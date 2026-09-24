@@ -1,0 +1,65 @@
+{
+  "tabs": {
+    "poem": "📜 Poem Mode",
+    "story": "📖 Story Mode",
+    "creator": "📱 Content Creator"
+  },
+  "placeholders": {
+    "poem": "Describe the theme, mood, or imagery for your poem (e.g. 'A walk under autumn moonlight' or 'அன்பின் ஆழம்')...",
+    "story": "Enter your story premise, characters, or conflict (e.g. 'Two childhood friends reuniting after 20 years')...",
+    "creator": "Enter a hook, thoughts, or theme for your social card/caption (e.g. 'Finding stillness in a noisy city')..."
+  },
+  "labels": {
+    "poemType": "Poem Form",
+    "genre": "Genre",
+    "tone": "Tone",
+    "length": "Length",
+    "language": "Language",
+    "platform": "Platform",
+    "style": "Visual Style",
+    "format": "Card Format"
+  },
+  "options": {
+    "length": {
+      "short": "Short",
+      "medium": "Medium",
+      "long": "Long"
+    },
+    "tones": {
+      "inspiring": "Inspiring",
+      "romantic": "Romantic",
+      "philosophical": "Philosophical",
+      "melancholic": "Melancholic",
+      "humorous": "Humorous",
+      "solemn": "Solemn",
+      "mystical": "Mystical"
+    },
+    "genres": {
+      "drama": "Poetic Drama",
+      "folklore": "Folklore & Myth",
+      "scifi": "Sci-Fi Wonder",
+      "sliceOfLife": "Slice of Life",
+      "adventure": "Adventure Quest",
+      "mystery": "Mystery"
+    },
+    "formats": {
+      "quote": "Short Quote (≤20 words)",
+      "poemCard": "Poem Card (4–8 lines)",
+      "caption": "Caption + Hashtags"
+    }
+  },
+  "buttons": {
+    "generate": "Generate",
+    "generating": "Composing Masterpiece...",
+    "regenerating": "Regenerating in {{language}} · same theme",
+    "clear": "Clear input"
+  },
+  "quota": {
+    "pill": "{{remaining}}/{{limit}} today",
+    "unlimited": "Unlimited PRO",
+    "resetsAt": "Resets at midnight"
+  },
+  "toasts": {
+    "tamilDetected": "Tamil detected! Switched language to தமிழ்"
+  }
+}

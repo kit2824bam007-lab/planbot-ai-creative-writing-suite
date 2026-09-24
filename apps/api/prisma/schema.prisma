@@ -1,0 +1,176 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String?         @unique
+  name          String?
+  avatar        String?
+  passwordHash  String?         @map("password_hash")
+  googleId      String?         @unique @map("google_id")
+  plan                   Plan            @default(FREE)
+  subscriptionStatus     String?         @default("ACTIVE") @map("subscription_status")
+  subscriptionStartDate  DateTime?       @map("subscription_start_date")
+  subscriptionExpiryDate DateTime?       @map("subscription_expiry_date")
+  razorpayPaymentId      String?         @map("razorpay_payment_id")
+  razorpayOrderId        String?         @map("razorpay_order_id")
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+
+  conversations Conversation[]
+  poems         Poem[]
+  logs          GenerationLog[]
+  feedbacks     Feedback[]
+  dailyUsages   DailyUsage[]
+
+  @@map("users")
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  title     String
+  mode      String    @default("poem") // poem, story, creator
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@index([userId, updatedAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  role           String       // user, assistant, system
+  content        String       @db.Text
+  metadata       Json?        // {mode, language, poemType, genre, tone, length, platform, style, format, ...}
+  model          String       @default("gemini-1.5-flash")
+  tokensUsed     Int          @default(0) @map("tokens_used")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model Poem {
+  id        String     @id @default(uuid())
+  userId    String?    @map("user_id")
+  prompt    String     @db.Text
+  content   String     @db.Text
+  mode      String     @default("poem")
+  poemType  String?    @map("poem_type")
+  genre     String?
+  tone      String?
+  language  String     @default("ta")
+  slug      String     @unique
+  isPublic  Boolean    @default(true) @map("is_public")
+  viewCount Int        @default(0) @map("view_count")
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  feedbacks Feedback[]
+
+  @@index([slug])
+  @@index([userId, createdAt])
+  @@map("poems")
+}
+
+model GenerationLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  ip         String
+  model      String
+  tokensUsed Int      @default(0) @map("tokens_used")
+  success    Boolean  @default(true)
+  errorCode  String?  @map("error_code")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([ip, createdAt])
+  @@index([userId, createdAt])
+  @@map("generation_logs")
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  poemId    String?  @map("poem_id")
+  userId    String?  @map("user_id")
+  rating    Int
+  comment   String?  @db.Text
+  flagged   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  poem      Poem?    @relation(fields: [poemId], references: [id], onDelete: SetNull)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([poemId])
+  @@map("feedbacks")
+}
+
+model DailyUsage {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  usageDate       String   @map("usage_date") // "YYYY-MM-DD"
+  generationCount Int      @default(0) @map("generation_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, usageDate])
+  @@index([userId, usageDate])
+  @@map("daily_usages")
+}
+
+model SubscriptionOrder {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  orderId     String   @unique @map("order_id")
+  amount      Int      @default(3000) // 3000 paise = ₹30
+  currency    String   @default("INR")
+  status      String   @default("PENDING") // PENDING, PAID, FAILED
+  paymentId   String?  @map("payment_id")
+  signature   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("subscription_orders")
+}
+
+model OriginalityCheck {
+  id                 String   @id @default(uuid())
+  userId             String?  @map("user_id")
+  contentId          String?  @map("content_id")
+  contentType        String   @default("poem") @map("content_type") // poem, story, creator, caption
+  riskLevel          String   @default("LOW") @map("risk_level") // LOW, MEDIUM, HIGH
+  exactMatchFound    Boolean  @default(false) @map("exact_match_found")
+  semanticSimilarity String   @default("LOW") @map("semantic_similarity") // LOW, MEDIUM, HIGH
+  similarityScore    Float?   @map("similarity_score")
+  matchedPhrases     Json?    @map("matched_phrases")
+  reason             String?  @db.Text
+  recommendation     String?  @db.Text
+  sourcesChecked     String   @default("PlanBot generated-content database") @map("sources_checked")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([contentId])
+  @@map("originality_checks")
+}

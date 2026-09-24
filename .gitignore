@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables & Secrets (CRITICAL: Never commit credentials)
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+*.env
+*.env.*
+!*.env.example
+!**/.env.example
+!*.env*.example
+!**/.env*.example
+*.pem
+*.key
+*.cert
+*.pfx
+
+# Next.js Build Outputs
+.next/
+out/
+build/
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Diagnostic & Cache
+.turbo/
+.cache/
+.parcel-cache/
+.temp/
+tmp/
+temp/
+*.tsbuildinfo
+
+# Coverage directory used by tools like istanbul or jest
+coverage/
+.nyc_output/
+
+# Prisma generated clients (if outside node_modules)
+# prisma/client/
+
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sw?
+*.bak

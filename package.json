@@ -1,0 +1,27 @@
+{
+  "name": "planbot-ai",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm --prefix apps/api run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:api": "npm --prefix apps/api run build",
+    "build:web": "npm --prefix apps/web run build",
+    "test:api": "npm --prefix apps/api test",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down"
+  },
+  "keywords": [
+    "ai",
+    "poem",
+    "story",
+    "tamil",
+    "gemini",
+    "creative-writing"
+  ],
+  "author": "PlanBot Team",
+  "license": "MIT"
+}
