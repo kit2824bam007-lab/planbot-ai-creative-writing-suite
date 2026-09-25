@@ -111,22 +111,22 @@ export const OriginalityScreeningCard: React.FC<OriginalityScreeningCardProps> =
       )}
     >
       {/* Header Bar */}
-      <div className="px-3.5 py-2.5 flex items-center justify-between gap-2 border-b border-inherit">
-        <div className="flex items-center gap-2">
+      <div className="px-3 py-2 flex items-center justify-between gap-1.5 sm:gap-2 border-b border-inherit">
+        <div className="flex items-center gap-1.5 min-w-0">
           {isLow ? (
             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           ) : (
             <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
           )}
-          <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs font-serif">
+          <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs font-serif truncate">
             Originality & Similarity Screening
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <span
             className={cn(
-              'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
+              'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0',
               isLow
                 ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
                 : isHigh
@@ -140,7 +140,7 @@ export const OriginalityScreeningCard: React.FC<OriginalityScreeningCardProps> =
           <button
             type="button"
             onClick={() => setIsScreeningOpen(!isScreeningOpen)}
-            className="text-[11px] font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 underline ml-1"
+            className="text-[11px] font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 underline shrink-0"
           >
             {isScreeningOpen ? 'Less' : 'Details'}
           </button>

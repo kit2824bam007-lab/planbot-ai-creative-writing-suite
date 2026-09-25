@@ -86,151 +86,159 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
         </div>
       )}
 
-      {/* Action Buttons Toolbar with Desktop Polish */}
-      <div className="flex flex-wrap items-center gap-1 p-1 bg-white/80 dark:bg-zinc-850/80 backdrop-blur-xs rounded-2xl border border-[#E8E2D9] dark:border-[#282534] shadow-2xs text-zinc-600 dark:text-zinc-400">
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="p-1.5 rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-          title="Copy to clipboard"
-        >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-        </button>
+      {/* Action Buttons Toolbar: Row 1 Core Actions, Row 2 Refinement Chips */}
+      <div className="space-y-1.5 max-w-full">
+        {/* Core Actions Row: Copy, Download, Regenerate, Continue, Share */}
+        <div className="flex items-center justify-between sm:justify-start gap-1 p-1 bg-white/85 dark:bg-zinc-850/85 backdrop-blur-xs rounded-2xl border border-[#E8E2D9] dark:border-[#282534] shadow-2xs text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center gap-0.5 sm:gap-1">
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="p-1.5 rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              title="Copy to clipboard"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
 
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="p-1.5 rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-          title="Download .txt"
-        >
-          <Download className="w-3.5 h-3.5" />
-        </button>
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="p-1.5 rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              title="Download .txt"
+            >
+              <Download className="w-3.5 h-3.5" />
+            </button>
 
-        <span className="w-[1px] h-3.5 bg-stone-200 dark:border-zinc-700 mx-0.5" />
+            <span className="w-[1px] h-3.5 bg-stone-200 dark:bg-zinc-700 mx-0.5" />
 
-        <button
-          type="button"
-          disabled={isStreaming}
-          onClick={() => handleAction('regenerate')}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
-            isStreaming && 'opacity-50 cursor-not-allowed'
-          )}
-          title="Completely fresh take with zero line reuse"
-        >
-          <RotateCcw className="w-3 h-3" />
-          <span>Regenerate</span>
-        </button>
+            <button
+              type="button"
+              disabled={isStreaming}
+              onClick={() => handleAction('regenerate')}
+              className={cn(
+                'inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
+                isStreaming && 'opacity-50 cursor-not-allowed'
+              )}
+              title="Completely fresh take with zero line reuse"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Regenerate</span>
+            </button>
 
-        <button
-          type="button"
-          disabled={isStreaming}
-          onClick={() => handleAction('continue')}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
-            isStreaming && 'opacity-50 cursor-not-allowed'
-          )}
-          title="Pick up from where it ended"
-        >
-          <Play className="w-3 h-3" />
-          <span>Continue</span>
-        </button>
+            <button
+              type="button"
+              disabled={isStreaming}
+              onClick={() => handleAction('continue')}
+              className={cn(
+                'inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
+                isStreaming && 'opacity-50 cursor-not-allowed'
+              )}
+              title="Pick up from where it ended"
+            >
+              <Play className="w-3 h-3" />
+              <span>Continue</span>
+            </button>
+          </div>
 
-        <button
-          type="button"
-          disabled={isStreaming}
-          onClick={() => handleAction('more-creative')}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
-            isStreaming && 'opacity-50 cursor-not-allowed'
-          )}
-          title="Richer imagery and metaphor"
-        >
-          <Sparkles className="w-3 h-3 text-amber-500" />
-          <span>More Creative</span>
-        </button>
+          <div className="ml-auto flex items-center pr-0.5">
+            <button
+              type="button"
+              onClick={handleShareClick}
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-xl bg-primary/12 text-primary hover:bg-primary/20 transition-all shadow-2xs"
+              title="Share as Canvas Image Card"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Share</span>
+            </button>
+          </div>
+        </div>
 
-        <button
-          type="button"
-          disabled={isStreaming}
-          onClick={() => handleAction('more-emotional')}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
-            isStreaming && 'opacity-50 cursor-not-allowed'
-          )}
-          title="Deep emotional resonance"
-        >
-          <Heart className="w-3 h-3 text-rose-500" />
-          <span>More Emotional</span>
-        </button>
+        {/* Variations / Refinements: Horizontally scrollable on mobile with smooth swipe, wrapping on desktop */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5 sm:flex-wrap">
+          <button
+            type="button"
+            disabled={isStreaming}
+            onClick={() => handleAction('more-creative')}
+            className={cn(
+              'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-xs rounded-xl bg-white/75 dark:bg-zinc-800/70 border border-[#E8E2D9] dark:border-[#282534] hover:bg-warm-100 dark:hover:bg-zinc-750 text-zinc-600 dark:text-zinc-300 transition-colors shrink-0 shadow-2xs',
+              isStreaming && 'opacity-50 cursor-not-allowed'
+            )}
+            title="Richer imagery and metaphor"
+          >
+            <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
+            <span>More Creative</span>
+          </button>
 
-        <button
-          type="button"
-          disabled={isStreaming}
-          onClick={() => handleAction('more-humorous')}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
-            isStreaming && 'opacity-50 cursor-not-allowed'
-          )}
-          title="Playful wit and humor"
-        >
-          <Smile className="w-3 h-3 text-emerald-500" />
-          <span>Humorous</span>
-        </button>
+          <button
+            type="button"
+            disabled={isStreaming}
+            onClick={() => handleAction('more-emotional')}
+            className={cn(
+              'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-xs rounded-xl bg-white/75 dark:bg-zinc-800/70 border border-[#E8E2D9] dark:border-[#282534] hover:bg-warm-100 dark:hover:bg-zinc-750 text-zinc-600 dark:text-zinc-300 transition-colors shrink-0 shadow-2xs',
+              isStreaming && 'opacity-50 cursor-not-allowed'
+            )}
+            title="Deep emotional resonance"
+          >
+            <Heart className="w-3 h-3 text-rose-500 shrink-0" />
+            <span>More Emotional</span>
+          </button>
 
-        <button
-          type="button"
-          disabled={isStreaming}
-          onClick={() => handleAction('simpler')}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
-            isStreaming && 'opacity-50 cursor-not-allowed'
-          )}
-          title="Simpler words and everyday diction"
-        >
-          <PenTool className="w-3 h-3" />
-          <span>Simpler</span>
-        </button>
+          <button
+            type="button"
+            disabled={isStreaming}
+            onClick={() => handleAction('more-humorous')}
+            className={cn(
+              'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-xs rounded-xl bg-white/75 dark:bg-zinc-800/70 border border-[#E8E2D9] dark:border-[#282534] hover:bg-warm-100 dark:hover:bg-zinc-750 text-zinc-600 dark:text-zinc-300 transition-colors shrink-0 shadow-2xs',
+              isStreaming && 'opacity-50 cursor-not-allowed'
+            )}
+            title="Playful wit and humor"
+          >
+            <Smile className="w-3 h-3 text-emerald-500 shrink-0" />
+            <span>Humorous</span>
+          </button>
 
-        <button
-          type="button"
-          disabled={isStreaming}
-          onClick={() => handleAction('shorter')}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
-            isStreaming && 'opacity-50 cursor-not-allowed'
-          )}
-          title="Condensed to ~half length"
-        >
-          <TrendingDown className="w-3 h-3" />
-          <span>Shorter</span>
-        </button>
+          <button
+            type="button"
+            disabled={isStreaming}
+            onClick={() => handleAction('simpler')}
+            className={cn(
+              'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-xs rounded-xl bg-white/75 dark:bg-zinc-800/70 border border-[#E8E2D9] dark:border-[#282534] hover:bg-warm-100 dark:hover:bg-zinc-750 text-zinc-600 dark:text-zinc-300 transition-colors shrink-0 shadow-2xs',
+              isStreaming && 'opacity-50 cursor-not-allowed'
+            )}
+            title="Simpler words and everyday diction"
+          >
+            <PenTool className="w-3 h-3 shrink-0" />
+            <span>Simpler</span>
+          </button>
 
-        <button
-          type="button"
-          disabled={isStreaming}
-          onClick={() => handleAction('longer')}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
-            isStreaming && 'opacity-50 cursor-not-allowed'
-          )}
-          title="Extended to ~double length"
-        >
-          <Maximize2 className="w-3 h-3" />
-          <span>Longer</span>
-        </button>
+          <button
+            type="button"
+            disabled={isStreaming}
+            onClick={() => handleAction('shorter')}
+            className={cn(
+              'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-xs rounded-xl bg-white/75 dark:bg-zinc-800/70 border border-[#E8E2D9] dark:border-[#282534] hover:bg-warm-100 dark:hover:bg-zinc-750 text-zinc-600 dark:text-zinc-300 transition-colors shrink-0 shadow-2xs',
+              isStreaming && 'opacity-50 cursor-not-allowed'
+            )}
+            title="Condensed to ~half length"
+          >
+            <TrendingDown className="w-3 h-3 shrink-0" />
+            <span>Shorter</span>
+          </button>
 
-        <span className="w-[1px] h-3.5 bg-stone-200 dark:border-zinc-700 mx-0.5" />
-
-        <button
-          type="button"
-          onClick={handleShareClick}
-          className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-xl bg-primary/12 text-primary hover:bg-primary/20 transition-all shadow-2xs"
-          title="Share as Canvas Image Card"
-        >
-          <Share2 className="w-3.5 h-3.5" />
-          <span>Share</span>
-        </button>
+          <button
+            type="button"
+            disabled={isStreaming}
+            onClick={() => handleAction('longer')}
+            className={cn(
+              'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-xs rounded-xl bg-white/75 dark:bg-zinc-800/70 border border-[#E8E2D9] dark:border-[#282534] hover:bg-warm-100 dark:hover:bg-zinc-750 text-zinc-600 dark:text-zinc-300 transition-colors shrink-0 shadow-2xs',
+              isStreaming && 'opacity-50 cursor-not-allowed'
+            )}
+            title="Extended to ~double length"
+          >
+            <Maximize2 className="w-3 h-3 shrink-0" />
+            <span>Longer</span>
+          </button>
+        </div>
       </div>
     </div>
   );

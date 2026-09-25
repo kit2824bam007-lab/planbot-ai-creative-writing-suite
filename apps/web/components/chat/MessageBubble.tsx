@@ -36,7 +36,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isStreami
   // AI Message
   return (
     <div className="flex justify-start mb-6 animate-fade-in">
-      <div className="flex items-start gap-3 sm:gap-3.5 max-w-[98%] sm:max-w-[92%] w-full">
+      <div className="flex items-start gap-2 sm:gap-3.5 max-w-full sm:max-w-[92%] w-full">
         {/* Official Feather/Quill Avatar */}
         <div className="w-8 h-8 rounded-xl bg-white dark:bg-white/95 border border-stone-200/70 dark:border-white/20 flex items-center justify-center shrink-0 shadow-2xs mt-0.5 p-1">
           <img

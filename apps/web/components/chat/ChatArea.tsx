@@ -78,10 +78,10 @@ export const ChatArea: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-transparent relative">
       {/* Top Bar */}
-      <header className="h-16 border-b border-[#EAE3DA] dark:border-[#24212D] bg-[#FAF8F5]/85 dark:bg-[#15141A]/85 backdrop-blur-md px-5 flex items-center justify-between z-20 shrink-0">
-        <div className="flex items-center gap-3 overflow-hidden">
+      <header className="h-14 sm:h-16 border-b border-[#EAE3DA] dark:border-[#24212D] bg-[#FAF8F5]/85 dark:bg-[#15141A]/85 backdrop-blur-md px-3 sm:px-5 flex items-center justify-between z-20 shrink-0 gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
           {!isSidebarOpen && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen(true)}
@@ -91,7 +91,7 @@ export const ChatArea: React.FC = () => {
                 <PanelLeft className="w-4 h-4" />
               </button>
 
-              <div className="w-7 h-7 rounded-lg bg-white dark:bg-white/95 p-0.5 border border-stone-200/60 dark:border-white/20 shadow-2xs flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-white dark:bg-white/95 p-0.5 border border-stone-200/60 dark:border-white/20 shadow-2xs flex items-center justify-center shrink-0">
                 <img
                   src="/logo-transparent.png"
                   alt="PlanBot"
@@ -105,39 +105,39 @@ export const ChatArea: React.FC = () => {
 
           {/* Editable Title */}
           {isEditingTitle ? (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
               <input
                 type="text"
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
-                className="text-sm font-semibold bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 px-2.5 py-1 rounded-lg outline-none ring-1 ring-primary/40 font-serif"
+                className="text-xs sm:text-sm font-semibold bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 px-2.5 py-1 rounded-lg outline-none ring-1 ring-primary/40 font-serif w-full"
                 autoFocus
               />
               <button
                 type="button"
                 onClick={handleSaveTitle}
-                className="p-1 rounded-lg text-primary hover:bg-primary/10"
+                className="p-1 rounded-lg text-primary hover:bg-primary/10 shrink-0"
               >
                 <Check className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 group cursor-pointer" onClick={handleStartEdit}>
-              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[220px] sm:max-w-md font-serif tracking-tight">
+            <div className="flex items-center gap-1.5 group cursor-pointer min-w-0 flex-1 overflow-hidden" onClick={handleStartEdit}>
+              <span className="text-xs sm:text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate font-serif tracking-tight">
                 {currentTitle}
               </span>
-              <Edit2 className="w-3 h-3 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Edit2 className="w-3 h-3 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hidden sm:block" />
             </div>
           )}
         </div>
 
         {/* Right Info Controls */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* PRO Badge if active */}
           {(quota?.isPro || (user?.plan === 'PRO' && user?.subscriptionStatus === 'ACTIVE')) && (
             <div
-              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/12 border border-amber-500/30 text-amber-700 dark:text-amber-400 shadow-2xs"
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/12 border border-amber-500/30 text-amber-700 dark:text-amber-400 shadow-2xs"
               title={user?.subscriptionExpiryDate ? `PRO active until ${new Date(user.subscriptionExpiryDate).toLocaleDateString()}` : 'PRO Member'}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -149,7 +149,7 @@ export const ChatArea: React.FC = () => {
           <button
             type="button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800 transition-colors"
+            className="p-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800 transition-colors"
             title="Toggle Theme"
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -159,7 +159,8 @@ export const ChatArea: React.FC = () => {
           <button
             type="button"
             onClick={handleNewChat}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-stone-200/70 dark:border-zinc-700 shadow-2xs transition-all"
+            className="inline-flex items-center gap-1 p-1.5 sm:px-3 sm:py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-stone-200/70 dark:border-zinc-700 shadow-2xs transition-all"
+            title="New Chat"
           >
             <Plus className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">New Piece</span>
@@ -169,12 +170,12 @@ export const ChatArea: React.FC = () => {
 
       {/* Main Message Scroll Area */}
       <div className={cn(
-        "flex-1 overflow-y-auto px-4 sm:px-6 py-6 transition-all duration-200 ease-out",
+        "flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-6 transition-all duration-200 ease-out",
         !hasMessages
           ? "pb-4"
           : isComposerFocused
           ? "pb-[380px] sm:pb-[420px]"
-          : "pb-28 sm:pb-32"
+          : "pb-24 sm:pb-32"
       )}>
         <div className="max-w-4xl lg:max-w-5xl mx-auto min-h-full flex flex-col justify-between">
           {!hasMessages ? (

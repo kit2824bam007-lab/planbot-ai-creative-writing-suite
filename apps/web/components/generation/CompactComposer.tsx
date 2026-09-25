@@ -63,11 +63,9 @@ export const CompactComposer: React.FC<CompactComposerProps> = ({ onFocus, onCli
   };
 
   const placeholderText =
-    mode === 'poem'
-      ? 'Type your next poem prompt or thought… / அடுத்த கவிதைச் சிந்தனையை உள்ளிடவும்…'
-      : mode === 'story'
-      ? 'Continue the story or add a plot twist… / அடுத்த திருப்பத்தை உள்ளிடவும்…'
-      : 'Type your next idea or hook… / அடுத்த பதிவை உள்ளிடவும்…';
+    language === 'ta'
+      ? (mode === 'poem' ? 'அடுத்த கவிதை வரிகளை உள்ளிடவும்…' : mode === 'story' ? 'அடுத்த திருப்பத்தை உள்ளிடவும்…' : 'அடுத்த பதிவை உள்ளிடவும்…')
+      : (mode === 'poem' ? 'Next poem prompt or verse…' : mode === 'story' ? 'Continue the story or add a twist…' : 'Type your next idea or hook…');
 
   const modeBadgeText =
     mode === 'poem'
@@ -174,18 +172,18 @@ export const CompactComposer: React.FC<CompactComposerProps> = ({ onFocus, onCli
       </div>
 
       {/* Subtle bottom status bar */}
-      <div className="flex items-center justify-between px-2 pt-1.5 mt-0.5 border-t border-zinc-100/70 dark:border-zinc-800/60 text-[11px] text-zinc-400 dark:text-zinc-500">
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium text-zinc-600 dark:text-zinc-300">
+      <div className="flex items-center justify-between px-2 pt-1.5 mt-0.5 border-t border-zinc-100/70 dark:border-zinc-800/60 text-[11px] text-zinc-400 dark:text-zinc-500 gap-1.5 overflow-hidden">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
+          <span className="font-medium text-zinc-600 dark:text-zinc-300 truncate">
             {modeBadgeText}
           </span>
-          <span className="opacity-50">•</span>
-          <span className="text-zinc-500 dark:text-zinc-400">
+          <span className="opacity-50 shrink-0">•</span>
+          <span className="text-zinc-500 dark:text-zinc-400 shrink-0">
             {language === 'ta' ? 'தமிழ்' : 'English'}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0 text-[10px] sm:text-[11px]">
           {quota?.isPro || (user?.plan === 'PRO' && user?.subscriptionStatus === 'ACTIVE') ? (
             <span className="inline-flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full text-[10px] border border-amber-500/25">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -196,7 +194,7 @@ export const CompactComposer: React.FC<CompactComposerProps> = ({ onFocus, onCli
               {quota.remaining}/{quota.limit ?? 10} today
             </span>
           ) : null}
-          <span className="hidden sm:inline text-zinc-400/80">
+          <span className="hidden md:inline text-zinc-400/80">
             Enter ↵ to send
           </span>
         </div>
