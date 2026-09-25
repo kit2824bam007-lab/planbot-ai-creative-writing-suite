@@ -38,7 +38,7 @@ export const CreatorOptions: React.FC = () => {
         </div>
 
         {/* RIGHT: Configuration Dropdowns */}
-        <div className="lg:col-span-7 grid grid-cols-2 gap-2.5">
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <CustomDropdown
             label={t('labels.platform')}
             value={platform}

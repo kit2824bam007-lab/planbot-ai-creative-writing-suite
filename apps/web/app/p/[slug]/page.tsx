@@ -69,8 +69,8 @@ export default async function PublicPoemPage({
   }
 
   return (
-    <div className="min-h-screen bg-transparent py-12 px-4 select-none">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-screen bg-transparent py-6 sm:py-12 px-3 sm:px-4 select-none">
+      <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
         {/* Navigation & Brand */}
         <div className="flex items-center justify-between">
           <Link
@@ -96,9 +96,9 @@ export default async function PublicPoemPage({
         </div>
 
         {/* Poem Card */}
-        <div className="bg-white/95 dark:bg-[#181622]/92 border border-[#E8E2D9] dark:border-[#282534] rounded-3xl p-8 sm:p-14 shadow-soft-xl space-y-8 backdrop-blur-md">
+        <div className="bg-white/95 dark:bg-[#181622]/92 border border-[#E8E2D9] dark:border-[#282534] rounded-3xl p-5 sm:p-10 md:p-14 shadow-soft-xl space-y-6 sm:space-y-8 backdrop-blur-md">
           {/* Header */}
-          <div className="border-b border-[#EAE3DA] dark:border-[#262330] pb-6 space-y-3">
+          <div className="border-b border-[#EAE3DA] dark:border-[#262330] pb-5 sm:pb-6 space-y-2.5 sm:space-y-3">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-primary uppercase tracking-wider bg-primary/10 px-2.5 py-0.5 rounded-full">
                 {poem.poemType || poem.mode}
@@ -109,13 +109,13 @@ export default async function PublicPoemPage({
                 </span>
               )}
             </div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-medium text-zinc-900 dark:text-zinc-50 tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-3xl font-serif font-medium text-zinc-900 dark:text-zinc-50 tracking-tight leading-snug">
               "{poem.prompt}"
             </h1>
           </div>
 
           {/* Content */}
-          <div className="text-lg sm:text-xl text-zinc-800 dark:text-zinc-100 poem-content leading-loose font-serif">
+          <div className="text-base sm:text-xl text-zinc-800 dark:text-zinc-100 poem-content leading-relaxed sm:leading-loose font-serif">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {poem.content}
             </ReactMarkdown>

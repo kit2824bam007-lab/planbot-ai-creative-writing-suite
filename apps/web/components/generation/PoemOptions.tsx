@@ -33,7 +33,7 @@ export const PoemOptions: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 pt-2">
       <CustomDropdown
         label={t('labels.poemType')}
         value={poemType}

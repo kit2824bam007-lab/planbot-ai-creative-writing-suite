@@ -54,12 +54,12 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
     if (isOpen && dropdownRef.current) {
       const rect = dropdownRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
-      // If space below is less than 320px or if more vertical space is available above, pop upward
-      setOpenUpward(spaceBelow < 320 || spaceBelow < rect.top);
+      // If space below is less than 280px or if more vertical space is available above, pop upward
+      setOpenUpward(spaceBelow < 280 && rect.top > spaceBelow);
 
       // Check horizontal edge collision
       const spaceRight = window.innerWidth - rect.left;
-      setAlignRight(spaceRight < 280 && rect.right > 280);
+      setAlignRight(spaceRight < 240 || rect.right > window.innerWidth - 10);
     }
   }, [isOpen]);
 
@@ -92,7 +92,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'flex items-center justify-between gap-2 px-3 py-2 text-xs sm:text-sm rounded-xl border transition-all text-left shadow-2xs',
+          'flex items-center justify-between gap-2 px-3 py-2.5 min-h-[44px] text-xs sm:text-sm rounded-xl border transition-all text-left shadow-2xs',
           'bg-white dark:bg-zinc-800/90 border-[#E2DBD1] dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-200',
           'hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20',
           disabled && 'opacity-60 cursor-not-allowed bg-zinc-100 dark:bg-zinc-800/50'
@@ -106,7 +106,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
       {isOpen && !disabled && (
         <div
           className={cn(
-            'absolute z-50 w-full min-w-[240px] sm:min-w-[280px] bg-white/95 dark:bg-[#181622]/95 backdrop-blur-md border border-[#E6DFD4] dark:border-zinc-800 rounded-2xl shadow-soft-xl overflow-hidden animate-fade-in flex flex-col',
+            'absolute z-50 w-full min-w-[200px] xs:min-w-[240px] sm:min-w-[280px] max-w-[calc(100vw-24px)] bg-white/95 dark:bg-[#181622]/95 backdrop-blur-md border border-[#E6DFD4] dark:border-zinc-800 rounded-2xl shadow-soft-xl overflow-hidden animate-fade-in flex flex-col',
             openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
             alignRight ? 'right-0' : 'left-0'
           )}

@@ -121,51 +121,51 @@ export const GenerationPanel: React.FC<GenerationPanelProps> = ({ onGenerate, au
   };
 
   return (
-    <div className="w-full bg-white/92 dark:bg-[#181620]/90 backdrop-blur-md border border-[#E8E2D9] dark:border-[#282534] rounded-3xl shadow-soft-md p-4 sm:p-5 mb-4 transition-all">
+    <div className="w-full bg-white/92 dark:bg-[#181620]/90 backdrop-blur-md border border-[#E8E2D9] dark:border-[#282534] rounded-3xl shadow-soft-md p-3.5 sm:p-5 mb-4 transition-all">
       {/* Top Header: Mode Tabs + Summary Chip + Quota Pill */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EFEAE2] dark:border-[#262330] pb-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 border-b border-[#EFEAE2] dark:border-[#262330] pb-3 sm:pb-3.5">
         {/* Mode Tabs (Bilingual: English primary, Tamil secondary small text) */}
-        <div className="flex items-center gap-1 bg-warm-100/90 dark:bg-zinc-900/80 p-1 rounded-2xl border border-stone-200/50 dark:border-zinc-800/80">
+        <div className="flex items-center gap-1 bg-warm-100/90 dark:bg-zinc-900/80 p-1 rounded-2xl border border-stone-200/50 dark:border-zinc-800/80 overflow-x-auto no-scrollbar max-w-full">
           <button
             type="button"
             onClick={() => setMode('poem')}
             className={cn(
-              'px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5',
+              'px-2.5 sm:px-3.5 py-1.5 min-h-[38px] text-xs font-semibold rounded-xl transition-all flex items-center gap-1 sm:gap-1.5 shrink-0',
               mode === 'poem'
                 ? 'bg-white dark:bg-zinc-800 text-primary shadow-2xs font-semibold'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             )}
           >
             <span>📜 Poem</span>
-            <span className="text-[10px] opacity-70 font-normal">/ கவிதை</span>
+            <span className="text-[10px] opacity-70 font-normal hidden xs:inline">/ கவிதை</span>
           </button>
 
           <button
             type="button"
             onClick={() => setMode('story')}
             className={cn(
-              'px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5',
+              'px-2.5 sm:px-3.5 py-1.5 min-h-[38px] text-xs font-semibold rounded-xl transition-all flex items-center gap-1 sm:gap-1.5 shrink-0',
               mode === 'story'
                 ? 'bg-white dark:bg-zinc-800 text-primary shadow-2xs font-semibold'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             )}
           >
             <span>📖 Story</span>
-            <span className="text-[10px] opacity-70 font-normal">/ கதை</span>
+            <span className="text-[10px] opacity-70 font-normal hidden xs:inline">/ கதை</span>
           </button>
 
           <button
             type="button"
             onClick={() => setMode('creator')}
             className={cn(
-              'px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5',
+              'px-2.5 sm:px-3.5 py-1.5 min-h-[38px] text-xs font-semibold rounded-xl transition-all flex items-center gap-1 sm:gap-1.5 shrink-0',
               mode === 'creator'
                 ? 'bg-white dark:bg-zinc-800 text-primary shadow-2xs font-semibold'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             )}
           >
             <span>📱 Content Studio</span>
-            <span className="text-[10px] opacity-70 font-normal">/ உருவாக்கி</span>
+            <span className="text-[10px] opacity-70 font-normal hidden xs:inline">/ உருவாக்கி</span>
           </button>
         </div>
 
@@ -246,7 +246,7 @@ export const GenerationPanel: React.FC<GenerationPanelProps> = ({ onGenerate, au
           disabled={(!promptText.trim() && !uploadedMedia) || isStreaming}
           onClick={handleGenerate}
           className={cn(
-            'inline-flex items-center gap-2 px-5 py-2 text-xs sm:text-sm font-semibold text-white rounded-xl shadow-soft-sm transition-all',
+            'inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] text-xs sm:text-sm font-semibold text-white rounded-xl shadow-soft-sm transition-all',
             'bg-[#6B5488] hover:bg-[#5E477A] active:scale-[0.98]',
             (!promptText.trim() && !uploadedMedia || isStreaming) && 'opacity-50 cursor-not-allowed shadow-none'
           )}
