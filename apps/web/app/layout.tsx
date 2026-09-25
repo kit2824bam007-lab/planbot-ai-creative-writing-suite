@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Noto_Sans_Tamil } from 'next/font/google';
+import { Inter, Noto_Sans_Tamil, Newsreader } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
@@ -8,6 +8,15 @@ const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
+});
+
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  weight: ['400', '500', '600'],
+  variable: '--font-serif',
+  display: 'swap',
+  adjustFontFallback: false,
 });
 
 const notoSansTamil = Noto_Sans_Tamil({
@@ -36,7 +45,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${notoSansTamil.variable} font-sans`}>
+      <body className={`${inter.variable} ${newsreader.variable} ${notoSansTamil.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Toaster position="top-right" richColors closeButton />

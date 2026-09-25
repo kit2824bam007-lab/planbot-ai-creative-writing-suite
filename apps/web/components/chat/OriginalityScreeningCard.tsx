@@ -102,12 +102,12 @@ export const OriginalityScreeningCard: React.FC<OriginalityScreeningCardProps> =
   return (
     <div
       className={cn(
-        'mt-2.5 rounded-xl border text-xs transition-all shadow-sm overflow-hidden',
+        'mt-2.5 rounded-2xl border text-xs transition-all shadow-2xs overflow-hidden',
         isLow
-          ? 'border-emerald-200/90 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20'
+          ? 'border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/20'
           : isHigh
-          ? 'border-rose-300 dark:border-rose-900/70 bg-rose-50/50 dark:bg-rose-950/30'
-          : 'border-amber-300 dark:border-amber-900/70 bg-amber-50/50 dark:bg-amber-950/30'
+          ? 'border-rose-400/30 bg-rose-500/5 dark:bg-rose-950/25'
+          : 'border-amber-400/30 bg-amber-500/5 dark:bg-amber-950/25'
       )}
     >
       {/* Header Bar */}
@@ -118,8 +118,8 @@ export const OriginalityScreeningCard: React.FC<OriginalityScreeningCardProps> =
           ) : (
             <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
           )}
-          <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs">
-            🛡 Originality Screening
+          <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs font-serif">
+            Originality & Similarity Screening
           </span>
         </div>
 
@@ -128,10 +128,10 @@ export const OriginalityScreeningCard: React.FC<OriginalityScreeningCardProps> =
             className={cn(
               'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
               isLow
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
                 : isHigh
-                ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-                : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                : 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
             )}
           >
             Risk: {result.riskLevel}

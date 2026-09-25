@@ -6,6 +6,7 @@ const { env } = require('../config/env');
 const { hashPassword, verifyPassword } = require('../utils/crypto');
 const { ApiError } = require('../utils/errors');
 const { authenticate } = require('../middleware/auth');
+const { validateEmail } = require('../services/emailValidator');
 
 const router = express.Router();
 
@@ -47,6 +48,16 @@ const localUsers = new Map();
 router.post('/register', async (req, res, next) => {
   try {
     const { email, password, name } = registerSchema.parse(req.body);
+
+    // Verify email is a genuine, permanent email address (reject fake & disposable domains)
+    const emailCheck = await validateEmail(email);
+    if (!emailCheck.isValid) {
+      throw ApiError.badRequest(
+        emailCheck.message || 'Invalid email ID. Fake or disposable email addresses are not allowed.',
+        emailCheck.code || 'INVALID_EMAIL'
+      );
+    }
+
     const passwordHash = await hashPassword(password);
 
     let user = null;

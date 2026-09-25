@@ -57,21 +57,36 @@ export const EmptyState: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center py-10 px-4 text-center max-w-2xl mx-auto my-auto animate-fade-in">
-      {/* Sparkle Icon & Greeting */}
-      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-violet-600 to-purple-500 text-white flex items-center justify-center shadow-lg shadow-primary/20 mb-4">
-        <Sparkles className="w-7 h-7" />
+    <div className="relative flex flex-col items-center justify-center py-8 sm:py-12 px-4 text-center max-w-3xl mx-auto my-auto animate-fade-in select-none">
+      {/* Ethereal Ambient Sphere Blur (Inspired by reference image) */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-12 w-64 h-64 sm:w-72 sm:h-72 rounded-full bg-gradient-to-tr from-purple-200/40 via-violet-200/30 to-pink-100/40 dark:from-purple-900/20 dark:via-violet-900/15 dark:to-pink-900/15 blur-3xl pointer-events-none -z-10" />
+
+      {/* Official Feather/Quill Brand Logo */}
+      <div className="relative mb-5 group">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white/95 dark:bg-white/95 border border-[#E8E1D7] dark:border-white/20 shadow-soft-md flex items-center justify-center p-3 backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">
+          <img
+            src="/logo-transparent.png"
+            alt="PlanBot Logo"
+            width={64}
+            height={64}
+            className="w-full h-full max-w-[64px] max-h-[64px] object-contain transition-all"
+          />
+        </div>
+        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center text-primary backdrop-blur-xs">
+          <Sparkles className="w-3 h-3" />
+        </div>
       </div>
 
-      <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
+      {/* Editorial Heading */}
+      <h1 className="font-serif text-2xl sm:text-4xl text-zinc-900 dark:text-zinc-50 tracking-tight font-medium max-w-xl leading-tight">
         What masterpiece shall we compose today?
       </h1>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 max-w-md">
-        Explore classical meters, lyrical verses, compelling stories, or create stunning social cards in Tamil, English, and more.
+      <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-2.5 max-w-lg leading-relaxed font-sans">
+        Explore classical meters, lyrical verses, compelling stories, or create media-aware social content in Tamil and English.
       </p>
 
-      {/* 4 Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-8">
+      {/* 4 Cards Grid with Refined Desktop Polish */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full mt-8 text-left">
         {suggestions.map((card, i) => {
           const Icon = card.icon;
           return (
@@ -79,19 +94,19 @@ export const EmptyState: React.FC = () => {
               key={i}
               type="button"
               onClick={card.action}
-              className="flex items-start gap-3 p-3.5 rounded-xl text-left bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md transition-all group"
+              className="flex items-start gap-3.5 p-4 rounded-2xl bg-white/85 dark:bg-zinc-900/65 border border-[#E8E2D9] dark:border-[#262330] hover:border-primary/40 hover:bg-white dark:hover:bg-zinc-900/90 shadow-soft-sm hover:shadow-soft-md transition-all group active:scale-[0.99]"
             >
-              <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-primary shrink-0 group-hover:bg-primary/10 transition-colors">
-                <Icon className="w-4 h-4" />
+              <div className="p-2.5 rounded-xl bg-warm-100 dark:bg-zinc-800/90 text-primary shrink-0 group-hover:bg-primary/12 transition-colors border border-stone-200/50 dark:border-zinc-700/50">
+                <Icon className="w-4 h-4 stroke-[1.8]" />
               </div>
-              <div className="overflow-hidden">
-                <div className="text-[11px] font-semibold text-primary uppercase tracking-wider">
+              <div className="overflow-hidden min-w-0">
+                <div className="text-[10px] font-semibold text-primary uppercase tracking-wider">
                   {card.category}
                 </div>
-                <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 group-hover:text-primary transition-colors">
+                <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-100 mt-0.5 group-hover:text-primary transition-colors font-serif truncate">
                   {card.title}
                 </div>
-                <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-1">
+                <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mt-1 font-sans">
                   "{card.prompt}"
                 </div>
               </div>

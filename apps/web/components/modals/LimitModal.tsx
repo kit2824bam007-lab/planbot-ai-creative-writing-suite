@@ -168,49 +168,49 @@ export const LimitModal: React.FC = () => {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in select-none">
-      <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 sm:p-7 text-center space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in select-none">
+      <div className="relative w-full max-w-md bg-white/95 dark:bg-[#181622]/95 backdrop-blur-md border border-[#E8E2D9] dark:border-[#282534] rounded-3xl shadow-soft-xl p-6 sm:p-7 text-center space-y-5">
         {/* Close Button */}
         <button
           type="button"
           onClick={() => setIsLimitModalOpen(false)}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800 transition-colors"
           title="Close"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Pro Icon Badge */}
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-600 to-purple-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-purple-500/25">
-          <Zap className="w-8 h-8 fill-current text-white" />
+        <div className="w-14 h-14 rounded-2xl bg-[#6B5488] text-white flex items-center justify-center mx-auto shadow-soft-sm">
+          <Zap className="w-7 h-7 fill-current text-white" />
         </div>
 
         {/* Title & Usage Context */}
         <div className="space-y-1.5">
-          <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-serif font-medium text-zinc-900 dark:text-zinc-50 tracking-tight">
             You've reached today's free limit
           </h2>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
             You've used all {quota?.limit || 10} free generations for today.
           </p>
         </div>
 
         {/* Upgrade Plan Card */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-left space-y-3.5">
-          <div className="flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-700/60 pb-3">
+        <div className="p-4 sm:p-5 rounded-2xl bg-warm-50/70 dark:bg-zinc-900/60 border border-[#E2DBD1] dark:border-zinc-750 text-left space-y-3.5">
+          <div className="flex items-center justify-between border-b border-stone-200/80 dark:border-zinc-700/60 pb-3">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                PRO PLAN
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                PRO MEMBERSHIP
               </span>
-              <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                Upgrade to Pro
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 font-serif">
+                Full Literary Access
               </h3>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50">
+              <span className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50 font-serif">
                 ₹30
               </span>
-              <span className="text-xs text-zinc-400 block font-normal">
+              <span className="text-[11px] text-zinc-400 block font-normal">
                 / 30 days
               </span>
             </div>
@@ -220,7 +220,7 @@ export const LimitModal: React.FC = () => {
           <ul className="space-y-2 text-xs text-zinc-700 dark:text-zinc-300">
             {proFeatures.map((feat, idx) => (
               <li key={idx} className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                   <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
                 <span>{feat}</span>
@@ -240,7 +240,7 @@ export const LimitModal: React.FC = () => {
             type="button"
             disabled={isProcessing}
             onClick={handleUpgrade}
-            className="w-full flex items-center justify-center gap-2 py-3 px-5 text-sm font-semibold rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white shadow-lg shadow-purple-500/25 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-3 px-5 text-sm font-semibold rounded-xl bg-[#6B5488] hover:bg-[#5E477A] text-white shadow-soft-sm active:scale-[0.98] transition-all disabled:opacity-50"
           >
             {isProcessing ? (
               <>

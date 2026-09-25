@@ -54,7 +54,7 @@ export const WritingComposer: React.FC<WritingComposerProps> = ({
   // STATE 1: New / Empty Chat -> Full composer in static layout
   if (!hasMessages) {
     return (
-      <div className="shrink-0 max-w-3xl w-full mx-auto px-4 transition-all duration-200 ease-in-out">
+      <div className="shrink-0 max-w-4xl lg:max-w-5xl w-full mx-auto px-4 sm:px-6 transition-all duration-200 ease-in-out">
         <GenerationPanel />
       </div>
     );
@@ -64,9 +64,9 @@ export const WritingComposer: React.FC<WritingComposerProps> = ({
   return (
     <div
       ref={containerRef}
-      className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none bg-gradient-to-t from-zinc-50 via-zinc-50/95 to-transparent dark:from-zinc-950 dark:via-zinc-950/95 pt-6 pb-3 sm:pb-5 px-4 transition-all duration-200 ease-in-out"
+      className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none bg-gradient-to-t from-[#FAF8F5] via-[#FAF8F5]/90 to-transparent dark:from-[#131217] dark:via-[#131217]/90 pt-8 pb-4 sm:pb-6 px-4 sm:px-6 transition-all duration-200 ease-in-out"
     >
-      <div className="max-w-3xl w-full mx-auto pointer-events-auto">
+      <div className="max-w-4xl lg:max-w-5xl w-full mx-auto pointer-events-auto">
         <div className="transition-all duration-200 ease-out">
           {isExpanded ? (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-200">

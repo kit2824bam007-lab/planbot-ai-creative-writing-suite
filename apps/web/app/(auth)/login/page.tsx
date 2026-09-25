@@ -52,17 +52,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-zinc-50 dark:bg-zinc-950">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-xl p-8 space-y-6 animate-fade-in">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-transparent select-none">
+      <div className="w-full max-w-md bg-white/92 dark:bg-[#181622]/90 backdrop-blur-md border border-[#E8E2D9] dark:border-[#282534] rounded-3xl shadow-soft-xl p-8 space-y-6 animate-fade-in">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 to-purple-500 text-white flex items-center justify-center mx-auto shadow-md">
-            <Sparkles className="w-6 h-6" />
+          <div className="w-14 h-14 rounded-2xl bg-white dark:bg-white/95 p-2 mx-auto border border-stone-200/60 dark:border-white/20 shadow-soft-sm flex items-center justify-center">
+            <img
+              src="/logo-transparent.png"
+              alt="PlanBot"
+              width={40}
+              height={40}
+              className="w-full h-full max-w-[40px] max-h-[40px] object-contain"
+            />
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+          <h1 className="font-serif text-2xl sm:text-3xl font-medium text-zinc-900 dark:text-zinc-50 tracking-tight">
             Sign in to PlanBot AI
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-sans">
             Continue composing sublime classical and contemporary poetry.
           </p>
         </div>
@@ -72,9 +78,9 @@ export default function LoginPage() {
           type="button"
           disabled={loading}
           onClick={handleGoogleMock}
-          className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700/60 transition-all shadow-sm"
+          className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-stone-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/80 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-warm-50 dark:hover:bg-zinc-750 transition-all shadow-2xs"
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 shrink-0" width="16" height="16" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -96,9 +102,9 @@ export default function LoginPage() {
         </button>
 
         <div className="flex items-center gap-3">
-          <span className="h-[1px] bg-zinc-200 dark:bg-zinc-800 flex-1" />
-          <span className="text-[11px] font-semibold text-zinc-400 uppercase">or with email</span>
-          <span className="h-[1px] bg-zinc-200 dark:bg-zinc-800 flex-1" />
+          <span className="h-[1px] bg-stone-200/80 dark:bg-zinc-800 flex-1" />
+          <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">or with email</span>
+          <span className="h-[1px] bg-stone-200/80 dark:bg-zinc-800 flex-1" />
         </div>
 
         {/* Email & Password Form */}
@@ -115,7 +121,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="poet@example.com"
-                className="w-full bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-200 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full bg-warm-50/70 dark:bg-zinc-900/60 border border-[#E2DBD1] dark:border-zinc-750 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-200 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
           </div>
@@ -132,7 +138,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-200 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full bg-warm-50/70 dark:bg-zinc-900/60 border border-[#E2DBD1] dark:border-zinc-750 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-200 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
           </div>
@@ -140,7 +146,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold text-white rounded-xl shadow-md bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 active:scale-[0.98] transition-all"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold text-white rounded-xl shadow-soft-sm bg-[#6B5488] hover:bg-[#5E477A] active:scale-[0.98] transition-all"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Sign In</span>}
           </button>

@@ -151,21 +151,21 @@ export const ShareModal: React.FC = () => {
       {/* Hidden offscreen canvas for rendering */}
       <canvas ref={canvasRef} className="hidden" />
 
-      <div className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-2xl bg-white/95 dark:bg-[#181622]/95 backdrop-blur-md border border-[#E8E2D9] dark:border-[#282534] rounded-3xl shadow-soft-xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-[#EAE3DA] dark:border-[#262330] flex items-center justify-between">
           <div className="flex items-center gap-2">
             {step === 2 && (
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 mr-1"
+                className="p-1.5 rounded-lg hover:bg-warm-100 dark:hover:bg-zinc-800 text-zinc-500 mr-1"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
             )}
             <Share2 className="w-5 h-5 text-primary" />
-            <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 font-serif">
               {step === 1 ? 'Design Social Card' : 'Share Composition'}
             </h2>
           </div>
@@ -173,7 +173,7 @@ export const ShareModal: React.FC = () => {
           <button
             type="button"
             onClick={handleClose}
-            className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -185,14 +185,14 @@ export const ShareModal: React.FC = () => {
             /* STEP 1: Template Selection & Preview */
             <div className="space-y-5">
               {/* Aspect Ratio Switcher */}
-              <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800/60 p-1.5 rounded-2xl">
+              <div className="flex items-center justify-between bg-warm-100/80 dark:bg-zinc-900/80 p-1.5 rounded-2xl border border-stone-200/50 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setAspectRatio('square')}
                   className={cn(
                     'flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all',
                     aspectRatio === 'square'
-                      ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm'
+                      ? 'bg-white dark:bg-zinc-800 text-primary shadow-2xs font-semibold'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
                   )}
                 >
@@ -204,7 +204,7 @@ export const ShareModal: React.FC = () => {
                   className={cn(
                     'flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all',
                     aspectRatio === 'story'
-                      ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm'
+                      ? 'bg-white dark:bg-zinc-800 text-primary shadow-2xs font-semibold'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
                   )}
                 >
@@ -213,7 +213,7 @@ export const ShareModal: React.FC = () => {
               </div>
 
               {/* Live Preview Display */}
-              <div className="flex items-center justify-center p-4 bg-zinc-100/70 dark:bg-zinc-800/40 rounded-2xl min-h-[220px]">
+              <div className="flex items-center justify-center p-4 bg-warm-50 dark:bg-zinc-900/40 border border-stone-200/50 dark:border-zinc-800/60 rounded-2xl min-h-[220px]">
                 {previewDataUrl ? (
                   <img
                     src={previewDataUrl}
@@ -367,7 +367,7 @@ export const ShareModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleDownloadPng}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-semibold text-sm shadow-md hover:opacity-90 active:scale-[0.99] transition-all"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#6B5488] hover:bg-[#5E477A] text-white font-semibold text-sm shadow-soft-sm hover:opacity-95 active:scale-[0.99] transition-all"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download High-Res PNG Image</span>
@@ -378,7 +378,7 @@ export const ShareModal: React.FC = () => {
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-[#EAE3DA] dark:border-[#262330] bg-[#FAF8F5]/80 dark:bg-[#15141A]/80 flex items-center justify-between">
           {step === 1 ? (
             <>
               <button
@@ -392,7 +392,7 @@ export const ShareModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-xl shadow-sm transition-all"
+                className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-[#6B5488] hover:bg-[#5E477A] rounded-xl shadow-soft-sm transition-all"
               >
                 <span>Continue to Share</span>
                 <ArrowRight className="w-3.5 h-3.5" />

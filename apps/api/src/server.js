@@ -26,3 +26,13 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
+
+// Protect process from crashing on async stream parsing errors from 3rd-party SDKs
+process.on('unhandledRejection', (reason) => {
+  console.warn('[Process] Handled Unhandled Rejection:', reason?.message || reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[Process] Handled Uncaught Exception:', err?.message || err);
+});
+

@@ -32,7 +32,7 @@ export default function MainLayout({
   }, [setUser, setQuota]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 font-sans">
+    <div className="flex h-screen w-screen overflow-hidden bg-transparent font-sans">
       <ResizableSidebar />
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {children}

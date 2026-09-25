@@ -173,11 +173,11 @@ export const MediaUploader: React.FC = () => {
       />
 
       {!uploadedMedia ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={() => imageInputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 transition-all active:scale-95 shadow-xs"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-750 text-zinc-700 dark:text-zinc-200 border border-stone-200/70 dark:border-zinc-700/80 transition-all active:scale-98 shadow-2xs"
           >
             <ImageIcon className="w-3.5 h-3.5 text-primary" />
             <span>Upload Image</span>
@@ -186,28 +186,28 @@ export const MediaUploader: React.FC = () => {
           <button
             type="button"
             onClick={() => videoInputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 transition-all active:scale-95 shadow-xs"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-750 text-zinc-700 dark:text-zinc-200 border border-stone-200/70 dark:border-zinc-700/80 transition-all active:scale-98 shadow-2xs"
           >
-            <VideoIcon className="w-3.5 h-3.5 text-violet-500" />
+            <VideoIcon className="w-3.5 h-3.5 text-primary" />
             <span>Upload Video</span>
           </button>
 
           <span className="text-[11px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">
-            (Optional: Content will be customized to match your media)
+            (Media-aware generation tailored to your upload)
           </span>
         </div>
       ) : (
         /* Preview Card */
-        <div className="p-2.5 rounded-xl border border-violet-200 dark:border-violet-900/60 bg-violet-50/50 dark:bg-violet-950/20 flex items-center justify-between gap-3 animate-fade-in shadow-xs">
-          <div className="flex items-center gap-2.5 overflow-hidden">
+        <div className="p-3 rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10 flex items-center justify-between gap-3 animate-fade-in shadow-2xs">
+          <div className="flex items-center gap-3 overflow-hidden">
             {uploadedMedia.type === 'image' ? (
               <img
                 src={uploadedMedia.previewUrl}
                 alt="Preview"
-                className="w-12 h-12 rounded-lg object-cover border border-violet-300/60 dark:border-violet-800 shrink-0 shadow-xs"
+                className="w-12 h-12 rounded-xl object-cover border border-primary/20 shrink-0 shadow-2xs"
               />
             ) : (
-              <div className="w-12 h-12 rounded-lg bg-zinc-900 border border-violet-300/60 dark:border-violet-800 flex items-center justify-center text-white shrink-0 shadow-xs relative overflow-hidden">
+              <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-primary/20 flex items-center justify-center text-white shrink-0 shadow-2xs relative overflow-hidden">
                 <video
                   src={uploadedMedia.previewUrl}
                   className="w-full h-full object-cover opacity-80"
@@ -221,10 +221,10 @@ export const MediaUploader: React.FC = () => {
             <div className="overflow-hidden text-xs">
               <div className="flex items-center gap-1.5 font-semibold text-zinc-800 dark:text-zinc-200">
                 <FileCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="truncate max-w-[180px] sm:max-w-xs">{uploadedMedia.fileName}</span>
+                <span className="truncate max-w-[200px] sm:max-w-xs">{uploadedMedia.fileName}</span>
               </div>
               <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-1.5">
-                <span className="uppercase font-medium text-[10px] px-1.5 py-0.2 rounded bg-violet-100 dark:bg-violet-900/60 text-violet-700 dark:text-violet-300">
+                <span className="uppercase font-semibold text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary dark:text-primary-300">
                   {uploadedMedia.type}
                 </span>
                 <span>•</span>
@@ -242,7 +242,7 @@ export const MediaUploader: React.FC = () => {
           <button
             type="button"
             onClick={handleRemove}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-zinc-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0 border border-transparent hover:border-rose-200 dark:hover:border-rose-900/60"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-zinc-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0 border border-transparent hover:border-rose-200 dark:hover:border-rose-900/60"
             title="Remove Media"
             aria-label="Remove Media"
           >

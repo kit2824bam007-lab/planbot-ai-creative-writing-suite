@@ -4,8 +4,6 @@ import React, { useRef, useEffect, useState } from 'react';
 import {
   Square,
   Plus,
-  Radio,
-  Sparkles,
   Edit2,
   Check,
   PanelLeft,
@@ -78,19 +76,31 @@ export const ChatArea: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-50 dark:bg-zinc-950 relative">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-transparent relative">
       {/* Top Bar */}
-      <header className="h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-4 flex items-center justify-between z-20 shrink-0">
+      <header className="h-16 border-b border-[#EAE3DA] dark:border-[#24212D] bg-[#FAF8F5]/85 dark:bg-[#15141A]/85 backdrop-blur-md px-5 flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-3 overflow-hidden">
           {!isSidebarOpen && (
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(true)}
-              className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              title="Open Sidebar"
-            >
-              <PanelLeft className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800 transition-colors"
+                title="Open Sidebar"
+              >
+                <PanelLeft className="w-4 h-4" />
+              </button>
+
+              <div className="w-7 h-7 rounded-lg bg-white dark:bg-white/95 p-0.5 border border-stone-200/60 dark:border-white/20 shadow-2xs flex items-center justify-center">
+                <img
+                  src="/logo-transparent.png"
+                  alt="PlanBot"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5 object-contain"
+                />
+              </div>
+            </div>
           )}
 
           {/* Editable Title */}
@@ -101,20 +111,20 @@ export const ChatArea: React.FC = () => {
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
-                className="text-sm font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 px-2 py-1 rounded-md outline-none ring-1 ring-primary"
+                className="text-sm font-semibold bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 px-2.5 py-1 rounded-lg outline-none ring-1 ring-primary/40 font-serif"
                 autoFocus
               />
               <button
                 type="button"
                 onClick={handleSaveTitle}
-                className="p-1 rounded text-primary hover:bg-primary/10"
+                className="p-1 rounded-lg text-primary hover:bg-primary/10"
               >
                 <Check className="w-4 h-4" />
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-2 group cursor-pointer" onClick={handleStartEdit}>
-              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[200px] sm:max-w-xs">
+              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[220px] sm:max-w-md font-serif tracking-tight">
                 {currentTitle}
               </span>
               <Edit2 className="w-3 h-3 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -123,17 +133,11 @@ export const ChatArea: React.FC = () => {
         </div>
 
         {/* Right Info Controls */}
-        <div className="flex items-center gap-2.5">
-          {/* System Online Pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
-            <Radio className="w-3 h-3 animate-pulse" />
-            <span>System Online</span>
-          </div>
-
+        <div className="flex items-center gap-2 sm:gap-2.5">
           {/* PRO Badge if active */}
           {(quota?.isPro || (user?.plan === 'PRO' && user?.subscriptionStatus === 'ACTIVE')) && (
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-sm"
+              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/12 border border-amber-500/30 text-amber-700 dark:text-amber-400 shadow-2xs"
               title={user?.subscriptionExpiryDate ? `PRO active until ${new Date(user.subscriptionExpiryDate).toLocaleDateString()}` : 'PRO Member'}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -141,17 +145,11 @@ export const ChatArea: React.FC = () => {
             </div>
           )}
 
-          {/* Model Selector Badge */}
-          <div className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
-            <Sparkles className="w-3 h-3 text-primary" />
-            <span>Gemini 3.6 Flash</span>
-          </div>
-
           {/* Dark / Light Toggle */}
           <button
             type="button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="p-2 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800 transition-colors"
             title="Toggle Theme"
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -161,24 +159,24 @@ export const ChatArea: React.FC = () => {
           <button
             type="button"
             onClick={handleNewChat}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-stone-200/70 dark:border-zinc-700 shadow-2xs transition-all"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">New Chat</span>
+            <span className="hidden sm:inline">New Piece</span>
           </button>
         </div>
       </header>
 
       {/* Main Message Scroll Area */}
       <div className={cn(
-        "flex-1 overflow-y-auto px-4 py-6 transition-all duration-200 ease-out",
+        "flex-1 overflow-y-auto px-4 sm:px-6 py-6 transition-all duration-200 ease-out",
         !hasMessages
           ? "pb-4"
           : isComposerFocused
           ? "pb-[380px] sm:pb-[420px]"
           : "pb-28 sm:pb-32"
       )}>
-        <div className="max-w-3xl mx-auto min-h-full flex flex-col justify-between">
+        <div className="max-w-4xl lg:max-w-5xl mx-auto min-h-full flex flex-col justify-between">
           {!hasMessages ? (
             <EmptyState />
           ) : (

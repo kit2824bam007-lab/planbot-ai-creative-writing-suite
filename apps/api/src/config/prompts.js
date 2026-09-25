@@ -300,18 +300,30 @@ function getFormatRules(format) {
  */
 function getPlatformRules(platform) {
   const norm = (platform || '').toLowerCase().replace(/[\s_]+/g, '-');
+  if (norm.includes('linkedin')) {
+    return `PLATFORM RULES: LINKEDIN POST
+- Tone: Professional, articulate, thought-provoking, and deeply human.
+- CORE OBJECTIVE: Write an authentic, insightful, Professional post based DIRECTLY on what is happening in the uploaded media (event, demo, project, workshop, or achievement).
+- START WITH THE REAL MOMENT: Begin with the actual event, demo, or project depicted. Explain what is happening, why it matters, and what problem was tackled (e.g. "Today, we got to see our AI project move from an idea on paper to something we could actually demonstrate.").
+- STRICT ANTI-JARGON CONSTRAINT: ABSOLUTELY FORBIDDEN to use hollow corporate buzzwords and clichés (e.g., NO "In today's fast-paced digital world...", NO "Seamless execution is the bridge between...", NO "Transforming paradigms", NO "Unlocking synergy", NO "Empowering cross-functional delivery").
+- AUTHENTIC HUMAN VOICE: Sound like a passionate, grounded professional or engineer sharing a real journey. Keep it professional, candid, and humble.
+- GENUINE TAKEAWAYS: Include 1-2 practical reflections or takeaways drawn from the visible work, without exaggerated claims or fabricated numbers.
+- FORMAT: Clean single-line breaks for mobile readability. An engaging concluding question to spark discussion.
+- HASHTAGS: Exactly 3 to 5 highly relevant professional hashtags matching the actual domain (e.g. #SoftwareEngineering #AIProject #StudentInnovation).`;
+  }
   if (norm.includes('instagram-story') || (norm.includes('story') && !norm.includes('short'))) {
     return `PLATFORM RULES: INSTAGRAM STORY
 - Structure: Short, story-friendly text suited for instant reading on mobile stories.
-- Brevity: Highly concise (1 to 3 impactful lines) that fits cleanly over visual media without clutter.
-- Tone: Intimate, direct, visually compatible.`;
+- Brevity: Highly concise (1 to 2 impactful lines) that fits cleanly over visual media without cluttering or covering the subject.
+- Tone: Intimate, direct, candid, and visually compatible.`;
   }
   if (norm.includes('reel') || norm.includes('instagram-reel')) {
     return `PLATFORM RULES: INSTAGRAM REEL
-- Hook: An arresting first line/hook to stop scrolling in the first second.
+- Hook: An arresting first line/hook to stop scrolling in the first 2 seconds, tied directly to the visual movement or opening scene.
 - Caption: Short, punchy caption (2 to 3 sentences) synchronized with high-energy visual rhythm.
+- Short Punch Line: Memorable closing line that lingers after the video loops.
 - Call to Action (CTA): Optional engaging prompt to save, share, or comment.
-- Hashtags: 5 to 8 targeted trending hashtags.`;
+- Hashtags: 5 to 8 targeted trending-style hashtags reflecting the exact scene.`;
   }
   if (norm.includes('whatsapp') || norm.includes('status')) {
     return `PLATFORM RULES: WHATSAPP STATUS
@@ -321,32 +333,27 @@ function getPlatformRules(platform) {
   }
   if (norm.includes('twitter') || norm.includes('x-post')) {
     return `PLATFORM RULES: TWITTER / X POST
-- Structure: Concise, high-impact post with a powerful opening hook.
+- Structure: Concise, high-impact post under 280 characters with a powerful opening hook.
 - Character Economy: Sharp and memorable phrasing.
-- Hashtags: 2 to 3 relevant hashtags maximum.`;
-  }
-  if (norm.includes('linkedin')) {
-    return `PLATFORM RULES: LINKEDIN POST
-- Tone: Professional, articulate, thought-provoking, and inspiring.
-- Content: Connects the visual theme or subject to career insight, leadership, personal growth, or creative discipline.
-- Spacing: Clean single-line breaks for scannability. Minimal, purposeful hashtags.`;
+- Hashtags: 1 to 2 relevant hashtags maximum.`;
   }
   if (norm.includes('facebook')) {
     return `PLATFORM RULES: FACEBOOK POST
 - Tone: Warm, conversational, friendly, and community-oriented.
-- Engagement: Encourages friends and followers to share thoughts, relate, or reminisce.`;
+- Engagement: Encourages friends and followers to share thoughts, relate, or reminisce about the visible moment.`;
   }
   if (norm.includes('youtube') || norm.includes('shorts')) {
     return `PLATFORM RULES: YOUTUBE SHORTS
-- Hook: High-energy opening hook designed for rapid short-form video retention.
+- Title: High-retention, clickable title based on the actual media subject.
+- Hook: High-energy opening hook designed for rapid short-form video retention matching the first 2 seconds of action.
 - Caption: Short, engaging description matching the video journey.
 - Call to Action (CTA): Prompt to like, comment, or subscribe.
 - Hashtags: #Shorts plus 3 to 5 topic-specific tags.`;
   }
   // Default: Instagram Post
   return `PLATFORM RULES: INSTAGRAM POST
-- Structure: Engaging, aesthetically pleasing caption with an attractive opening.
-- Body: Well-spaced, evocative sentences with strong sensory appeal.
+- Structure: Engaging, aesthetically pleasing caption with an attractive, scroll-stopping opening hook.
+- Body: Well-spaced, evocative sentences with strong sensory appeal grounded in the actual visual textures and mood.
 - Hashtags: 5 to 8 curated, relevant hashtags placed cleanly at the end.`;
 }
 
@@ -567,18 +574,127 @@ NARRATIVE RULES:
 - NEGATIVE CONSTRAINT: FORBIDDEN: verse, rhyming lines, stanzas, or isolated numbered bullet points. Output genuine, immersive prose.
 `;
   } else if (mode === 'creator') {
+    const isLinkedIn = (platform || '').toLowerCase().includes('linkedin');
     modeSpecificRules = `
 [MODE: CONTENT CREATOR]
 TARGET PLATFORM: ${platform}
 ${getPlatformRules(platform)}
 ${getStyleGuideline(style)}
 ${getFormatRules(format)}
+
+==================================================
+CONTENT CREATOR PHILOSOPHY & HUMAN VOICE DIRECTIVE:
+1. CORE PRINCIPLE — MEDIA FIRST, NEVER INVERT PRIORITIES:
+   - MEDIA = WHAT THE CONTENT IS ABOUT (The grounded source of truth)
+   - USER REQUEST = WHAT THEY WANT (The creative instruction and direction)
+   - PLATFORM = WHERE IT WILL BE USED (${platform})
+   - TONE/STYLE = HOW IT SHOULD SOUND (${tone} / ${style})
+   - LANGUAGE = HOW IT SHOULD BE EXPRESSED (${langDisplay})
+   - CREATIVITY = HOW INTERESTING THE FINAL WRITING SHOULD FEEL
+
+2. THE "HUMAN CREATOR" INTERNAL PERSPECTIVE:
+   Before generating, think like a thoughtful, creative human creator:
+   - What would a real person notice first when looking at this photo or video?
+   - What is interesting, unique, or memorable about this particular moment?
+   - What emotion, story, or message does this visual naturally communicate?
+   - What would make someone stop scrolling?
+   - What would a real human actually say about this?
+   - What detail makes this media different from a generic stock photo or video?
+
+3. THE "HUMAN TEST" (MANDATORY INTERNAL QUALITY FILTER):
+   "If I remove the uploaded media and give this exact text to 10 completely different images or videos, would it still make sense?"
+   If YES, the text is too generic! You MUST rewrite it using specific details from the actual uploaded media.
+
+4. STRICT BANNED AI CLICHÉS & BUZZWORDS (DO NOT USE BY DEFAULT):
+   - "In today's fast-paced digital world..."
+   - "Seamless execution is the bridge between..."
+   - "Transforming ideas into impactful solutions..."
+   - "Embracing the journey..."
+   - "Creating meaningful experiences..."
+   - "Unlocking new possibilities..."
+   - "Where creativity meets innovation..."
+   - "Capturing moments that last forever..."
+   - "Making memories that will last a lifetime..."
+   - "Every moment is special..."
+   - "Living my best life..."
+   - "Delivering seamless excellence..."
+   - "A testament to..."
+   Instead, use specific details and natural human observations from the actual visual.
+
+5. OUTPUT FORMAT DIRECTIVE:
+   ${isLinkedIn ? `Since the target platform is LINKEDIN:
+   Output an authentic, well-structured professional LinkedIn post:
+   - Strong, grounded opening hook stating the real moment/project/demo
+   - Clear context: what is happening, what was built or achieved, and what problem was tackled
+   - Sincere human takeaway or lesson learned (avoiding corporate hype)
+   - Engaging concluding question for the community
+   - 3 to 5 targeted professional hashtags` : `Unless the user explicitly specifies a different single-item format, structure standard caption generation with distinct creative directions:
+   ✨ OPTION 1 — CINEMATIC
+   [A cinematic, atmospheric caption capturing the visual depth and sensory details]
+
+   ✨ OPTION 2 — NATURAL / HUMAN
+   [A genuine, personal observation written in an authentic human voice, honest feeling, and candid conversational warmth]
+
+   ✨ OPTION 3 — TRENDY / SOCIAL
+   [A relatable, punchy, modern social-media-style caption tailored for mobile feeds]
+
+   🎬 ORIGINAL CINEMATIC LINE
+   [An original, memorable punchline or quote inspired by the visual mood]
+
+   🏷 HASHTAGS
+   #tag1 #tag2 #tag3 #tag4 #tag5 #tag6`}
+
+   - If user requested Reel content:
+     🎬 Reel Hook: [Arresting visual hook for the first 2-3 seconds]
+     📝 Caption: [Engaging, rhythmic 2-3 sentence reel caption]
+     🔥 Short Punch Line: [Memorable ending punch line]
+     #️⃣ Hashtags: [5-8 targeted hashtags]
+     📣 Optional CTA: [Save / Share / Comment prompt]
+
+   - If user requested Story content:
+     ✨ [Ultra-concise, aesthetic story line suitable for Instagram/WhatsApp mobile story overlay]
+
+   - If user requested YouTube Shorts:
+     🎬 Title: [High-retention video title]
+     🔥 Hook: [Opening hook matching the video motion]
+     📝 Short Description: [Engaging description]
+     #️⃣ Hashtags: #Shorts [plus 3-5 targeted tags]
+
+6. EMOJIS & HASHTAGS:
+   - Use 2 to 8 relevant emojis carefully chosen to match the actual visuals (e.g. sunset: 🌅 🌇 ✨ 🌊; food: 🍕 🍜 ☕ 😋; tech/demo: 💻 🚀 💡 🎯; friends: 🫶 😂 ❤️).
+   - DO NOT place an emoji after every single word. Avoid emoji clutter.
+   - Generate 5 to 10 targeted hashtags directly reflecting the visible scene, mood, and language. Do not output 30-50 generic hashtags.
+
+7. ORIGINALITY & MOVIE-STYLE GUIDANCE:
+   - When the user asks for "movie dialogue", "mass dialogue", "hero entry vibe", or "cinematic lines":
+     Generate 100% ORIGINAL, evocative wording capturing that electrifying mood.
+     ABSOLUTELY FORBIDDEN: Copying, reproducing, or quoting copyrighted movie dialogues, famous punchlines, or protected song lyrics.
+     Do NOT present generated lines as actual quotes from any existing film.
+
+8. ZERO HALLUCINATION SAFEGUARDS:
+   - Never invent: brand names, prices, discounts, unverified statistics, fake achievements, or sensitive personal attributes.
+   - For travel: if location is unknown, use evocative general travel language (e.g. "Somewhere between the road and the sky. 🌄").
+   - For food: ground the copy in the visible plate, presentation, and appetizing aesthetic.
+   - For products: highlight visible craftsmanship, texture, and styling without medical or unverified performance claims.
+   - For people/selfies: reflect visible outfit vibe, lighting, posture, and expression; do not identify real persons or assume private personal details.
+   - For tech/demos: focus on the visible application, UI walkthrough, code, or presentation without fabricating fake company names or client metrics.
+==================================================
 `;
   }
 
   // Translanguaging & Language Enforcement
   let languageDirective = '';
-  if (language === 'ta') {
+  if (language === 'tanglish' || params.isTanglish) {
+    languageDirective = `
+==================================================
+CRITICAL MANDATORY LANGUAGE DIRECTIVE: TARGET = TANGLISH (தமிழ் + ஆங்கிலம் கலவை)
+1. TARGET OUTPUT LANGUAGE IS NATURAL CONVERSATIONAL TANGLISH.
+2. Write in authentic Romanized Tamil words blended naturally with English (e.g. "Sunset paakumbodhu, life konjam slow-ah poganum pola irukku. 🌅").
+3. Keep the cadence rhythmic, authentic, youth-centric, and natural to modern Tamil social media conversation.
+4. Do NOT output textbook formal Tamil or pure English when Tanglish is requested.
+==================================================
+`;
+  } else if (language === 'ta') {
     languageDirective = `
 ==================================================
 CRITICAL MANDATORY LANGUAGE DIRECTIVE: TARGET = TAMIL (தமிழ்)
@@ -609,12 +725,21 @@ CRITICAL REQUIREMENT: MEDIA-AWARE CREATIVE GENERATION
 The user uploaded an ${mc.mediaType || 'image/video'}.
 VISUAL MEDIA CONTEXT:
 - Media Type: ${mc.mediaType || 'visual'}
+${mc.category ? `- Category: ${mc.category}` : ''}
 ${mc.scene ? `- Setting/Location: ${mc.scene}` : ''}
-${mc.objects && mc.objects.length ? `- Main Subjects/Objects: ${mc.objects.join(', ')}` : ''}
+${(mc.subjects || mc.objects) && (mc.subjects || mc.objects).length ? `- Main Subjects/Objects: ${(mc.subjects || mc.objects).join(', ')}` : ''}
+${mc.peopleContext ? `- People Context: ${mc.peopleContext}` : ''}
+${mc.foodDetails ? `- Food Presentation: ${mc.foodDetails}` : ''}
+${mc.productDetails ? `- Product Styling: ${mc.productDetails}` : ''}
+${mc.lighting ? `- Lighting: ${mc.lighting}` : ''}
 ${mc.mood ? `- Mood & Emotional Atmosphere: ${mc.mood}` : ''}
 ${mc.colors && mc.colors.length ? `- Dominant Colors: ${mc.colors.join(', ')}` : ''}
 ${mc.visualTheme ? `- Visual Aesthetic Theme: ${mc.visualTheme}` : ''}
 ${mc.activity ? `- Action/Activity: ${mc.activity}` : ''}
+${mc.distinctiveDetails ? `- Distinctive Elements: ${mc.distinctiveDetails}` : ''}
+${mc.openingHook ? `- Video Opening Frame: ${mc.openingHook}` : ''}
+${mc.keyActions && mc.keyActions.length ? `- Video Movements: ${mc.keyActions.join(' -> ')}` : ''}
+${mc.endingMoment ? `- Video Ending Scene: ${mc.endingMoment}` : ''}
 ${mc.summary ? `- Overview: ${mc.summary}` : ''}
 
 MANDATORY RULES FOR MEDIA-AWARE OUTPUT:
@@ -723,8 +848,27 @@ function buildActionPrompt(action, ctx = {}) {
       specificInstruction = `ACTION: REFINE AND POLISH`;
   }
 
+  let mediaContextInstruction = '';
+  if (ctx.mediaContext) {
+    const mc = ctx.mediaContext;
+    mediaContextInstruction = `
+VISUAL MEDIA CONTEXT TO PRESERVE ACROSS THIS ACTION:
+- Media Type: ${mc.mediaType || 'visual media'}
+${mc.category ? `- Category: ${mc.category}` : ''}
+${mc.scene ? `- Setting/Scene: ${mc.scene}` : ''}
+${(mc.subjects || mc.objects)?.length ? `- Visual Elements: ${(mc.subjects || mc.objects).join(', ')}` : ''}
+${mc.mood ? `- Mood: ${mc.mood}` : ''}
+${mc.visualTheme ? `- Visual Theme: ${mc.visualTheme}` : ''}
+${mc.foodDetails ? `- Food Presentation: ${mc.foodDetails}` : ''}
+${mc.productDetails ? `- Product Styling: ${mc.productDetails}` : ''}
+
+CRITICAL: Strictly ground this refined version in the uploaded ${mc.mediaType || 'media'} context above. Do not lose the connection to what is visually depicted!
+`;
+  }
+
   return `[ITERATIVE REFINEMENT REQUEST]
 ${specificInstruction}
+${mediaContextInstruction}
 
 CONTEXT — DO NOT CHANGE:
 - Original Prompt: "${originalPrompt}"

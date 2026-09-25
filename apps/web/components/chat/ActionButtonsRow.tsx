@@ -86,34 +86,34 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
         </div>
       )}
 
-      {/* Action Buttons Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 text-zinc-500 dark:text-zinc-400">
+      {/* Action Buttons Toolbar with Desktop Polish */}
+      <div className="flex flex-wrap items-center gap-1 p-1 bg-white/80 dark:bg-zinc-850/80 backdrop-blur-xs rounded-2xl border border-[#E8E2D9] dark:border-[#282534] shadow-2xs text-zinc-600 dark:text-zinc-400">
         <button
           type="button"
           onClick={handleCopy}
-          className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+          className="p-1.5 rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
           title="Copy to clipboard"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
         </button>
 
         <button
           type="button"
           onClick={handleDownload}
-          className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+          className="p-1.5 rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
           title="Download .txt"
         >
           <Download className="w-3.5 h-3.5" />
         </button>
 
-        <span className="w-[1px] h-3.5 bg-zinc-200 dark:bg-zinc-800 mx-0.5" />
+        <span className="w-[1px] h-3.5 bg-stone-200 dark:border-zinc-700 mx-0.5" />
 
         <button
           type="button"
           disabled={isStreaming}
           onClick={() => handleAction('regenerate')}
           className={cn(
-            'inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
             isStreaming && 'opacity-50 cursor-not-allowed'
           )}
           title="Completely fresh take with zero line reuse"
@@ -127,7 +127,7 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
           disabled={isStreaming}
           onClick={() => handleAction('continue')}
           className={cn(
-            'inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
             isStreaming && 'opacity-50 cursor-not-allowed'
           )}
           title="Pick up from where it ended"
@@ -141,7 +141,7 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
           disabled={isStreaming}
           onClick={() => handleAction('more-creative')}
           className={cn(
-            'inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
             isStreaming && 'opacity-50 cursor-not-allowed'
           )}
           title="Richer imagery and metaphor"
@@ -155,7 +155,7 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
           disabled={isStreaming}
           onClick={() => handleAction('more-emotional')}
           className={cn(
-            'inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
             isStreaming && 'opacity-50 cursor-not-allowed'
           )}
           title="Deep emotional resonance"
@@ -169,7 +169,7 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
           disabled={isStreaming}
           onClick={() => handleAction('more-humorous')}
           className={cn(
-            'inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
             isStreaming && 'opacity-50 cursor-not-allowed'
           )}
           title="Playful wit and humor"
@@ -183,7 +183,7 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
           disabled={isStreaming}
           onClick={() => handleAction('simpler')}
           className={cn(
-            'inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
             isStreaming && 'opacity-50 cursor-not-allowed'
           )}
           title="Simpler words and everyday diction"
@@ -197,7 +197,7 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
           disabled={isStreaming}
           onClick={() => handleAction('shorter')}
           className={cn(
-            'inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
             isStreaming && 'opacity-50 cursor-not-allowed'
           )}
           title="Condensed to ~half length"
@@ -211,7 +211,7 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
           disabled={isStreaming}
           onClick={() => handleAction('longer')}
           className={cn(
-            'inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-xl hover:bg-warm-100 dark:hover:bg-zinc-750 transition-colors',
             isStreaming && 'opacity-50 cursor-not-allowed'
           )}
           title="Extended to ~double length"
@@ -220,12 +220,12 @@ export const ActionButtonsRow: React.FC<ActionButtonsRowProps> = ({ message }) =
           <span>Longer</span>
         </button>
 
-        <span className="w-[1px] h-3.5 bg-zinc-200 dark:bg-zinc-800 mx-0.5" />
+        <span className="w-[1px] h-3.5 bg-stone-200 dark:border-zinc-700 mx-0.5" />
 
         <button
           type="button"
           onClick={handleShareClick}
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-xl bg-primary/12 text-primary hover:bg-primary/20 transition-all shadow-2xs"
           title="Share as Canvas Image Card"
         >
           <Share2 className="w-3.5 h-3.5" />

@@ -36,6 +36,12 @@ export const ConversationList: React.FC<ConversationListProps> = ({ searchQuery 
       const data = await api.getConversation(conv.id);
       if (data && data.messages) {
         setMessages(data.messages);
+        const lastWithMedia = [...data.messages].reverse().find((m: any) => m.metadata?.mediaContext);
+        if (lastWithMedia?.metadata?.mediaContext) {
+          useChatStore.getState().setMediaContext(lastWithMedia.metadata.mediaContext);
+        } else {
+          useChatStore.getState().setMediaContext(null);
+        }
       }
     } catch (err) {
       toast.error('Could not load conversation history.');
@@ -82,8 +88,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({ searchQuery 
             className={cn(
               'group relative flex items-center justify-between px-3 py-2 text-xs rounded-xl cursor-pointer transition-all',
               isSelected
-                ? 'bg-primary/10 text-primary font-semibold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100'
+                ? 'bg-primary/12 text-primary font-semibold shadow-2xs border border-primary/20'
+                : 'text-zinc-600 dark:text-zinc-400 hover:bg-[#F2ECE1]/60 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-zinc-100'
             )}
           >
             <div className="flex items-center gap-2.5 overflow-hidden flex-1">

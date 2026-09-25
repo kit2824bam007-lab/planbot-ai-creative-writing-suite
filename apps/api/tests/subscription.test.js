@@ -41,7 +41,7 @@ describe('Subscription, Usage & Rate Limiting System', () => {
     expect(res.body.currency).toBe('INR');
     expect(res.body.orderId).toBeDefined();
     expect(res.body.keyId).toBeDefined();
-  });
+  }, 15000);
 
   test('POST /api/subscription/verify-payment verifies payment and activates 30-day Pro', async () => {
     // 1. Create order

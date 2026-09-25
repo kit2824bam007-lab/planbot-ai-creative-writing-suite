@@ -93,20 +93,27 @@ class KeyPool {
     const target = this.keys.find((k) => k.id === keyEntry.id);
     if (!target) return;
 
+    // Do not penalize API keys for client-side argument or format errors
+    const isClientError = errMessage && (errMessage.includes('400') || errMessage.includes('invalid argument'));
+    if (isClientError) {
+      target.lastError = errMessage;
+      return;
+    }
+
     target.failedCalls++;
     target.consecutiveFailures++;
     target.lastError = errMessage || (isQuota ? '429 Rate Limit' : 'Unknown Error');
 
     const now = Date.now();
     if (isQuota) {
-      // 429 quota: 1-minute cooldown
+      // 429 quota exhaustion: 1 hour in production so healthy keys take over seamlessly (60s in tests)
+      const quotaCooldown = process.env.NODE_ENV === 'test' ? 60 * 1000 : 60 * 60 * 1000;
       target.isCooldown = true;
-      target.cooldownUntil = now + 60 * 1000;
+      target.cooldownUntil = now + quotaCooldown;
     } else {
-      // Exponential backoff: 1m -> 2m -> 4m -> 8m
-      const backoffMinutes = Math.min(Math.pow(2, target.consecutiveFailures - 1), 8);
+      // Temporary network/503 spikes: 15s cooldown
       target.isCooldown = true;
-      target.cooldownUntil = now + backoffMinutes * 60 * 1000;
+      target.cooldownUntil = now + 15 * 1000;
     }
   }
 

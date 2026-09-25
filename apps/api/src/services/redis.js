@@ -105,6 +105,20 @@ const redisService = {
     return nextVal;
   },
 
+  async decr(key) {
+    if (this.isAvailable()) {
+      try {
+        return await redisClient.decr(key);
+      } catch (err) {
+        // Fallback to memory
+      }
+    }
+    const current = parseInt(memoryStore.get(key) || '0', 10);
+    const nextVal = Math.max(0, current - 1);
+    memoryStore.set(key, String(nextVal));
+    return nextVal;
+  },
+
   async expire(key, seconds) {
     if (this.isAvailable()) {
       try {

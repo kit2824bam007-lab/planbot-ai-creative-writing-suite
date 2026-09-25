@@ -121,65 +121,65 @@ export const GenerationPanel: React.FC<GenerationPanelProps> = ({ onGenerate, au
   };
 
   return (
-    <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-md p-4 mb-4 transition-all">
+    <div className="w-full bg-white/92 dark:bg-[#181620]/90 backdrop-blur-md border border-[#E8E2D9] dark:border-[#282534] rounded-3xl shadow-soft-md p-4 sm:p-5 mb-4 transition-all">
       {/* Top Header: Mode Tabs + Summary Chip + Quota Pill */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EFEAE2] dark:border-[#262330] pb-3.5">
         {/* Mode Tabs (Bilingual: English primary, Tamil secondary small text) */}
-        <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl">
+        <div className="flex items-center gap-1 bg-warm-100/90 dark:bg-zinc-900/80 p-1 rounded-2xl border border-stone-200/50 dark:border-zinc-800/80">
           <button
             type="button"
             onClick={() => setMode('poem')}
             className={cn(
-              'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1',
+              'px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5',
               mode === 'poem'
-                ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm'
+                ? 'bg-white dark:bg-zinc-800 text-primary shadow-2xs font-semibold'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             )}
           >
-            <span>📜 Poem Mode</span>
-            <span className="text-[10px] opacity-75 font-normal">/ கவிதை</span>
+            <span>📜 Poem</span>
+            <span className="text-[10px] opacity-70 font-normal">/ கவிதை</span>
           </button>
 
           <button
             type="button"
             onClick={() => setMode('story')}
             className={cn(
-              'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1',
+              'px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5',
               mode === 'story'
-                ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm'
+                ? 'bg-white dark:bg-zinc-800 text-primary shadow-2xs font-semibold'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             )}
           >
-            <span>📖 Story Mode</span>
-            <span className="text-[10px] opacity-75 font-normal">/ கதை</span>
+            <span>📖 Story</span>
+            <span className="text-[10px] opacity-70 font-normal">/ கதை</span>
           </button>
 
           <button
             type="button"
             onClick={() => setMode('creator')}
             className={cn(
-              'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1',
+              'px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5',
               mode === 'creator'
-                ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm'
+                ? 'bg-white dark:bg-zinc-800 text-primary shadow-2xs font-semibold'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             )}
           >
-            <span>📱 Content Creator</span>
-            <span className="text-[10px] opacity-75 font-normal">/ உருவாக்கி</span>
+            <span>📱 Content Studio</span>
+            <span className="text-[10px] opacity-70 font-normal">/ உருவாக்கி</span>
           </button>
         </div>
 
         {/* Right Tools: Clean English Summary Chip + Quota / PRO Pill */}
         <div className="flex items-center gap-2.5">
           {/* Summary Chip (English only) */}
-          <div className="hidden sm:inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+          <div className="hidden sm:inline-flex items-center px-3 py-1 text-xs font-medium rounded-xl bg-warm-50 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 shadow-2xs font-serif">
             {getSummaryChip()}
           </div>
 
           {/* Quota / PRO Pill */}
           {isPro ? (
             <div
-              className="px-3 py-1 text-xs font-bold rounded-full border border-amber-500/40 bg-gradient-to-r from-amber-500/15 to-yellow-500/15 text-amber-600 dark:text-amber-400 flex items-center gap-1.5 shadow-sm"
+              className="px-3 py-1 text-xs font-bold rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center gap-1.5 shadow-2xs"
               title={user?.subscriptionExpiryDate ? `Pro active until ${new Date(user.subscriptionExpiryDate).toLocaleDateString()}` : 'Pro Plan Active'}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -188,12 +188,12 @@ export const GenerationPanel: React.FC<GenerationPanelProps> = ({ onGenerate, au
           ) : (
             <div
               className={cn(
-                'px-3 py-1 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5',
+                'px-3 py-1 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5 shadow-2xs',
                 isZeroQuota
                   ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 animate-pulse'
                   : isLowQuota
-                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800 text-amber-600 dark:text-amber-400'
-                  : 'bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300'
+                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-400'
+                  : 'bg-primary/8 dark:bg-primary/15 border-primary/20 text-primary dark:text-primary-300'
               )}
               title={isZeroQuota ? "Today's free generations are finished" : `${remaining}/${limit} generations remaining today`}
             >
@@ -205,7 +205,7 @@ export const GenerationPanel: React.FC<GenerationPanelProps> = ({ onGenerate, au
       </div>
 
       {/* Textarea Area */}
-      <div className="relative mt-3">
+      <div className="relative mt-3.5">
         <textarea
           ref={textareaRef}
           value={promptText}
@@ -213,14 +213,14 @@ export const GenerationPanel: React.FC<GenerationPanelProps> = ({ onGenerate, au
           onKeyDown={handleKeyDown}
           placeholder={placeholderText}
           rows={2}
-          className="w-full resize-none bg-zinc-50/70 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 rounded-xl px-3.5 py-2.5 pr-10 text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-sans"
+          className="w-full resize-none bg-warm-50/70 dark:bg-zinc-900/60 border border-[#E4DDD3] dark:border-zinc-800 rounded-2xl px-4 py-3 pr-10 text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all font-sans leading-relaxed shadow-2xs"
         />
 
         {promptText && (
           <button
             type="button"
             onClick={() => setPromptText('')}
-            className="absolute top-2.5 right-2.5 p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            className="absolute top-3.5 right-3.5 p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-stone-200/60 dark:hover:bg-zinc-700 transition-colors"
             title={t('buttons.clear')}
           >
             <X className="w-3.5 h-3.5" />
@@ -229,12 +229,14 @@ export const GenerationPanel: React.FC<GenerationPanelProps> = ({ onGenerate, au
       </div>
 
       {/* Mode-Specific Option Dropdowns */}
-      {mode === 'poem' && <PoemOptions />}
-      {mode === 'story' && <StoryOptions />}
-      {mode === 'creator' && <CreatorOptions />}
+      <div className="mt-2.5">
+        {mode === 'poem' && <PoemOptions />}
+        {mode === 'story' && <StoryOptions />}
+        {mode === 'creator' && <CreatorOptions />}
+      </div>
 
-      {/* Bottom Bar: Character Counter & Gradient Generate Button */}
-      <div className="flex items-center justify-between pt-3 mt-2 border-t border-zinc-100 dark:border-zinc-800">
+      {/* Bottom Bar: Character Counter & Generate Button */}
+      <div className="flex items-center justify-between pt-3.5 mt-3 border-t border-[#EFEAE2] dark:border-[#262330]">
         <span className="text-xs font-medium text-zinc-400">
           {promptText.length}/500
         </span>
@@ -244,8 +246,8 @@ export const GenerationPanel: React.FC<GenerationPanelProps> = ({ onGenerate, au
           disabled={(!promptText.trim() && !uploadedMedia) || isStreaming}
           onClick={handleGenerate}
           className={cn(
-            'inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-xl shadow-md transition-all',
-            'bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 active:scale-[0.98]',
+            'inline-flex items-center gap-2 px-5 py-2 text-xs sm:text-sm font-semibold text-white rounded-xl shadow-soft-sm transition-all',
+            'bg-[#6B5488] hover:bg-[#5E477A] active:scale-[0.98]',
             (!promptText.trim() && !uploadedMedia || isStreaming) && 'opacity-50 cursor-not-allowed shadow-none'
           )}
         >

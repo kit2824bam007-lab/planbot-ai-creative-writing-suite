@@ -79,15 +79,15 @@ export const CompactComposer: React.FC<CompactComposerProps> = ({ onFocus, onCli
   return (
     <div
       onClick={onClick}
-      className="w-full bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl shadow-xl shadow-zinc-900/5 dark:shadow-black/40 p-2 sm:p-2.5 transition-all focus-within:border-zinc-400 dark:focus-within:border-zinc-600 focus-within:ring-2 focus-within:ring-primary/15 cursor-text"
+      className="w-full bg-white/92 dark:bg-[#181622]/90 backdrop-blur-md border border-[#E6DFD4] dark:border-[#282534] rounded-2xl shadow-soft-lg p-2 sm:p-2.5 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15 cursor-text"
     >
       {/* Attached Media Indicator in Compact Mode */}
       {uploadedMedia && (
-        <div className="mb-2 px-2.5 py-1.5 rounded-xl bg-violet-50/80 dark:bg-violet-950/40 border border-violet-200/80 dark:border-violet-800/60 flex items-center justify-between text-xs text-violet-700 dark:text-violet-300 animate-fade-in shadow-xs">
+        <div className="mb-2 px-3 py-1.5 rounded-xl bg-primary/8 dark:bg-primary/15 border border-primary/20 flex items-center justify-between text-xs text-primary dark:text-primary-300 animate-fade-in shadow-2xs">
           <div className="flex items-center gap-2 truncate">
             <span className="text-sm">{uploadedMedia.type === 'image' ? '📷' : '🎥'}</span>
-            <span className="font-semibold truncate max-w-[200px] sm:max-w-xs">{uploadedMedia.fileName}</span>
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-violet-200/60 dark:bg-violet-900/60 text-violet-800 dark:text-violet-200">
+            <span className="font-semibold truncate max-w-[220px] sm:max-w-xs">{uploadedMedia.fileName}</span>
+            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary dark:text-primary-200">
               {uploadedMedia.type}
             </span>
           </div>
@@ -118,7 +118,7 @@ export const CompactComposer: React.FC<CompactComposerProps> = ({ onFocus, onCli
           }}
           placeholder={placeholderText}
           rows={1}
-          className="flex-1 resize-none bg-transparent border-0 outline-none px-2 py-1 text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-sans max-h-32 overflow-y-auto leading-relaxed cursor-text"
+          className="flex-1 resize-none bg-transparent border-0 outline-none px-2.5 py-1 text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-sans max-h-32 overflow-y-auto leading-relaxed cursor-text"
         />
 
         {promptText && !isStreaming && (
@@ -144,7 +144,7 @@ export const CompactComposer: React.FC<CompactComposerProps> = ({ onFocus, onCli
                 e.stopPropagation();
                 stopStreaming();
               }}
-              className="p-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 active:scale-95 transition-all shadow-sm"
+              className="p-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 active:scale-95 transition-all shadow-2xs"
               title="Stop generation"
             >
               <Square className="w-4 h-4 fill-current" />
@@ -160,10 +160,10 @@ export const CompactComposer: React.FC<CompactComposerProps> = ({ onFocus, onCli
                 }
               }}
               className={cn(
-                'p-2 rounded-xl transition-all shadow-sm flex items-center justify-center',
+                'p-2 rounded-xl transition-all shadow-2xs flex items-center justify-center',
                 promptText.trim() || uploadedMedia
-                  ? 'bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white active:scale-95 shadow-md shadow-violet-500/25'
-                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-300 dark:text-zinc-600 cursor-not-allowed'
+                  ? 'bg-[#6B5488] hover:bg-[#5E477A] text-white active:scale-95 shadow-soft-sm'
+                  : 'bg-warm-100 dark:bg-zinc-800 text-zinc-300 dark:text-zinc-600 cursor-not-allowed'
               )}
               title="Send message (Enter)"
             >

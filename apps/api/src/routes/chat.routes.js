@@ -7,7 +7,7 @@ const { detectLanguage } = require('../services/language');
 const { validateGuards } = require('../services/guards');
 const { buildSystemPrompt, buildActionPrompt, CLASSICAL_TAMIL_FORMS } = require('../config/prompts');
 const { authenticate } = require('../middleware/auth');
-const { checkDailyLimit, getQuotaStatus } = require('../middleware/rateLimit');
+const { checkDailyLimit, getQuotaStatus, refundDailyLimit } = require('../middleware/rateLimit');
 const { sanitizeInput } = require('../middleware/sanitize');
 const { hashString } = require('../utils/crypto');
 const { ApiError } = require('../utils/errors');
@@ -92,18 +92,22 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
     const { prompt = '', mode, length, action, previousMessageId } = params;
     let conversationId = params.conversationId;
 
-    // 1. Language Determination:
-    // If user explicitly chose a language in params, that is the target output language!
-    let resolvedLanguage = params.language === 'en' ? 'en' : 'ta';
+    // 1. Language Determination & Tanglish Detection:
+    const contentCreatorService = require('../services/contentCreator.service');
+    const preferredLang = contentCreatorService.detectLanguagePreference(prompt, params.language);
+    const isTanglish = preferredLang === 'tanglish';
+    let resolvedLanguage = isTanglish ? 'tanglish' : (params.language === 'en' ? 'en' : 'ta');
 
     // 2. Classical Form -> Force language to 'ta' (only in poem mode)
-    let resolvedPoemType = params.poemType || (mode === 'poem' ? (resolvedLanguage === 'ta' ? 'வெண்பா' : 'Free Verse') : '');
-    if (mode === 'poem' && CLASSICAL_TAMIL_FORMS.includes(resolvedPoemType)) {
+    let resolvedPoemType = mode === 'poem'
+      ? (params.poemType || (resolvedLanguage === 'ta' ? 'வெண்பா' : 'Free Verse'))
+      : null;
+    if (mode === 'poem' && resolvedPoemType && CLASSICAL_TAMIL_FORMS.includes(resolvedPoemType)) {
       resolvedLanguage = 'ta';
     }
 
     // Detect script and translanguaging of input prompt
-    const detection = detectLanguage(prompt, resolvedLanguage);
+    const detection = detectLanguage(prompt, resolvedLanguage === 'tanglish' ? 'ta' : resolvedLanguage);
     const hasTamilUnicode = /[\u0B80-\u0BFF]/.test(prompt);
     const hasLatinWords = /[a-zA-Z]/.test(prompt);
     const isRomanized = detection.romanizedInput || (resolvedLanguage === 'ta' && !hasTamilUnicode && hasLatinWords);
@@ -126,6 +130,7 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
         mediaContext = await mediaAnalysisService.analyzeMedia(params.media);
       } catch (mErr) {
         console.warn('[ChatRoutes] Media analysis warning:', mErr.message);
+        await refundDailyLimit(req);
         const friendlyMessage = (mErr.message && !mErr.message.includes('at ') && !mErr.message.includes('node:'))
           ? mErr.message
           : 'Unable to analyze this media. Please try another file.';
@@ -134,6 +139,41 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
           message: friendlyMessage
         });
         return res.end();
+      }
+    }
+
+    // 3b. Active Conversation Media Memory:
+    // If user does not re-upload media on follow-up prompts, retrieve active mediaContext from the conversation history
+    if (!mediaContext && !params.media && conversationId && prisma?.message) {
+      try {
+        const lastMediaMsg = await prisma.message.findFirst({
+          where: {
+            conversationId,
+            role: 'assistant'
+          },
+          orderBy: { createdAt: 'desc' }
+        });
+        if (lastMediaMsg?.metadata && typeof lastMediaMsg.metadata === 'object' && lastMediaMsg.metadata.mediaContext) {
+          mediaContext = lastMediaMsg.metadata.mediaContext;
+        }
+      } catch (dbErr) {
+        console.warn('[ChatRoutes] Conversation mediaContext lookup warning:', dbErr.message);
+      }
+    }
+
+    // Detect explicit platform, tone, style, and content type in Creator mode
+    let resolvedPlatform = params.platform;
+    let resolvedTone = params.tone;
+    let resolvedStyle = params.style;
+    let resolvedFormat = params.format;
+
+    if (mode === 'creator' && prompt) {
+      resolvedPlatform = contentCreatorService.detectPlatformPreference(prompt, params.platform);
+      resolvedTone = contentCreatorService.detectTonePreference(prompt, params.tone);
+      resolvedStyle = contentCreatorService.detectStylePreference(prompt, params.style);
+      const detected = contentCreatorService.detectContentType(prompt);
+      if (detected && detected !== 'caption') {
+        resolvedFormat = detected;
       }
     }
 
@@ -169,7 +209,7 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
         length,
         platform: params.platform,
         style: params.style,
-        format: params.format
+        format: resolvedFormat
       };
 
       if (!mediaContext && prevMeta.mediaContext) {
@@ -187,8 +227,9 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
         length: prevMeta.length || length,
         platform: prevMeta.platform || params.platform,
         style: prevMeta.style || params.style,
-        format: prevMeta.format || params.format,
+        format: prevMeta.format || resolvedFormat,
         romanizedInput: isRomanized,
+        isTanglish,
         mediaContext
       });
 
@@ -205,23 +246,35 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
         language: resolvedLanguage,
         poemType: resolvedPoemType,
         genre: params.genre,
-        tone: params.tone,
+        tone: resolvedTone,
         length,
-        platform: params.platform,
-        style: params.style,
-        format: params.format,
+        platform: resolvedPlatform,
+        style: resolvedStyle,
+        format: resolvedFormat,
         romanizedInput: isRomanized,
+        isTanglish,
         mediaContext
       });
 
       if (mediaContext) {
         const userInstruction = prompt.trim();
         const mediaVisualSummary = [
+          mediaContext.category ? `Category: ${mediaContext.category}` : '',
           mediaContext.scene ? `Setting: ${mediaContext.scene}` : '',
-          mediaContext.objects?.length ? `Subjects: ${mediaContext.objects.join(', ')}` : '',
+          (mediaContext.subjects || mediaContext.objects)?.length ? `Subjects: ${(mediaContext.subjects || mediaContext.objects).join(', ')}` : '',
+          mediaContext.peopleContext ? `People: ${mediaContext.peopleContext}` : '',
+          mediaContext.foodDetails ? `Food: ${mediaContext.foodDetails}` : '',
+          mediaContext.productDetails ? `Product: ${mediaContext.productDetails}` : '',
+          mediaContext.lighting ? `Lighting: ${mediaContext.lighting}` : '',
           mediaContext.mood ? `Mood: ${mediaContext.mood}` : '',
           mediaContext.colors?.length ? `Colors: ${mediaContext.colors.join(', ')}` : '',
-          mediaContext.summary ? `Visual overview: ${mediaContext.summary}` : ''
+          mediaContext.visualTheme ? `Theme: ${mediaContext.visualTheme}` : '',
+          mediaContext.activity ? `Activity: ${mediaContext.activity}` : '',
+          mediaContext.distinctiveDetails ? `Details: ${mediaContext.distinctiveDetails}` : '',
+          mediaContext.openingHook ? `Opening Frame: ${mediaContext.openingHook}` : '',
+          mediaContext.keyActions?.length ? `Video Actions: ${mediaContext.keyActions.join(' -> ')}` : '',
+          mediaContext.endingMoment ? `Ending: ${mediaContext.endingMoment}` : '',
+          mediaContext.summary ? `Summary: ${mediaContext.summary}` : ''
         ].filter(Boolean).join(' | ');
 
         if (userInstruction) {
@@ -229,14 +282,19 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
 Uploaded ${mediaContext.mediaType || 'visual media'}: ${mediaVisualSummary}
 User Instruction: "${userInstruction}"
 
-CRITICAL INSTRUCTION:
-Generate creative literature/social content that is genuinely and specifically inspired by the visual content of this uploaded ${mediaContext.mediaType || 'media'} while applying the user's instruction. Every phrase must naturally fit what is visible in the media.`;
+CRITICAL INSTRUCTIONS:
+1. Genuinely ground every line in what is visually depicted in this uploaded ${mediaContext.mediaType || 'media'} (${mediaVisualSummary}). Do NOT invent unrelated scenes or generic filler.
+2. Execute the user's instruction: "${userInstruction}" applying the requested mood, tone, format, and language.
+3. If movie dialogue or mass style is asked, compose 100% original, creative wording without copying copyrighted movie lines.
+4. Include 2 to 8 relevant emojis directly reflecting the visual content, and 5 to 10 targeted hashtags.`;
         } else {
           userPrompt = `[MEDIA-AWARE GENERATION REQUEST]
 Uploaded ${mediaContext.mediaType || 'visual media'}: ${mediaVisualSummary}
 
-CRITICAL INSTRUCTION:
-Compose an authentic, creative composition specifically tailored to what is shown in this ${mediaContext.mediaType || 'media'}, crafted for ${params.platform || 'social media'} in ${params.style || 'aesthetic'} style and ${params.format || 'creative'} format. Every phrase must directly suit the visible atmosphere, subjects, and setting.`;
+CRITICAL INSTRUCTIONS:
+1. Compose social media content tailored to what is shown in this ${mediaContext.mediaType || 'media'} for ${params.platform || 'Instagram'} in ${params.style || 'aesthetic'} style and ${resolvedFormat || 'caption'} format.
+2. Produce 3 distinct creative options (Cinematic, Aesthetic, Casual) plus an original line and targeted hashtags.
+3. Ground the copy in the visible atmosphere, subjects, and setting.`;
         }
       } else {
         userPrompt = prompt;
@@ -279,11 +337,17 @@ Compose an authentic, creative composition specifically tailored to what is show
       abortController.abort();
     });
 
+    // Only pass lightweight image to generateStream; video context is already embedded into prompt
+    let streamMedia = null;
+    if (params.media && params.media.type === 'image' && (!params.media.fileSize || params.media.fileSize < 4 * 1024 * 1024)) {
+      streamMedia = params.media;
+    }
+
     let generatedText = '';
     const generationResult = await geminiService.generateStream({
       systemPrompt,
       userPrompt,
-      media: params.media,
+      media: streamMedia,
       signal: abortController.signal,
       onChunk: (chunk) => {
         generatedText += chunk;
@@ -292,6 +356,15 @@ Compose an authentic, creative composition specifically tailored to what is show
     });
 
     let finalOutput = generationResult.fullText || generatedText;
+
+    if (!finalOutput || !finalOutput.trim()) {
+      await refundDailyLimit(req);
+      sendEvent('error', {
+        code: 'EMPTY_GENERATION',
+        message: 'Could not generate a response. Please try again.'
+      });
+      return res.end();
+    }
 
     // 6. Guards Check & Auto-Retry
     const guardResult = validateGuards(finalOutput, {
@@ -338,11 +411,11 @@ Compose an authentic, creative composition specifically tailored to what is show
       language: resolvedLanguage,
       poemType: resolvedPoemType,
       genre: params.genre,
-      tone: params.tone,
+      tone: resolvedTone,
       length,
-      platform: params.platform,
-      style: params.style,
-      format: params.format,
+      platform: resolvedPlatform,
+      style: resolvedStyle,
+      format: resolvedFormat,
       action: action || null,
       mediaType: mediaContext?.mediaType || params.media?.type || null,
       mediaContext: mediaContext || null
@@ -361,7 +434,7 @@ Compose an authentic, creative composition specifically tailored to what is show
               userId: req.user ? req.user.id : (req.anonId || 'anon_guest')
             }
           });
-          conversationId = conv.id;
+          conversationId = conv.id;       1                       
         }
 
         // Save User Message (only for brand new user prompts, not for sub-actions)
@@ -423,6 +496,7 @@ Compose an authentic, creative composition specifically tailored to what is show
     res.end();
   } catch (err) {
     console.error('Generation Stream Error:', err);
+    await refundDailyLimit(req);
     sendEvent('error', {
       code: err.code || 'AI_UNAVAILABLE',
       message: 'AI generation is temporarily unavailable. Please try again shortly.'

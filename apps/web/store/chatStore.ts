@@ -88,7 +88,11 @@ interface ChatState {
 export const useChatStore = create<ChatState>((set) => ({
   uploadedMedia: null,
   mediaContext: null,
-  setUploadedMedia: (uploadedMedia) => set({ uploadedMedia, mediaContext: null }),
+  setUploadedMedia: (uploadedMedia) =>
+    set((state) => ({
+      uploadedMedia,
+      mediaContext: uploadedMedia ? null : state.mediaContext
+    })),
   setMediaContext: (mediaContext) => set({ mediaContext }),
 
   user: null,
@@ -97,7 +101,13 @@ export const useChatStore = create<ChatState>((set) => ({
   conversations: [],
   currentConversationId: null,
   setConversations: (conversations) => set({ conversations }),
-  setCurrentConversationId: (id) => set({ currentConversationId: id }),
+  setCurrentConversationId: (id) =>
+    set((state) => ({
+      currentConversationId: id,
+      uploadedMedia: id === null ? null : state.uploadedMedia,
+      mediaContext: id === null ? null : state.mediaContext,
+      messages: id === null ? [] : state.messages
+    })),
   addConversation: (conv) =>
     set((state) => ({
       conversations: [conv, ...state.conversations.filter((c) => c.id !== conv.id)],
@@ -107,7 +117,8 @@ export const useChatStore = create<ChatState>((set) => ({
     set((state) => ({
       conversations: state.conversations.filter((c) => c.id !== id),
       currentConversationId: state.currentConversationId === id ? null : state.currentConversationId,
-      messages: state.currentConversationId === id ? [] : state.messages
+      messages: state.currentConversationId === id ? [] : state.messages,
+      mediaContext: state.currentConversationId === id ? null : state.mediaContext
     })),
   updateConversationTitle: (id, title) =>
     set((state) => ({

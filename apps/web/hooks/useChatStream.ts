@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { useChatStore } from '../store/chatStore';
 import { toast } from 'sonner';
+import { api } from '../lib/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -80,6 +81,7 @@ export function useChatStream() {
         createdAt: new Date()
       });
       setPromptText('');
+      state.setUploadedMedia(null);
     } else {
       // Set regenerating chip text
       const actionLabel = action.replace('-', ' ');
@@ -118,6 +120,8 @@ export function useChatStream() {
         duration: currentMedia.duration
       } : undefined;
 
+      const effectiveMediaContext = options?.mediaContext || state.mediaContext || undefined;
+
       const response = await fetch(`${API_BASE_URL}/api/chat/generate`, {
         method: 'POST',
         headers,
@@ -140,7 +144,7 @@ export function useChatStream() {
           previousContent: options?.previousContent,
           originalPrompt: options?.overridePrompt || userPrompt,
           media: mediaPayload,
-          mediaContext: options?.mediaContext || state.mediaContext || undefined
+          mediaContext: effectiveMediaContext
         })
       });
 
@@ -243,6 +247,7 @@ export function useChatStream() {
                 if (parsed.messageId) finalMessageId = parsed.messageId;
                 if (parsed.conversationId) finalConvId = parsed.conversationId;
               } else if (currentEvent === 'error') {
+                api.getQuota().then(setQuota).catch(() => {});
                 if (parsed.code === 'MEDIA_ANALYSIS_FAILED') {
                   toast.error(parsed.message || 'Unable to analyze this media. Please try another file.');
                 } else if (parsed.code === 'AI_UNAVAILABLE' || parsed.code === 'KEYS_EXHAUSTED' || parsed.status === 503) {
@@ -289,6 +294,15 @@ export function useChatStream() {
             updatedAt: new Date().toISOString()
           });
         }
+      } else if (!controller.signal.aborted) {
+        // Stream ended with no content: refresh quota so refunded token reflects immediately
+        api.getQuota().then(setQuota).catch(() => {});
+        addMessage({
+          id: `msg_err_${Date.now()}`,
+          role: 'assistant',
+          content: 'மன்னிக்கவும், AI பதிலை உருவாக்க முடியவில்லை. உங்கள் தினசரி வரம்பு கழிக்கப்படவில்லை. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.\n\n*(Apologies, response could not be generated. Your quota has been preserved. Please try again.)*',
+          createdAt: new Date()
+        });
       }
     } catch (err: any) {
       if (err.name === 'AbortError') {

@@ -93,101 +93,115 @@ export const ResizableSidebar: React.FC = () => {
   if (!isSidebarOpen) return null;
 
   return (
-    <aside
-      style={{ width: `${sidebarWidth}px` }}
-      className="relative flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 select-none z-30 shrink-0"
-    >
-      {/* Top Header: Brand Logo & Close Button */}
-      <div className="h-14 px-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 to-purple-500 text-white flex items-center justify-center shadow-md shadow-primary/20">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-              <span>PlanBot AI</span>
-              <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
-                v1.0
-              </span>
-            </div>
-            <div className="text-[10px] text-zinc-400 font-medium">
-              Creative Writing Suite
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsSidebarOpen(false)}
-          className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          title="Collapse Sidebar"
-        >
-          <PanelLeftClose className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Action: Gradient + New Chat */}
-      <div className="p-3">
-        <button
-          type="button"
-          onClick={handleNewChat}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold text-white rounded-xl shadow-sm bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 active:scale-[0.99] transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Chat</span>
-        </button>
-
-        {/* Debounced Ctrl+K Search Bar */}
-        <div className="mt-2.5 relative">
-          <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search conversations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-100/80 dark:bg-zinc-800/80 border border-transparent focus:border-primary/40 rounded-xl pl-8 pr-12 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 outline-none transition-all"
-          />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-[10px] text-zinc-400 bg-white dark:bg-zinc-700 px-1 py-0.5 rounded border border-zinc-200 dark:border-zinc-600">
-            <Command className="w-2.5 h-2.5" />
-            <span>K</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Conversation List Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-3 space-y-4">
-        {/* Workspace Section */}
-        <div>
-          <div className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider px-2 py-1">
-            Workspace
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100/60 dark:bg-zinc-800/40 rounded-lg">
-            <Compass className="w-3.5 h-3.5 text-primary" />
-            <span>AI Literary Assistant</span>
-          </div>
-        </div>
-
-        {/* Conversations History */}
-        <div>
-          <div className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider px-2 py-1">
-            Recent Compositions
-          </div>
-          <ConversationList searchQuery={searchQuery} />
-        </div>
-      </div>
-
-      {/* User Avatar Menu at Bottom */}
-      <UserMenu />
-
-      {/* Resize Handle Drag Bar */}
+    <>
+      {/* Mobile Backdrop Overlay (only on small screens < md) */}
       <div
-        onMouseDown={startResizing}
-        className={cn(
-          'absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-primary/50 transition-colors',
-          isResizing && 'bg-primary w-2'
-        )}
+        onClick={() => setIsSidebarOpen(false)}
+        className="fixed inset-0 bg-stone-900/30 dark:bg-black/60 backdrop-blur-xs z-30 md:hidden transition-opacity"
       />
-    </aside>
+
+      <aside
+        style={{ width: `${sidebarWidth}px` }}
+        className="fixed md:relative top-0 bottom-0 left-0 flex flex-col h-full bg-[#FAF8F5]/95 dark:bg-[#15141A]/95 backdrop-blur-md border-r border-[#E8E2D9] dark:border-[#262330] select-none z-40 md:z-30 shrink-0 shadow-lg md:shadow-none transition-transform"
+      >
+        {/* Top Header: Feather Logo & Brand Area */}
+        <div className="h-16 px-4 border-b border-[#EAE3DA] dark:border-[#24212D] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="relative w-8 h-8 rounded-xl bg-white dark:bg-white/95 p-0.5 shadow-soft-sm border border-stone-200/60 dark:border-white/20 flex items-center justify-center shrink-0">
+              <img
+                src="/logo-transparent.png"
+                alt="PlanBot"
+                width={24}
+                height={24}
+                className="w-6 h-6 object-contain transition-transform"
+              />
+            </div>
+            <div>
+              <div className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 font-serif">
+                <span>PlanBot AI</span>
+                <span className="text-[10px] font-sans font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                  v1.0
+                </span>
+              </div>
+              <div className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-wide">
+                Creative Writing Workspace
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800 transition-colors"
+            title="Collapse Sidebar"
+          >
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Action: Refined New Chat & Search */}
+        <div className="p-3 space-y-2.5">
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold text-white rounded-xl shadow-soft-sm bg-[#6B5488] hover:bg-[#5E477A] active:scale-[0.99] transition-all"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Composition</span>
+          </button>
+
+          {/* Ctrl+K Search Bar */}
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search compositions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/80 dark:bg-zinc-900/60 border border-[#E5DFD5] dark:border-zinc-800 focus:border-primary/50 focus:bg-white dark:focus:bg-zinc-900 rounded-xl pl-8 pr-11 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 outline-none transition-all shadow-2xs"
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-[10px] text-zinc-400 bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-stone-200/70 dark:border-zinc-700/60 font-mono">
+              <Command className="w-2.5 h-2.5" />
+              <span>K</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Conversation List Scroll Area */}
+        <div className="flex-1 overflow-y-auto px-3 space-y-4">
+          {/* Workspace Badge */}
+          <div>
+            <div className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider px-2 py-1">
+              Workspace
+            </div>
+            <div className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-white/60 dark:bg-zinc-900/40 border border-stone-200/50 dark:border-zinc-800/60 rounded-xl shadow-2xs">
+              <Compass className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span className="truncate">Literary & Social Studio</span>
+            </div>
+          </div>
+
+          {/* Conversations History */}
+          <div>
+            <div className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider px-2 py-1">
+              Recent Compositions
+            </div>
+            <ConversationList searchQuery={searchQuery} />
+          </div>
+        </div>
+
+        {/* User Profile Menu at Bottom */}
+        <UserMenu />
+
+        {/* Resize Handle Drag Bar */}
+        <div
+          onMouseDown={startResizing}
+          className={cn(
+            'absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-primary/40 transition-colors hidden md:block',
+            isResizing && 'bg-primary/70 w-1.5'
+          )}
+        />
+      </aside>
+    </>
   );
 };

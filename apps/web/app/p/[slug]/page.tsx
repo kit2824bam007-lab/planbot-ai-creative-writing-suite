@@ -69,16 +69,24 @@ export default async function PublicPoemPage({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Navigation */}
+    <div className="min-h-screen bg-transparent py-12 px-4 select-none">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Navigation & Brand */}
         <div className="flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            className="inline-flex items-center gap-2.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Compose with PlanBot AI</span>
+            <div className="w-7 h-7 rounded-xl bg-white dark:bg-white/95 p-1 border border-stone-200/60 dark:border-white/20 shadow-2xs flex items-center justify-center">
+              <img
+                src="/logo-transparent.png"
+                alt="PlanBot"
+                width={20}
+                height={20}
+                className="w-full h-full max-w-[20px] max-h-[20px] object-contain"
+              />
+            </div>
+            <span className="font-serif">PlanBot Literary Studio</span>
           </Link>
 
           <div className="flex items-center gap-2 text-xs text-zinc-400">
@@ -88,33 +96,33 @@ export default async function PublicPoemPage({
         </div>
 
         {/* Poem Card */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 sm:p-12 shadow-xl space-y-6">
+        <div className="bg-white/95 dark:bg-[#181622]/92 border border-[#E8E2D9] dark:border-[#282534] rounded-3xl p-8 sm:p-14 shadow-soft-xl space-y-8 backdrop-blur-md">
           {/* Header */}
-          <div className="border-b border-zinc-100 dark:border-zinc-800 pb-5 space-y-2">
+          <div className="border-b border-[#EAE3DA] dark:border-[#262330] pb-6 space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-primary uppercase tracking-wider">
+              <span className="text-xs font-bold text-primary uppercase tracking-wider bg-primary/10 px-2.5 py-0.5 rounded-full">
                 {poem.poemType || poem.mode}
               </span>
               {poem.language === 'ta' && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-full">
+                <span className="text-[10px] font-semibold px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 rounded-md">
                   தமிழ்
                 </span>
               )}
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium text-zinc-900 dark:text-zinc-50 tracking-tight leading-tight">
               "{poem.prompt}"
             </h1>
           </div>
 
           {/* Content */}
-          <div className="text-base text-zinc-800 dark:text-zinc-200 poem-content leading-loose font-serif">
+          <div className="text-lg sm:text-xl text-zinc-800 dark:text-zinc-100 poem-content leading-loose font-serif">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {poem.content}
             </ReactMarkdown>
           </div>
 
           {/* Footer watermark & CTA */}
-          <div className="border-t border-zinc-100 dark:border-zinc-800 pt-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="border-t border-[#EAE3DA] dark:border-[#262330] pt-6 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs text-zinc-400">
               <Sparkles className="w-4 h-4 text-primary" />
               <span>Created with PlanBot AI</span>
@@ -122,9 +130,9 @@ export default async function PublicPoemPage({
 
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-primary text-white hover:bg-primary/90 transition-all shadow-sm"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold rounded-xl bg-[#6B5488] hover:bg-[#5E477A] text-white shadow-soft-sm hover:opacity-95 transition-all"
             >
-              <span>Create Your Own</span>
+              <span>Compose Your Own</span>
             </Link>
           </div>
         </div>

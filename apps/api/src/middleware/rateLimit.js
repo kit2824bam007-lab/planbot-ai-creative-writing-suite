@@ -51,7 +51,7 @@ async function checkDailyLimit(req, res, next) {
     const now = new Date();
 
     // Today's date string YYYY-MM-DD
-    const tz = req.query.tz || req.headers['x-timezone'] || 'UTC';
+    const tz = req.query?.tz || req.headers?.['x-timezone'] || 'UTC';
     const { dateStr, secondsUntilMidnight, resetsAt } = getTimezoneDetails(tz);
 
     // If authenticated, check live subscription in DB
@@ -156,7 +156,7 @@ async function checkDailyLimit(req, res, next) {
 async function getQuotaStatus(req) {
   const isAuth = Boolean(req.user && req.user.id);
   const now = new Date();
-  const tz = req.query.tz || req.headers['x-timezone'] || 'UTC';
+  const tz = req.query?.tz || req.headers?.['x-timezone'] || 'UTC';
   const { dateStr, resetsAt } = getTimezoneDetails(tz);
 
   if (isAuth && prisma && prisma.client && prisma.isAvailable()) {
@@ -222,7 +222,40 @@ async function getQuotaStatus(req) {
   };
 }
 
+/**
+ * Refunds 1 generation quota credit if generation fails or errors
+ */
+async function refundDailyLimit(req) {
+  try {
+    const isAuth = Boolean(req.user && req.user.id);
+    const plan = isAuth ? (req.user.plan || 'FREE') : 'FREE';
+    if (plan === 'PRO') return;
+
+    const tz = req.query?.tz || req.headers?.['x-timezone'] || 'UTC';
+    const { dateStr } = getTimezoneDetails(tz);
+    const identifier = isAuth ? `user:${req.user.id}` : `anon:${req.anonId || req.clientIp}`;
+    const redisKey = `genlimit:${identifier}:${dateStr}`;
+
+    const current = await redis.get(redisKey);
+    const used = parseInt(current || '0', 10);
+    if (used > 0) {
+      await redis.decr(redisKey);
+    }
+
+    if (isAuth && prisma && prisma.client && prisma.isAvailable() && prisma.client.dailyUsage) {
+      await prisma.client.dailyUsage.updateMany({
+        where: { userId: req.user.id, usageDate: dateStr, generationCount: { gt: 0 } },
+        data: { generationCount: { decrement: 1 } }
+      }).catch(() => {});
+    }
+  } catch (err) {
+    console.warn('[RateLimit] Quota refund warning:', err.message);
+  }
+}
+
 module.exports = {
   checkDailyLimit,
-  getQuotaStatus
+  getQuotaStatus,
+  refundDailyLimit
 };
+
