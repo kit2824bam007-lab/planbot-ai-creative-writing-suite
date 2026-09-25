@@ -64,7 +64,7 @@ export const WritingComposer: React.FC<WritingComposerProps> = ({
   return (
     <div
       ref={containerRef}
-      className="absolute bottom-[calc(3.6rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-20 pointer-events-none bg-gradient-to-t from-[#FAF8F5] via-[#FAF8F5]/90 to-transparent dark:from-[#131217] dark:via-[#131217]/90 pt-6 pb-2 sm:pb-6 px-2.5 sm:px-6 transition-all duration-200 ease-in-out"
+      className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none bg-gradient-to-t from-[#FAF8F5] via-[#FAF8F5]/90 to-transparent dark:from-[#131217] dark:via-[#131217]/90 pt-6 pb-[calc(0.6rem+env(safe-area-inset-bottom,0px))] sm:pb-6 px-3 sm:px-6 transition-all duration-200 ease-in-out"
     >
       <div className="max-w-4xl lg:max-w-5xl w-full mx-auto pointer-events-auto">
         <div className="transition-all duration-200 ease-out">

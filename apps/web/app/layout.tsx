@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Noto_Sans_Tamil, Newsreader } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from 'next-themes';
@@ -25,6 +25,13 @@ const notoSansTamil = Noto_Sans_Tamil({
   variable: '--font-noto-tamil',
   display: 'swap',
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  interactiveWidget: 'resizes-content',
+};
 
 export const metadata: Metadata = {
   title: 'PlanBot AI — Full AI Poem & Story Generator',

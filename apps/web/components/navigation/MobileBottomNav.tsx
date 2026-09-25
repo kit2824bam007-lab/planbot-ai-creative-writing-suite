@@ -3,9 +3,11 @@
 import React from 'react';
 import { Home, Clock, PenTool, User } from 'lucide-react';
 import { useChatStore } from '../../store/chatStore';
+import { useKeyboardStatus } from '../../hooks/useKeyboardStatus';
 import { cn } from '../../lib/utils';
 
 export const MobileBottomNav: React.FC = () => {
+  const isKeyboardOpen = useKeyboardStatus();
   const {
     isSidebarOpen,
     setIsSidebarOpen,
@@ -55,6 +57,12 @@ export const MobileBottomNav: React.FC = () => {
       setIsLimitModalOpen(true);
     }
   };
+
+  // In chat mode (messages exist) or when phone keyboard is open, hide the bottom nav
+  // so the message composer sits directly on top of the phone keyboard without interference!
+  if (messages.length > 0 || isKeyboardOpen) {
+    return null;
+  }
 
   // Determine active item based on current app state
   const isHistoryActive = isSidebarOpen;

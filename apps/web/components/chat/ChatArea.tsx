@@ -205,7 +205,7 @@ export const ChatArea: React.FC = () => {
           ? "pb-24 md:pb-4"
           : isComposerFocused
           ? "pb-[400px] sm:pb-[420px]"
-          : "pb-36 sm:pb-32"
+          : "pb-28 sm:pb-32"
       )}>
         <div className="max-w-4xl lg:max-w-5xl mx-auto min-h-full flex flex-col justify-between">
           {!hasMessages ? (
