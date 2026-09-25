@@ -7,6 +7,7 @@ import {
   Edit2,
   Check,
   PanelLeft,
+  Menu,
   Sun,
   Moon
 } from 'lucide-react';
@@ -77,11 +78,40 @@ export const ChatArea: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-transparent relative">
-      {/* Top Bar */}
+      {/* Top Bar: Compact, clean, and mobile-optimized */}
       <header className="h-14 sm:h-16 border-b border-[#EAE3DA] dark:border-[#24212D] bg-[#FAF8F5]/85 dark:bg-[#15141A]/85 backdrop-blur-md px-3 sm:px-5 flex items-center justify-between z-20 shrink-0 gap-2">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
+        {/* MOBILE HEADER (md:hidden): ☰  🪶 PlanBot */}
+        <div className="flex md:hidden items-center gap-2 min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-1.5 -ml-0.5 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-200/50 dark:hover:bg-zinc-800 transition-colors shrink-0"
+            title="Open Menu"
+            aria-label="Open Sidebar Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div className="flex items-center gap-1.5 overflow-hidden">
+            <div className="w-7 h-7 rounded-lg bg-white dark:bg-white/95 p-0.5 border border-stone-200/60 dark:border-white/20 shadow-2xs flex items-center justify-center shrink-0">
+              <img
+                src="/logo-transparent.png"
+                alt="PlanBot"
+                width={20}
+                height={20}
+                className="w-5 h-5 object-contain"
+              />
+            </div>
+            <span className="font-serif font-bold text-sm text-zinc-900 dark:text-zinc-100 tracking-tight">
+              PlanBot
+            </span>
+          </div>
+        </div>
+
+        {/* DESKTOP HEADER (hidden md:flex): Preserves exact desktop title & sidebar controls */}
+        <div className="hidden md:flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
           {!isSidebarOpen && (
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen(true)}
@@ -132,7 +162,7 @@ export const ChatArea: React.FC = () => {
           )}
         </div>
 
-        {/* Right Info Controls */}
+        {/* Right Info Controls: Theme Toggle & New Chat Button */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* PRO Badge if active */}
           {(quota?.isPro || (user?.plan === 'PRO' && user?.subscriptionStatus === 'ACTIVE')) && (
@@ -172,10 +202,10 @@ export const ChatArea: React.FC = () => {
       <div className={cn(
         "flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-6 transition-all duration-200 ease-out",
         !hasMessages
-          ? "pb-4"
+          ? "pb-24 md:pb-4"
           : isComposerFocused
-          ? "pb-[380px] sm:pb-[420px]"
-          : "pb-24 sm:pb-32"
+          ? "pb-[400px] sm:pb-[420px]"
+          : "pb-36 sm:pb-32"
       )}>
         <div className="max-w-4xl lg:max-w-5xl mx-auto min-h-full flex flex-col justify-between">
           {!hasMessages ? (

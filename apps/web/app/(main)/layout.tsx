@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { ResizableSidebar } from '../../components/sidebar/ResizableSidebar';
 import { ShareModal } from '../../components/share/ShareModal';
 import { LimitModal } from '../../components/modals/LimitModal';
+import { MobileBottomNav } from '../../components/navigation/MobileBottomNav';
 import { useQuota } from '../../hooks/useQuota';
 import { useChatStore } from '../../store/chatStore';
 import { api } from '../../lib/api';
@@ -36,6 +37,7 @@ export default function MainLayout({
       <ResizableSidebar />
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {children}
+        <MobileBottomNav />
       </main>
       <ShareModal />
       <LimitModal />
