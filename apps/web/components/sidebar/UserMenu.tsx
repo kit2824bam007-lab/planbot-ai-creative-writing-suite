@@ -113,6 +113,11 @@ export const UserMenu: React.FC = () => {
 
         <Link
           href="/login"
+          onClick={() => {
+            if (typeof window !== 'undefined' && window.innerWidth < 768) {
+              useChatStore.getState().setIsSidebarOpen(false);
+            }
+          }}
           className="flex items-center justify-center gap-2 w-full py-2 px-3 text-xs font-semibold rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90 shadow-soft-sm transition-all"
         >
           <User className="w-3.5 h-3.5" />

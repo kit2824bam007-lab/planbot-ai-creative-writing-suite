@@ -32,6 +32,9 @@ export const ConversationList: React.FC<ConversationListProps> = ({ searchQuery 
 
   const handleSelectConversation = async (conv: ConversationItem) => {
     setCurrentConversationId(conv.id);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      useChatStore.getState().setIsSidebarOpen(false);
+    }
     try {
       const data = await api.getConversation(conv.id);
       if (data && data.messages) {

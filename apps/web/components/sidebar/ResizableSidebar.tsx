@@ -7,7 +7,8 @@ import {
   Search,
   PanelLeftClose,
   Compass,
-  Command
+  Command,
+  X
 } from 'lucide-react';
 import { useChatStore } from '../../store/chatStore';
 import { ConversationList } from './ConversationList';
@@ -29,6 +30,13 @@ export const ResizableSidebar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isResizing, setIsResizing] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-close sidebar on mobile devices upon initial mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
+  }, [setIsSidebarOpen]);
 
   // Load persisted width & conversations on mount
   useEffect(() => {
@@ -88,6 +96,9 @@ export const ResizableSidebar: React.FC = () => {
   const handleNewChat = () => {
     setCurrentConversationId(null);
     setMessages([]);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
   };
 
   if (!isSidebarOpen) return null;
@@ -102,11 +113,11 @@ export const ResizableSidebar: React.FC = () => {
 
       <aside
         style={{ width: `${sidebarWidth}px` }}
-        className="fixed md:relative top-0 bottom-0 left-0 flex flex-col h-full bg-[#FAF8F5]/95 dark:bg-[#15141A]/95 backdrop-blur-md border-r border-[#E8E2D9] dark:border-[#262330] select-none z-40 md:z-30 shrink-0 shadow-lg md:shadow-none transition-transform"
+        className="fixed md:relative top-0 bottom-0 left-0 flex flex-col h-full max-w-[85vw] bg-[#FAF8F5]/98 dark:bg-[#15141A]/98 backdrop-blur-md border-r border-[#E8E2D9] dark:border-[#262330] select-none z-40 md:z-30 shrink-0 shadow-2xl md:shadow-none transition-transform"
       >
         {/* Top Header: Feather Logo & Brand Area */}
-        <div className="h-16 px-4 border-b border-[#EAE3DA] dark:border-[#24212D] flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
+        <div className="h-14 sm:h-16 px-3.5 sm:px-4 border-b border-[#EAE3DA] dark:border-[#24212D] flex items-center justify-between shrink-0 gap-2">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
             <div className="relative w-8 h-8 rounded-xl bg-white dark:bg-white/95 p-0.5 shadow-soft-sm border border-stone-200/60 dark:border-white/20 flex items-center justify-center shrink-0">
               <img
                 src="/logo-transparent.png"
@@ -116,14 +127,14 @@ export const ResizableSidebar: React.FC = () => {
                 className="w-6 h-6 object-contain transition-transform"
               />
             </div>
-            <div>
+            <div className="min-w-0 flex-1 overflow-hidden">
               <div className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 font-serif">
-                <span>PlanBot AI</span>
-                <span className="text-[10px] font-sans font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                <span className="truncate">PlanBot AI</span>
+                <span className="text-[10px] font-sans font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full shrink-0">
                   v1.0
                 </span>
               </div>
-              <div className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-wide">
+              <div className="text-[10px] text-zinc-400 dark:text-zinc-500 font-sans tracking-wide truncate">
                 Creative Writing Workspace
               </div>
             </div>
@@ -132,10 +143,11 @@ export const ResizableSidebar: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsSidebarOpen(false)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800 transition-colors"
-            title="Collapse Sidebar"
+            className="p-1.5 rounded-xl bg-stone-200/70 hover:bg-stone-300/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100 transition-colors shrink-0 flex items-center justify-center shadow-2xs"
+            title="Close Sidebar"
           >
-            <PanelLeftClose className="w-4 h-4" />
+            <X className="w-4 h-4 md:hidden" />
+            <PanelLeftClose className="w-4 h-4 hidden md:block" />
           </button>
         </div>
 
