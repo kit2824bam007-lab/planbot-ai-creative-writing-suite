@@ -83,6 +83,10 @@ interface ChatState {
   setSidebarWidth: (w: number) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (val: boolean) => void;
+  isSpeakingModalOpen: boolean;
+  setIsSpeakingModalOpen: (val: boolean) => void;
+  isOptionsDrawerOpen: boolean;
+  setIsOptionsDrawerOpen: (val: boolean) => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -186,5 +190,9 @@ export const useChatStore = create<ChatState>((set) => ({
   sidebarWidth: 280,
   setSidebarWidth: (sidebarWidth) => set({ sidebarWidth }),
   isSidebarOpen: true,
-  setIsSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen })
+  setIsSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
+  isSpeakingModalOpen: false,
+  setIsSpeakingModalOpen: (isSpeakingModalOpen) => set({ isSpeakingModalOpen }),
+  isOptionsDrawerOpen: false,
+  setIsOptionsDrawerOpen: (isOptionsDrawerOpen) => set({ isOptionsDrawerOpen })
 }));

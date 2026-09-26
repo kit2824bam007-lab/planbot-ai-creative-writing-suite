@@ -293,7 +293,7 @@ export async function renderCardToCanvas(
   ctx.font = `500 24px Inter, sans-serif`;
   ctx.fillStyle = template.textColor;
   ctx.textAlign = 'center';
-  ctx.fillText('✨ PlanBot AI', width / 2, height - (template.hasKolamBorder ? 90 : 60));
+  ctx.fillText('✨ DreamInk AI', width / 2, height - (template.hasKolamBorder ? 90 : 60));
   ctx.restore();
 
   return canvas.toDataURL('image/png');

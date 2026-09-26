@@ -529,6 +529,228 @@ function getToneGuideline(tone, lang = 'ta') {
 }
 
 /**
+ * Extracts key semantic anchors (Place, Setting, Characters, Event/Plot, Emotional feel)
+ * from user prompt to ensure strict AI grounding.
+ */
+function extractContentAnchors(promptText = '') {
+  if (!promptText || typeof promptText !== 'string') {
+    return {
+      rawPrompt: '',
+      keywords: [],
+      place: null,
+      setting: null,
+      characters: [],
+      event: null,
+      feel: null,
+      summary: ''
+    };
+  }
+
+  const rawPrompt = promptText.trim();
+  const words = rawPrompt
+    .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'<>]/g, ' ')
+    .split(/\s+/)
+    .map((w) => w.trim())
+    .filter(Boolean);
+
+  const STOPWORDS = new Set([
+    'a', 'an', 'the', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or', 'is', 'are', 'was', 'were',
+    'with', 'by', 'from', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below',
+    'write', 'create', 'generate', 'make', 'give', 'compose', 'story', 'poem', 'content', 'post',
+    'please', 'tell', 'me', 'want', 'like', 'need', 'some', 'that', 'this', 'these', 'those',
+    'ஒரு', 'மற்றும்', 'என்று', 'என', 'உள்ள', 'ஆகிய', 'கதை', 'கவிதை', 'எழுது', 'உருவாக்கு'
+  ]);
+
+  const keywords = words.filter((w) => !STOPWORDS.has(w.toLowerCase()));
+
+  const SETTING_WORDS = new Set([
+    'temple', 'church', 'mosque', 'beach', 'sea', 'ocean', 'mountain', 'hill', 'forest', 'jungle',
+    'river', 'lake', 'college', 'school', 'university', 'office', 'village', 'town', 'city', 'street',
+    'road', 'station', 'airport', 'hospital', 'garden', 'park', 'house', 'room', 'balcony', 'roof',
+    'ground', 'field',
+    'கோயில்', 'கோவில்', 'ஆலயம்', 'கடற்கரை', 'கடல்', 'மலை', 'காடு', 'ஆறு', 'குளம்', 'கல்லூரி', 'பள்ளி',
+    'அலுவலகம்', 'கிராமம்', 'ஊர்', 'நகரம்', 'தெரு', 'வீடு', 'அறை', 'திடல்'
+  ]);
+
+  const CHARACTER_WORDS = new Set([
+    'boy', 'girl', 'man', 'woman', 'child', 'children', 'kid', 'kids', 'baby', 'friend', 'friends',
+    'mother', 'father', 'mom', 'dad', 'parent', 'parents', 'brother', 'sister', 'lover', 'lovers',
+    'husband', 'wife', 'teacher', 'student', 'doctor', 'soldier', 'farmer', 'hero', 'heroine',
+    'சிறுவன்', 'சிறுமி', 'பையன்', 'பெண்', 'ஆண்', 'குழந்தை', 'தோழன்', 'தோழி', 'நண்பன்', 'நண்பர்கள்',
+    'அம்மா', 'அப்பா', 'தாய்', 'தந்தை', 'காதலன்', 'காதலி', 'கணவன்', 'மனைவி', 'ஆசிரியர்', 'மாணவன்', 'விவசாயி'
+  ]);
+
+  const EVENT_WORDS = new Set([
+    'competition', 'contest', 'race', 'match', 'tournament', 'game', 'fight', 'battle', 'war',
+    'farewell', 'wedding', 'marriage', 'festival', 'celebration', 'party', 'journey', 'travel', 'trip',
+    'exam', 'test', 'interview', 'meeting', 'reunion', 'rebellion', 'protest', 'sacrifice',
+    'போட்டி', 'பந்தயம்', 'விளையாட்டு', 'சண்டை', 'போர்', 'பிரிவு', 'பிரிவுபசார', 'திருமணம்', 'விழா',
+    'பண்டிகை', 'பயணம்', 'தேர்வு', 'சந்திப்பு'
+  ]);
+
+  const FEEL_WORDS = new Set([
+    'feel', 'feeling', 'emotional', 'emotion', 'sad', 'sadness', 'happy', 'happiness', 'joy',
+    'pain', 'heartbreak', 'sorrow', 'grief', 'tear', 'tears', 'humor', 'funny', 'comedy',
+    'romantic', 'romance', 'love', 'suspense', 'thrill', 'thrilling', 'horror', 'fear',
+    'fearful', 'calm', 'peace', 'peaceful', 'hope', 'hopeful', 'inspire', 'inspiring',
+    'உணர்ச்சி', 'சோகம்', 'மகிழ்ச்சி', 'வலி', 'பிரிவு', 'காதல்', 'நகைச்சுவை', 'திகில்', 'அமைதி', 'நம்பிக்கை'
+  ]);
+
+  let place = null;
+  let setting = null;
+  const characters = [];
+  let event = null;
+  let feel = null;
+
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    const wLower = w.toLowerCase();
+
+    if (FEEL_WORDS.has(wLower)) {
+      feel = feel ? `${feel}, ${w}` : w;
+      continue;
+    }
+
+    if (CHARACTER_WORDS.has(wLower)) {
+      characters.push(w);
+      continue;
+    }
+
+    if (SETTING_WORDS.has(wLower)) {
+      setting = setting ? `${setting}, ${w}` : w;
+      continue;
+    }
+
+    // Check compound events (e.g., "rock competition", "farewell party")
+    if (i < words.length - 1) {
+      const nextWord = words[i + 1].toLowerCase();
+      if ((EVENT_WORDS.has(nextWord) || nextWord.includes('competition') || nextWord.includes('match')) && !SETTING_WORDS.has(nextWord)) {
+        event = `${w} ${words[i + 1]}`;
+        i++;
+        continue;
+      }
+    }
+
+    if (EVENT_WORDS.has(wLower)) {
+      event = event ? `${event}, ${w}` : w;
+      continue;
+    }
+
+    // Place / named location identification (e.g. Pallathur, Madurai, etc.)
+    if (!place && !STOPWORDS.has(wLower)) {
+      if (!SETTING_WORDS.has(wLower) && !CHARACTER_WORDS.has(wLower) && !EVENT_WORDS.has(wLower) && !FEEL_WORDS.has(wLower)) {
+        place = w;
+      }
+    }
+  }
+
+  return {
+    rawPrompt,
+    keywords,
+    place,
+    setting,
+    characters,
+    event,
+    feel,
+    summary: [
+      place ? `Place: ${place}` : '',
+      setting ? `Setting: ${setting}` : '',
+      characters.length ? `Characters: ${characters.join(', ')}` : '',
+      event ? `Main Event: ${event}` : '',
+      feel ? `Feel/Tone: ${feel}` : ''
+    ].filter(Boolean).join(' | ')
+  };
+}
+
+/**
+ * Builds a structured user prompt containing complete generation context and anchor directives.
+ */
+function buildStructuredUserPrompt(params = {}) {
+  const {
+    prompt = '',
+    mode = 'poem',
+    poemType,
+    genre,
+    tone = 'natural',
+    length = 'medium',
+    language = 'ta',
+    platform,
+    style,
+    format,
+    mediaContext
+  } = params;
+
+  const rawInput = (prompt || '').trim();
+  const langDisplay = langName(language === 'tanglish' ? 'ta' : language);
+  const anchors = extractContentAnchors(rawInput);
+
+  let contentTypeLabel = 'Creative Writing';
+  if (mode === 'poem') {
+    contentTypeLabel = `Poem (${poemType || (language === 'ta' ? 'மரபுக் கவிதை' : 'Free Verse')})`;
+  } else if (mode === 'story') {
+    contentTypeLabel = `Short Story (Genre: ${genre || 'General'})`;
+  } else if (mode === 'creator') {
+    contentTypeLabel = `Social Content (${platform || 'Instagram'} - ${format || 'Post'})`;
+  }
+
+  const structuredContext = {
+    userInput: rawInput,
+    contentType: contentTypeLabel,
+    genre: genre || 'None specified',
+    tone: tone || 'Natural',
+    mood: anchors.feel || tone || 'Natural',
+    language: language === 'tanglish' ? 'Tanglish (Romanized Tamil + English)' : langDisplay,
+    length: length || 'medium',
+    otherOptions: {
+      poemType: poemType || undefined,
+      platform: platform || undefined,
+      style: style || undefined,
+      format: format || undefined
+    }
+  };
+
+  let mediaSummary = '';
+  if (mediaContext) {
+    const mc = mediaContext;
+    mediaSummary = `
+[VISUAL MEDIA CONTEXT]:
+- Type: ${mc.mediaType || 'visual media'}
+${mc.category ? `- Category: ${mc.category}` : ''}
+${mc.scene ? `- Setting/Location: ${mc.scene}` : ''}
+${(mc.subjects || mc.objects)?.length ? `- Main Subjects: ${(mc.subjects || mc.objects).join(', ')}` : ''}
+${mc.mood ? `- Mood: ${mc.mood}` : ''}
+`;
+  }
+
+  const anchorItems = [];
+  if (anchors.place) anchorItems.push(`- Place/Location: ${anchors.place}`);
+  if (anchors.setting) anchorItems.push(`- Setting/Environment: ${anchors.setting}`);
+  if (anchors.characters.length) anchorItems.push(`- Characters: ${anchors.characters.join(', ')}`);
+  if (anchors.event) anchorItems.push(`- Main Event/Plot: ${anchors.event}`);
+  if (anchors.feel) anchorItems.push(`- Requested Feel: ${anchors.feel}`);
+  if (anchors.keywords.length && anchorItems.length === 0) {
+    anchorItems.push(`- Key Anchors: ${anchors.keywords.join(', ')}`);
+  }
+
+  return `[STRUCTURED GENERATION REQUEST]
+${JSON.stringify(structuredContext, null, 2)}
+${mediaSummary}
+USER'S ACTUAL INPUT (PRIMARY SOURCE OF TRUTH):
+"${rawInput}"
+
+CONTENT ANCHORS TO WEAVE INTO THE WORK:
+${anchorItems.length > 0 ? anchorItems.join('\n') : `- Topic: ${rawInput}`}
+
+MANDATORY GENERATION DIRECTIVES:
+1. WHAT TO WRITE ABOUT: The user's actual input is the primary source of the content. Every generated scene or verse MUST revolve around the anchors above (${anchors.summary || rawInput}).
+2. NO GENERIC SUBSTITUTION: Never replace the user's topic with a generic template or invent an unrelated story.
+3. GENRE ROLE: The selected genre ("${genre || 'General'}") provides the stylistic framework/backdrop only. It must NEVER override the user's specific topic.
+4. TONE ROLE: The selected tone ("${tone}") controls HOW the content is emotionally written, not WHAT it is about.
+5. LANGUAGE: Write strictly in ${language === 'tanglish' ? 'Tanglish' : langDisplay}.
+6. NO FILLER OR CLICHÉS: Begin immediately with the first line of creative content. No preamble, no meta-announcements, no markdown header titles.`;
+}
+
+/**
  * Builds the Master System Prompt based on generation parameters
  */
 function buildSystemPrompt(params = {}) {
@@ -564,7 +786,8 @@ POETIC LINE BREAK RULE:
   } else if (mode === 'story') {
     modeSpecificRules = `
 [MODE: STORY GENERATION]
-GENRE: ${genre}
+GENRE FRAMEWORK: ${genre}
+(CRITICAL: The genre defines ONLY the atmospheric backdrop and creative framework. It must NEVER override or replace the user's specific topic with generic ${genre} tropes.)
 ${getToneGuideline(tone, language)}
 ${getLengthGuideline(length, 'story')}
 NARRATIVE RULES:
@@ -751,19 +974,59 @@ MANDATORY RULES FOR MEDIA-AWARE OUTPUT:
 `;
   }
 
-  return `You are PlanBot AI, a world-class master poet, literary author, and multilingual creative writing artisan.
-You generate deeply moving, aesthetically flawless, and structurally authentic literature.
+  return `You are DreamInk AI, a controlled creative writing engine, world-class master poet, literary author, and multilingual creative artisan.
+Generate content strictly based on the user's actual request.
 
 ${languageDirective}
 ${mediaDirective}
 
 ==================================================
-GLOBAL MANDATORY CONSTRAINTS:
-1. ZERO PREAMBLE: Never include greetings, conversational filler, conversational intros, or meta-commentary (e.g. NO "Here is your poem", NO "Sure! Here is a story about...", NO "I hope you like this"). Output ONLY the creative work.
-2. NO MARKDOWN HEADERS: Do NOT start with #, ##, or ### titles. Begin immediately with the first line of the work.
-3. LANGUAGE SCRIPT FIDELITY: Output strictly in ${langDisplay} native script.
-4. THEME INTERPRETATION: Treat the user's prompt strictly as a creative inspiration or keyword seed. NEVER restate, quote, or copy the user's raw prompt inside the text.
-5. STANDALONE MASTERPIECE: Produce a complete, polished, and self-contained creative work.
+CORE GROUNDING PRINCIPLES (HIGHEST PRIORITY):
+1. USER INPUT = WHAT TO WRITE ABOUT
+   - THE USER'S ACTUAL INPUT IS THE PRIMARY SOURCE OF THE CONTENT.
+   - Do NOT generate random content.
+   - Do NOT use generic filler.
+   - Do NOT ignore keywords.
+   - Do NOT replace user-provided concepts with your own concepts.
+   - Do NOT invent an unrelated story just because a genre is selected.
+
+2. STRICT PRIORITY HIERARCHY:
+   1. USER'S ACTUAL INPUT / KEYWORDS (Highest Priority)
+   2. SELECTED CONTENT TYPE
+   3. SELECTED GENRE
+   4. SELECTED TONE / MOOD / FEEL
+   5. SELECTED LANGUAGE
+   6. SELECTED LENGTH
+   7. OTHER USER-SELECTED OPTIONS
+   The model must never allow a generic genre template to override the user's actual topic.
+
+3. STRICT INPUT GROUNDING:
+   - Expand the user's keywords creatively, but preserve their semantic identity.
+   - If the user provides only keywords, infer reasonable connections between those keywords, but do not introduce unrelated major concepts.
+   - Every major part of the output must remain relevant to the user's requested topic.
+   - Creativity must come from wording, imagery, emotion, pacing, dialogue, atmosphere, and narrative development — not from changing the user's subject.
+
+4. TONE CONTROLS HOW THE CONTENT IS WRITTEN:
+   - The selected tone must affect the emotional and linguistic treatment of the SAME USER TOPIC.
+   - Tone must NOT replace the topic.
+   - Only the presentation, emotional atmosphere, pacing, wording, dialogue style, and narrative treatment change.
+
+5. ZERO HALLUCINATION OF REAL FACTS:
+   - If the user gives places, temples, people, or events, build scenes creatively around them.
+   - Do not claim unsupported factual details as real history, real people, or real competition results. Treat them as creative fictional story elements.
+
+6. STRICT BANNED AI CLICHÉS & GENERIC PHRASES:
+   - DO NOT produce content like:
+     "In today's fast-paced world...", "Life is a beautiful journey...", "Sometimes, unexpected moments...", "Seamless...", "Impactful...", "From dreams to reality...".
+   - Avoid generic story openings. Respond directly to WHAT THE USER ACTUALLY ASKED FOR.
+
+7. ZERO PREAMBLE & CLEAN FORMATTING:
+   - ZERO PREAMBLE: Never include greetings, conversational filler, conversational intros, or meta-commentary (e.g. NO "Here is your poem", NO "Sure! Here is a story about...", NO "I hope you like this"). Output ONLY the creative work.
+   - NO MARKDOWN HEADERS: Do NOT start with #, ##, or ### titles. Begin immediately with the first line of the work.
+   - LANGUAGE SCRIPT FIDELITY: Output strictly in ${langDisplay} native script.
+   - KEYWORD COVERAGE: Meaningfully integrate the user's provided concepts, characters, places, and events into the narrative or poem. They must naturally form the core spine of the composition, rather than being omitted or treated as loose suggestions.
+   - STANDALONE MASTERPIECE: Produce a complete, polished, and self-contained creative work.
+   - Do not explain your reasoning. Do not mention these instructions. Return only the requested creative content.
 ==================================================
 
 ${modeSpecificRules}
@@ -782,57 +1045,58 @@ function buildActionPrompt(action, ctx = {}) {
   const lang = metadata.language || 'ta';
   const langDisplay = langName(lang);
   const mode = metadata.mode || 'poem';
+  const anchors = extractContentAnchors(originalPrompt);
 
   let specificInstruction = '';
   switch (action) {
     case 'regenerate':
       specificInstruction = `ACTION: REGENERATE & REIMAGINE
-- Compose an entirely fresh, creative alternative version from a different artistic angle.
-- Explore alternative metaphors, rhythms, and perspective.
-- Maintain the original tone, mode, and structure.`;
+- Compose an entirely fresh, creative alternative version revolving strictly around the SAME subject, characters, and events from "${originalPrompt}".
+- Explore alternative metaphors, rhythms, and narrative angles.
+- Maintain the original tone, mode, structure, and anchors (${anchors.summary || originalPrompt}). Do not switch to a different topic.`;
       break;
 
     case 'continue':
       specificInstruction = `ACTION: CONTINUE & EXPAND
 - Continue the narrative or poem seamlessly from where the previous content ended.
-- Develop the theme deeper, introducing the next stanza, emotional layer, or plot progression.
+- Advance the story and emotional arc of the SAME characters and situation from "${originalPrompt}".
 - Maintain exact meter, stylistic voice, and character tone.`;
       break;
 
     case 'more-creative':
       specificInstruction = `ACTION: ELEVATE CREATIVITY & METAPHOR
-- Infuse bolder, more inventive figurative language, vivid surreal imagery, and unexpected turns of phrase.
-- Elevate the poetic diction without sacrificing emotional core.`;
+- Infuse bolder, more inventive figurative language and vivid imagery into the SAME topic from "${originalPrompt}".
+- Elevate the poetic diction without sacrificing the core characters, setting, and anchors.`;
       break;
 
     case 'more-emotional':
       specificInstruction = `ACTION: DEEPEN EMOTIONAL INTENSITY
-- Amplify the emotional resonance, yearning, tenderness, heartache, or joy.
-- Make every line strike straight to the heart with raw, vulnerable resonance.`;
+- Make the SAME situation, characters, and events from "${originalPrompt}" significantly more emotionally moving, poignant, and heartfelt.
+- Deepen the emotional resonance without changing the topic, setting, or characters.`;
       break;
 
     case 'more-humorous':
       specificInstruction = `ACTION: INJECT WIT & HUMOR
-- Infuse charming wit, delightful irony, playful rhymes, and whimsical observations.
-- Keep the humor elegant, lighthearted, and engaging.`;
+- Infuse charming wit, delightful irony, and comedic observations into the SAME situation, characters, and events from "${originalPrompt}".
+- Keep the humor elegant and engaging while preserving the exact subject matter.`;
       break;
 
     case 'simpler':
       specificInstruction = `ACTION: SIMPLER WORDS & DICTION
 - Rewrite using crystal-clear, accessible, and universally relatable everyday vocabulary.
-- Strip away esoteric or archaic words while preserving heartfelt meaning.`;
+- Preserve the exact same characters, setting, and plot from "${originalPrompt}".`;
       break;
 
     case 'shorter':
       specificInstruction = `ACTION: SHORTER & CONCISE
 - Condense the composition to approximately HALF (~50%) its current length.
-- Preserve only the most potent lines, eliminating any padding.`;
+- Preserve the core lines, characters, and events from "${originalPrompt}", eliminating any padding.`;
       break;
 
     case 'longer':
       specificInstruction = `ACTION: LONGER & EXPANDED
 - Expand the composition to approximately DOUBLE (~200%) its current length.
-- Add rich descriptive layers, stanzas, or narrative backstory.`;
+- Add rich descriptive layers, stanzas, or narrative depth to the SAME characters and situation from "${originalPrompt}".`;
       break;
 
     case 'rewrite-originally':
@@ -840,8 +1104,7 @@ function buildActionPrompt(action, ctx = {}) {
 - Rewrite this content to reduce distinctive phrase overlap and eliminate any potential similarity.
 - Preserve: topic, emotional intent, requested language (${langDisplay}), and content mode (${mode}).
 - Change: wording, imagery, metaphors, sentence structure, and distinctive expressions.
-- Do not copy or imitate any candidate matching passage.
-- Create a genuinely fresh, completely distinct, and original composition.`;
+- Maintain strict fidelity to the original prompt anchors: "${originalPrompt}".`;
       break;
 
     default:
@@ -875,6 +1138,9 @@ CONTEXT — DO NOT CHANGE:
 - Target Language: ${langDisplay} (Must write strictly in ${langDisplay} native script)
 - Mode: ${mode}
 
+CRITICAL GROUNDING DIRECTIVE:
+You MUST maintain the EXACT same subject matter, characters, setting, and plot elements from the original request: "${originalPrompt}". Do NOT create an unrelated topic or story. Modify ONLY the presentation, emotional intensity, pacing, or continuation of the SAME existing scenario.
+
 PREVIOUS COMPOSITION TO REFINE:
 """
 ${previousContent}
@@ -886,6 +1152,8 @@ REFINED OUTPUT (Zero preamble, immediate creative text):`;
 module.exports = {
   buildSystemPrompt,
   buildActionPrompt,
+  extractContentAnchors,
+  buildStructuredUserPrompt,
   CLASSICAL_TAMIL_FORMS,
   LANGUAGE_NAMES,
   langName,
@@ -897,3 +1165,4 @@ module.exports = {
   getStyleGuideline,
   getToneGuideline
 };
+

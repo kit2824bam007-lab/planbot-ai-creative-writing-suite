@@ -28,9 +28,17 @@ try {
   isConnected = false;
 }
 
-module.exports = {
-  client: prisma,
-  isAvailable() {
+if (prisma) {
+  prisma.client = prisma;
+  prisma.isAvailable = function() {
     return isConnected;
-  }
-};
+  };
+  module.exports = prisma;
+} else {
+  module.exports = {
+    client: null,
+    isAvailable() {
+      return false;
+    }
+  };
+}

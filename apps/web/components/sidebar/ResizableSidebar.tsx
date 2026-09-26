@@ -121,7 +121,7 @@ export const ResizableSidebar: React.FC = () => {
             <div className="relative w-8 h-8 rounded-xl bg-white dark:bg-white/95 p-0.5 shadow-soft-sm border border-stone-200/60 dark:border-white/20 flex items-center justify-center shrink-0">
               <img
                 src="/logo-transparent.png"
-                alt="PlanBot"
+                alt="DreamInk"
                 width={24}
                 height={24}
                 className="w-6 h-6 object-contain transition-transform"
@@ -129,7 +129,7 @@ export const ResizableSidebar: React.FC = () => {
             </div>
             <div className="min-w-0 flex-1 overflow-hidden">
               <div className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 font-serif">
-                <span className="truncate">PlanBot AI</span>
+                <span className="truncate">DreamInk AI</span>
                 <span className="text-[10px] font-sans font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full shrink-0">
                   v1.0
                 </span>

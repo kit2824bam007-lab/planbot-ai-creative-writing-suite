@@ -1,119 +1,131 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, Feather, ScrollText, BookOpen, Compass } from 'lucide-react';
+import { Sparkles, Dices, Image as ImageIcon, ScrollText, Lightbulb, ChevronRight } from 'lucide-react';
 import { useChatStore } from '../../store/chatStore';
 
 export const EmptyState: React.FC = () => {
-  const { setPromptText, setMode, setPoemType, setLanguage } = useChatStore();
+  const {
+    user,
+    quota,
+    setPromptText,
+    setMode,
+    setPoemType,
+    setLanguage,
+    setIsLimitModalOpen,
+    setIsOptionsDrawerOpen
+  } = useChatStore();
 
-  const suggestions = [
+  const userName = user?.name ? user.name.split(' ')[0] : 'Hendricks';
+
+  const actionCards = [
     {
-      icon: Feather,
-      title: 'Haiku Inspiration',
-      category: 'Poem Mode · Haiku',
-      prompt: 'A gentle raindrop glistening on a lotus leaf at dawn',
+      icon: Dices,
+      title: 'Surprise me!',
+      desc: 'Surprise me with a creative idea or story.',
       action: () => {
-        setMode('poem');
-        setPoemType('Haiku');
-        setLanguage('en');
-        setPromptText('A gentle raindrop glistening on a lotus leaf at dawn');
+        const surprises = [
+          'Two childhood artists meet after 20 years at an exhibition in Chennai',
+          'A gentle raindrop glistening on a lotus leaf at dawn',
+          'A time traveler who can only communicate through classical poems',
+          'நிலவின் அழகும் மலரின் நறுமணமும் இணையும் இரவின் அமைதி'
+        ];
+        const randomItem = surprises[Math.floor(Math.random() * surprises.length)];
+        setPromptText(randomItem);
+        if (/[\u0B80-\u0BFF]/.test(randomItem)) {
+          setLanguage('ta');
+        }
+      }
+    },
+    {
+      icon: ImageIcon,
+      title: 'Create content',
+      desc: 'Create viral social posts from your idea or media.',
+      action: () => {
+        setMode('creator');
+        setIsOptionsDrawerOpen(true);
       }
     },
     {
       icon: ScrollText,
-      title: 'Shakespearean Sonnet',
-      category: 'Poem Mode · Sonnet',
-      prompt: 'Love enduring through the cruel changes of relentless time',
+      title: 'Poem & Verses',
+      desc: 'Compose in classical meters, Haiku, or வெண்பா.',
       action: () => {
         setMode('poem');
-        setPoemType('Sonnet');
-        setLanguage('en');
-        setPromptText('Love enduring through the cruel changes of relentless time');
+        setPoemType('Haiku');
+        setPromptText('Golden sunset melting across the silent ocean waves');
       }
     },
     {
-      icon: BookOpen,
-      title: 'Story Prompt Idea',
-      category: 'Story Mode · Drama',
-      prompt: 'Two childhood artists meet after 20 years at an exhibition in Chennai',
+      icon: Lightbulb,
+      title: 'Generate ideas',
+      desc: 'Brainstorm concepts, plot twists, and narratives.',
       action: () => {
         setMode('story');
-        setPromptText('Two childhood artists meet after 20 years at an exhibition in Chennai');
-      }
-    },
-    {
-      icon: Compass,
-      title: 'Diversity Experiment',
-      category: 'Classical Tamil · வெண்பா',
-      prompt: 'நிலவின் அழகும் மலரின் நறுமணமும் இணையும் இரவு',
-      action: () => {
-        setMode('poem');
-        setPoemType('வெண்பா');
-        setLanguage('ta');
-        setPromptText('நிலவின் அழகும் மலரின் நறுமணமும் இணையும் இரவு');
+        setPromptText('An undercover detective who realizes the suspect is their mentor');
       }
     }
   ];
 
   return (
-    <div className="relative flex flex-col items-center justify-center py-5 sm:py-12 px-3 sm:px-4 text-center max-w-3xl mx-auto my-auto animate-fade-in select-none">
-      {/* Ethereal Ambient Sphere Blur (Inspired by reference image) */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-8 sm:-translate-y-12 w-56 h-56 sm:w-72 sm:h-72 rounded-full bg-gradient-to-tr from-purple-200/40 via-violet-200/30 to-pink-100/40 dark:from-purple-900/20 dark:via-violet-900/15 dark:to-pink-900/15 blur-3xl pointer-events-none -z-10" />
+    <div className="relative flex flex-col items-center justify-center pt-2 sm:pt-6 pb-2 px-3 sm:px-4 text-center max-w-xl mx-auto my-auto animate-fade-in select-none">
+      {/* Soft Ambient Ethereal Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-gradient-to-tr from-purple-300/30 via-violet-300/25 to-pink-200/25 dark:from-purple-900/25 dark:via-violet-900/20 dark:to-pink-900/15 blur-3xl pointer-events-none -z-10" />
 
-      {/* Official Feather/Quill Brand Logo */}
-      <div className="relative mb-3.5 sm:mb-5 group">
-        <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-white/95 dark:bg-white/95 border border-[#E8E1D7] dark:border-white/20 shadow-soft-md flex items-center justify-center p-2.5 sm:p-3 backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">
-          <img
-            src="/logo-transparent.png"
-            alt="PlanBot Logo"
-            width={64}
-            height={64}
-            className="w-full h-full max-w-[64px] max-h-[64px] object-contain transition-all"
-          />
-        </div>
-        <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center text-primary backdrop-blur-xs">
-          <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-        </div>
+      {/* Greeting Header (Exactly matching Screen 1 reference) */}
+      <div className="mb-6 sm:mb-8 text-center">
+        <h2 className="text-sm sm:text-base font-medium text-zinc-500 dark:text-zinc-400 font-sans tracking-tight">
+          Hi, {userName}
+        </h2>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight mt-1 font-serif">
+          How can I help today?
+        </h1>
+        <p className="text-xs sm:text-sm text-zinc-400 dark:text-zinc-500 mt-2 max-w-sm mx-auto font-sans leading-relaxed">
+          I’m here to help — from quick verses to smart creative recommendations.
+        </p>
       </div>
 
-      {/* Editorial Heading */}
-      <h1 className="font-serif text-xl sm:text-4xl text-zinc-900 dark:text-zinc-50 tracking-tight font-medium max-w-xl leading-tight">
-        What masterpiece shall we compose today?
-      </h1>
-      <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-2 max-w-lg leading-relaxed font-sans">
-        Explore classical meters, lyrical verses, compelling stories, or create media-aware social content in Tamil and English.
-      </p>
-
-      {/* 4 Cards Grid with Refined Mobile & Desktop Polish */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5 w-full mt-6 sm:mt-8 text-left">
-        {suggestions.map((card, i) => {
+      {/* 2x2 Rounded Cards Grid (Directly matching Screen 1 reference) */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 w-full text-left">
+        {actionCards.map((card, i) => {
           const Icon = card.icon;
           return (
             <button
               key={i}
               type="button"
               onClick={card.action}
-              className="flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl bg-white/85 dark:bg-zinc-900/65 border border-[#E8E2D9] dark:border-[#262330] hover:border-primary/40 hover:bg-white dark:hover:bg-zinc-900/90 shadow-soft-sm hover:shadow-soft-md transition-all group active:scale-[0.99]"
+              className="p-3.5 sm:p-4 rounded-3xl bg-white/90 dark:bg-[#1C1826]/90 border border-stone-200/70 dark:border-zinc-800/80 hover:border-primary/40 dark:hover:border-primary/50 shadow-[0_4px_20px_-2px_rgba(110,80,140,0.06)] hover:shadow-soft-md transition-all duration-200 group active:scale-[0.98] flex flex-col justify-between min-h-[110px] sm:min-h-[125px]"
             >
-              <div className="p-2 sm:p-2.5 rounded-xl bg-warm-100 dark:bg-zinc-800/90 text-primary shrink-0 group-hover:bg-primary/12 transition-colors border border-stone-200/50 dark:border-zinc-700/50">
-                <Icon className="w-4 h-4 stroke-[1.8]" />
-              </div>
-              <div className="overflow-hidden min-w-0">
-                <div className="text-[10px] font-semibold text-primary uppercase tracking-wider">
-                  {card.category}
+              <div className="flex items-center justify-between w-full">
+                <div className="p-2 rounded-xl bg-purple-50 dark:bg-zinc-800/80 text-primary group-hover:bg-primary/10 transition-colors">
+                  <Icon className="w-4 h-4 stroke-[2]" />
                 </div>
-                <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-100 mt-0.5 group-hover:text-primary transition-colors font-serif truncate">
+              </div>
+              <div className="mt-2.5">
+                <div className="text-xs sm:text-sm font-semibold text-zinc-800 dark:text-zinc-100 group-hover:text-primary transition-colors font-serif">
                   {card.title}
                 </div>
-                <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mt-1 font-sans">
-                  "{card.prompt}"
+                <div className="text-[11px] text-zinc-400 dark:text-zinc-500 line-clamp-2 mt-0.5 leading-snug font-sans">
+                  {card.desc}
                 </div>
               </div>
             </button>
           );
         })}
       </div>
+
+      {/* PRO / Quota Banner (Matching Reference Screen 1 "Unlock more features with Pro") */}
+      <button
+        type="button"
+        onClick={() => setIsLimitModalOpen(true)}
+        className="mt-4 sm:mt-5 w-full py-2.5 px-4 rounded-2xl bg-white/70 dark:bg-[#1B1726]/70 border border-purple-200/50 dark:border-purple-900/40 hover:bg-white dark:hover:bg-[#1F1A2D] text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center justify-between shadow-2xs transition-all active:scale-[0.99] group"
+      >
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
+          <span>Unlock more features with Pro</span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+      </button>
     </div>
   );
 };

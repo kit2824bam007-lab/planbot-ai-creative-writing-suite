@@ -111,9 +111,9 @@ class KeyPool {
       target.isCooldown = true;
       target.cooldownUntil = now + quotaCooldown;
     } else {
-      // Temporary network/503 spikes: 15s cooldown
+      // Temporary network/503 spikes: 3s cooldown
       target.isCooldown = true;
-      target.cooldownUntil = now + 15 * 1000;
+      target.cooldownUntil = now + 3 * 1000;
     }
   }
 

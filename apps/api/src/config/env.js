@@ -1,6 +1,9 @@
+const path = require('path');
 const dotenv = require('dotenv');
 const { z } = require('zod');
 
+// Load apps/api/.env explicitly
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config();
 
 const envSchema = z.object({
@@ -16,7 +19,7 @@ const envSchema = z.object({
   GEMINI_API_KEY_3: z.string().optional(),
   GEMINI_API_KEY_4: z.string().optional(),
   GEMINI_API_KEY_5: z.string().optional(),
-  GEMINI_MODEL: z.string().default('gemini-3.6-flash'),
+  GEMINI_MODEL: z.string().default('gemini-3.8-flash'),
   DAILY_LIMIT_FREE: z.string().default('10').transform((val) => parseInt(val, 10)),
   DAILY_LIMIT_ANON: z.string().default('3').transform((val) => parseInt(val, 10)),
   ADMIN_API_KEY: z.string().default('admin-secret-key-planbot'),

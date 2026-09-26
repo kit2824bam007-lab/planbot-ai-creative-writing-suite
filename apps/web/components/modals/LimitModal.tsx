@@ -51,7 +51,7 @@ export const LimitModal: React.FC = () => {
           key: orderData.keyId,
           amount: orderData.amount,
           currency: orderData.currency || 'INR',
-          name: 'PlanBot AI',
+          name: 'DreamInk AI',
           description: '30 Days Pro Subscription — Unlimited AI Generations',
           order_id: orderData.orderId,
           prefill: {

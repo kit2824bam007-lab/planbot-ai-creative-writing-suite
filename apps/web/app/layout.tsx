@@ -34,12 +34,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'PlanBot AI — Full AI Poem & Story Generator',
+  title: 'DreamInk AI — AI Creative Writing, Poem & Story Studio',
   description: 'AI creative writing platform with classical Tamil forms, ChatGPT-style streaming chat, Tanglish translanguaging, and social media card generator.',
-  keywords: ['AI Poem Generator', 'Tamil Classical Poetry', 'Venpa', 'Kurinji', 'Story Generator', 'Tanglish to Tamil', 'Social Post Generator'],
-  authors: [{ name: 'PlanBot Team' }],
+  keywords: ['DreamInk AI', 'AI Poem Generator', 'Tamil Classical Poetry', 'Venpa', 'Kurinji', 'Story Generator', 'Tanglish to Tamil', 'Social Post Generator'],
+  authors: [{ name: 'DreamInk Team' }],
   openGraph: {
-    title: 'PlanBot AI — Full AI Poem & Story Generator',
+    title: 'DreamInk AI — AI Creative Writing, Poem & Story Studio',
     description: 'Compose sublime poetry and gripping stories in Tamil, English, and beyond.',
     type: 'website',
   },

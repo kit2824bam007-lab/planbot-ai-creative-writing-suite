@@ -131,11 +131,172 @@ CRITICAL CORRECTION: Rewrite the work 100% in native script. Zero English alphab
     }
   }
 
+  // 5. TOPIC_RELEVANCE_CHECK
+  if (originalPrompt && originalPrompt.trim().length >= 3 && !params.hasMedia && !params.mediaContext) {
+    const relevanceResult = validateTopicRelevance(cleanOutput, originalPrompt, language);
+    if (!relevanceResult.valid) {
+      return {
+        valid: false,
+        code: 'TOPIC_RELEVANCE_FAILED',
+        message: relevanceResult.message,
+        retryPrompt: relevanceResult.retryPrompt
+      };
+    }
+  }
+
   // Passed all guards
+  return { valid: true };
+}
+
+const COMMON_CONCEPT_MAP = {
+  pallathur: /pallathur|பல்லாத்தூர்|பள்ளத்தூர்|பல்லவத்தூர்/i,
+  temple: /temple|கோயில்|கோவில்|ஆலயம்|கோபுரம்|சன்னதி/i,
+  boy: /boy|சிறுவன்|பையன்|இளைஞன்|ஆண்/i,
+  girl: /girl|சிறுமி|பெண்|இளம்பெண்|மகள்/i,
+  rock: /rock|பாறை|கல்|கற்பாறை/i,
+  competition: /competition|போட்டி|பந்தயம்/i,
+  friend: /friend|தோழ|நண்ப|நட்பு/i,
+  friendship: /friendship|நட்பு|தோழமை|நண்பர்கள்/i,
+  college: /college|கல்லூரி/i,
+  farewell: /farewell|பிரிவு|விடைபெறு|பிரிவுபசார/i,
+  love: /love|காதல்|அன்பு/i,
+  rain: /rain|மழை/i,
+  moon: /moon|நிலா|நிலவு|சந்திரன்|மதி/i,
+  sun: /sun|சூரியன்|கதிர்|செங்கதிர்/i,
+  sunset: /sunset|அந்தி|அஸ்தமனம்|மாலை|செவ்வானம்/i,
+  beach: /beach|கடற்கரை|கடல்|மணல்|அலை|அலைகள்/i,
+  sea: /sea|கடல்|அலை|அலைகள்/i,
+  ocean: /ocean|பெருங்கடல்|கடல்/i,
+  mountain: /mountain|மலை|சிகரம்/i,
+  forest: /forest|காடு|வனம்/i,
+  river: /river|ஆறு|நதி/i,
+  exam: /exam|தேர்வு|பரீட்சை/i,
+  test: /test|தேர்வு|சோதனை/i,
+  mother: /mother|அம்மா|தாய்/i,
+  father: /father|அப்பா|தந்தை/i,
+  school: /school|பள்ளி|பாடசாலை/i,
+  village: /village|கிராம|ஊர்/i,
+  city: /city|நகரம்|நகர்/i,
+  music: /music|இசை|கானம்/i,
+  song: /song|பாடல்|பாட்டு/i,
+  book: /book|புத்தகம்|நூல்/i,
+  tree: /tree|மரம்|விருட்சம்/i,
+  flower: /flower|மலர்|பூ/i,
+  dream: /dream|கனவு/i,
+  fear: /fear|பயம்|அச்சம்/i,
+  life: /life|வாழ்க்கை|வாழ்வு/i,
+  night: /night|இரவு|ராத்திரி/i,
+  morning: /morning|காலை|விடியல்/i,
+  tears: /tear|கண்ணீர்|விழிநீர்/i,
+  smile: /smile|புன்னகை|சிரிப்பு/i,
+  journey: /journey|பயணம்|வழி/i,
+  tea: /tea|டீ|தேநீர்|காபி/i,
+  coffee: /coffee|காபி|தேநீர்|டீ/i,
+  talk: /talk|பேச்சு|உரையாடல்|பேச/i,
+  talks: /talk|பேச்சு|உரையாடல்|பேச/i,
+  food: /food|உணவு|சாப்பாடு|விருந்து/i,
+  doctor: /doctor|மருத்துவர்|டாக்டர்/i,
+  wedding: /wedding|திருமணம்|கல்யாணம்/i,
+  alone: /alone|தனிமை|ஒற்றை/i,
+  silent: /silent|மௌனம்|அமைதி/i,
+  silence: /silence|மௌனம்|அமைதி/i
+};
+
+function checkConceptMatch(keyword, text, language) {
+  const kw = keyword.toLowerCase().trim();
+  const textLower = text.toLowerCase();
+
+  // 1. Direct match (covers English/Tanglish or when text contains the word)
+  if (textLower.includes(kw)) return true;
+
+  // 2. Tamil check
+  if (language === 'ta' || /[\u0B80-\u0BFF]/.test(text)) {
+    // Check concept dictionary
+    if (COMMON_CONCEPT_MAP[kw] && COMMON_CONCEPT_MAP[kw].test(text)) {
+      return true;
+    }
+    // If the keyword itself is in Tamil script, check substring of stem (length >= 3)
+    if (/[\u0B80-\u0BFF]/.test(kw)) {
+      const stem = kw.slice(0, Math.min(kw.length, 3));
+      if (text.includes(stem)) return true;
+    }
+    // Simple English-to-Tamil phonetic heuristic for proper nouns (like Pallathur)
+    if (kw.length >= 5) {
+      const prefix = kw.slice(0, 4);
+      if (textLower.includes(prefix)) return true;
+    }
+  }
+
+  // 3. English stem match (length >= 4)
+  if (kw.length >= 4) {
+    const stem = kw.slice(0, -1);
+    if (textLower.includes(stem)) return true;
+  }
+
+  return false;
+}
+
+function validateTopicRelevance(output = '', originalPrompt = '', language = 'ta') {
+  if (!originalPrompt || originalPrompt.trim().length < 3) {
+    return { valid: true };
+  }
+
+  const STOPWORDS = new Set([
+    'a', 'an', 'the', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or', 'is', 'are', 'was', 'were',
+    'with', 'by', 'from', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below',
+    'write', 'create', 'generate', 'make', 'give', 'compose', 'story', 'poem', 'content', 'post',
+    'please', 'tell', 'me', 'want', 'like', 'need', 'some', 'that', 'this', 'these', 'those',
+    'feel', 'feeling', 'based', 'using', 'around', 'mode', 'type', 'tone', 'genre',
+    'ஒரு', 'மற்றும்', 'என்று', 'என', 'உள்ள', 'ஆகிய', 'கதை', 'கவிதை', 'எழுது'
+  ]);
+
+  const cleanPrompt = originalPrompt.replace(/[.,/#!$%^&*;:{}=\-_`~()?"'<>]/g, ' ');
+  const rawTokens = cleanPrompt.split(/\s+/).map((w) => w.trim()).filter(Boolean);
+  const keywords = rawTokens.filter((w) => w.length >= 3 && !STOPWORDS.has(w.toLowerCase()));
+
+  // If no significant keywords to test, pass
+  if (keywords.length === 0) {
+    return { valid: true };
+  }
+
+  let matchedCount = 0;
+  const missingKeywords = [];
+
+  for (const kw of keywords) {
+    if (checkConceptMatch(kw, output, language)) {
+      matchedCount++;
+    } else {
+      missingKeywords.push(kw);
+    }
+  }
+
+  // Determine required threshold
+  let minRequired = 1;
+  if (keywords.length >= 4) {
+    minRequired = Math.min(2, Math.ceil(keywords.length * 0.35));
+  } else if (keywords.length >= 2) {
+    minRequired = 1;
+  }
+
+  if (matchedCount < minRequired) {
+    return {
+      valid: false,
+      code: 'TOPIC_RELEVANCE_FAILED',
+      message: `Output lacked semantic grounding in user keywords (matched ${matchedCount}/${keywords.length}). Missing concepts: ${missingKeywords.slice(0, 4).join(', ')}`,
+      retryPrompt: `[RETRY RULE - STRICT INPUT GROUNDING REQUIRED]
+CRITICAL CORRECTION: Your previous response drifted away from the user's topic and anchors.
+The user explicitly asked for content about: "${originalPrompt}".
+MANDATORY: You MUST actively feature and weave in these exact core concepts: ${keywords.join(', ')}.
+Do NOT invent an unrelated story or fallback to generic templates. Ground every scene and line in the user's actual keywords.`
+    };
+  }
+
   return { valid: true };
 }
 
 module.exports = {
   validateGuards,
-  looksLikePoem
+  looksLikePoem,
+  validateTopicRelevance
 };
+

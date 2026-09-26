@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const keyPool = require('./keyPool');
 const { env } = require('../config/env');
 
-const DEFAULT_MODEL = env.GEMINI_MODEL || 'gemini-3.6-flash';
+const DEFAULT_MODEL = env.GEMINI_MODEL || 'gemini-3.8-flash';
 
 /**
  * Handles communication with Gemini API, including streaming,
@@ -27,7 +27,16 @@ class GeminiService {
     while (attempts < maxAttempts) {
       attempts++;
       try {
-        keyEntry = keyPool.getKey();
+        try {
+          keyEntry = keyPool.getKey();
+        } catch (keyErr) {
+          if (keyErr.message === 'ALL_KEYS_EXHAUSTED' && attempts < maxAttempts) {
+            console.warn(`[GeminiService] Keys temporarily cooling down, waiting 2s for attempt ${attempts}...`);
+            await new Promise((r) => setTimeout(r, 2000));
+            continue;
+          }
+          throw keyErr;
+        }
 
         // Check if test environment or demo/mock key without internet
         if (process.env.NODE_ENV === 'test' || !keyEntry.key || keyEntry.key === 'demo-dev-key' || keyEntry.key.startsWith('your-') || keyEntry.key.startsWith('key-')) {
@@ -67,6 +76,10 @@ class GeminiService {
           contents: [{ role: 'user', parts }]
         });
 
+        if (result.response && typeof result.response.catch === 'function') {
+          result.response.catch(() => {});
+        }
+
         let fullText = '';
         for await (const chunk of result.stream) {
           if (signal && signal.aborted) {
@@ -93,7 +106,13 @@ class GeminiService {
         }
 
         if (attempts >= maxAttempts) {
-          console.warn(`[GeminiService] All ${maxAttempts} live attempts encountered temporary API spike (${err.message}). Seamlessly engaging creative engine fallback...`);
+          console.warn(`[GeminiService] All ${maxAttempts} live attempts failed (${err.message}).`);
+          if (process.env.NODE_ENV !== 'test') {
+            const unavailableError = new Error('AI generation is temporarily unavailable. Please try again shortly.');
+            unavailableError.code = 'AI_UNAVAILABLE';
+            unavailableError.status = 503;
+            throw unavailableError;
+          }
           return await this.mockStreamGeneration({ userPrompt, systemPrompt, onChunk, signal });
         }
         console.warn(`[GeminiService] Attempt ${attempts} failed (${err.message}). Retrying with next key...`);
@@ -101,6 +120,12 @@ class GeminiService {
       }
     }
 
+    if (process.env.NODE_ENV !== 'test') {
+      const unavailableError = new Error('AI generation is temporarily unavailable. Please try again shortly.');
+      unavailableError.code = 'AI_UNAVAILABLE';
+      unavailableError.status = 503;
+      throw unavailableError;
+    }
     return await this.mockStreamGeneration({ userPrompt, systemPrompt, onChunk, signal });
   }
 
@@ -618,7 +643,19 @@ Real moments don't need a filter—just the right light. 🌇
         } else if (isLifePrompt) {
           mockResponse = `"நிஜ வாழ்க்கையில் எதுவும் நடக்காதது போல சில அமைதியான நாட்கள் நகரும்... ஆனால் அந்த அமைதியில்தான் வாழ்க்கையின் மிகப்பெரிய திருப்பங்கள் அமைதியாகக் காத்திருக்கும்" என்று நினைத்துக் கொண்டான் அர்ஜுன்.\n\nகாலை நேரத்து காபி கோப்பையுடன் பால்கனியில் நின்றிருந்த அவனுக்கு, தினசரி வழக்கமான சலிப்பு ஒருவித ஏமாற்றத்தை தந்தது. "ஏன் என் வாழ்க்கையில் மட்டும் எந்த மாற்றமும் நிகழ மாட்டேங்குது?" என்று முணுமுணுத்தான்.\n\nஅப்போது அவனது கதவு தட்டப்பட்டது. எதிர்வீட்டுச் சிறுவன் ஓடிவந்து, "அண்ணா, நீங்க தேடிக்கிட்டு இருந்த உங்க அப்பாவோட பழைய டைரி எங்க பரண்ல கிடைச்சிருக்கு!" என்று ஒரு பழமையான நோட்டுப்புத்தகத்தை நீட்டினான். அதுவரை எதுவும் நடக்காததாகத் தோன்றிய அந்தச் சாதாரண நாள், அவனது குடும்பத்தின் 20 வருட ரகசியத்தை வெளிக்கொணரும் தொடக்கப் புள்ளியானது.`;
         } else {
-          mockResponse = `அந்தி மாலையின் செவ்வானம் மெல்லக் கனிந்து கொண்டிருந்தது. பழனி மலையடிவாரத்துத் தென்றல் சில்லென்று வீச, கார்த்திக் மரத்தடியில் அமைதியாக நின்றிருந்தான்.\n\n"இத்தனை நாளா எங்க போயிருந்தீங்க?" என்று கேட்டபடி கயல்விழி அவனை நோக்கி வந்தாள்.\n\nஅவன் புன்னகையுடன் திரும்பிப் பார்த்தான். "தொலைந்த கனவுகளைத் தேடிப் போனேன், ஆனா நிஜமான அமைதி இங்கதான் இருக்குனு புரிஞ்சுக்கிட்டேன்." என்றான்.\n\nஇருவரின் கண்களிலும் புரிதலின் மெல்லிய வெளிச்சம் பரவியது. காலத்தின் சுவடுகள் கடந்து, புதியதொரு தொடக்கத்தை நோக்கி அவர்கள் அடியெடுத்து வைத்தனர்.`;
+          const hasPallathur = combined.includes('pallathur') || combined.includes('பள்ளத்தூர்') || combined.includes('பல்லாத்தூர்');
+          const hasRock = combined.includes('rock') || combined.includes('பாறை');
+          const hasTemple = combined.includes('temple') || combined.includes('கோயில்') || combined.includes('கோவில்');
+          const hasCollege = combined.includes('college') || combined.includes('கல்லூரி');
+          const hasFarewell = combined.includes('farewell') || combined.includes('பிரிவு');
+
+          if (hasPallathur || (hasRock && hasTemple)) {
+            mockResponse = `பள்ளத்தூர் கிராமத்து பழமையான கோயில் திடலில் அன்று மாலை பெருந்திரளான மக்கள் கூடியிருந்தனர். பாறை தூக்கும் போட்டி தொடங்கும் தருணத்தில், அங்கிருந்த இளைஞனும் இளம்பெண்ணும் ஒருவரையொருவர் நம்பிக்கையோடு நோக்கினர்.\n\n"இந்த முறை நீ நிச்சயம் அந்தப் பாறையைத் தூக்கி வெல்வாய்," என்று அவள் மெல்லிய குரலில் உற்சாகப்படுத்தினாள்.\n\nஅவன் புன்னகையுடன் கைகூப்பி இறைவனை வேண்டிவிட்டு, தனது முழு பலத்தையும் ஒன்று திரட்டி அந்தப் பாறையை நோக்கி முன்னேறினான். கோயில் மணியோசையோடு கூடிய உற்சாகக் குரல்கள் விண்ணைப் பிளந்தன.`;
+          } else if (hasCollege || hasFarewell) {
+            mockResponse = `கல்லூரி வளாகத்தின் கடைசி நாள் பிரிவுபசார விழாவில், கடந்த கால நினைவுகள் அலை அலையாய் நெஞ்சில் மோதின.\n\n"இந்த நட்பு இத்தோடு முடிந்துவிடாது, தூரங்கள் நம்மைப் பிரிக்க முடியாது," என்று அவன் உணர்ச்சிபொங்கக் கூறினான்.\n\nகண்ணீரும் சிரிப்பும் கலந்த அந்த மாலையில், தோழமையின் ஆழம் அனைவரின் இதயங்களிலும் அழியாத சுவடுகளாய் நிலைத்தது.`;
+          } else {
+            mockResponse = `அந்தி மாலையின் செவ்வானம் மெல்லக் கனிந்து கொண்டிருந்தது. பழனி மலையடிவாரத்துத் தென்றல் சில்லென்று வீச, கார்த்திக் மரத்தடியில் அமைதியாக நின்றிருந்தான்.\n\n"இத்தனை நாளா எங்க போயிருந்தீங்க?" என்று கேட்டபடி கயல்விழி அவனை நோக்கி வந்தாள்.\n\nஅவன் புன்னகையுடன் திரும்பிப் பார்த்தான். "தொலைந்த கனவுகளைத் தேடிப் போனேன், ஆனா நிஜமான அமைதி இங்கதான் இருக்குனு புரிஞ்சுக்கிட்டேன்." என்றான்.\n\nஇருவரின் கண்களிலும் புரிதலின் மெல்லிய வெளிச்சம் பரவியது. காலத்தின் சுவடுகள் கடந்து, புதியதொரு தொடக்கத்தை நோக்கி அவர்கள் அடியெடுத்து வைத்தனர்.`;
+          }
         }
       } else if (systemPrompt.includes('[MODE: CONTENT CREATOR]')) {
         if (systemPrompt.includes('FORMAT: Short Quote') || systemPrompt.includes('Two-line Couplet')) {
@@ -640,8 +677,18 @@ Real moments don't need a filter—just the right light. 🌇
         }
       } else if (systemPrompt.includes('[MODE: STORY GENERATION]')) {
         const isLife = combined.includes('real life') || combined.includes('nothing to happen');
+        const hasPallathur = combined.includes('pallathur');
+        const hasRock = combined.includes('rock');
+        const hasTemple = combined.includes('temple');
+        const hasCollege = combined.includes('college');
+        const hasFarewell = combined.includes('farewell');
+
         if (isLife) {
           mockResponse = `"Nothing ever happens in real life," Julian muttered, staring out the rain-streaked window of the coffee shop, stirring his lukewarm espresso.\n\nHe watched the familiar routine of people passing by with umbrellas, longing for even a small spark of adventure to disrupt the monotony.\n\nJust as he stood up to leave, the elderly man sitting across from him forgot a leather-bound sketchbook on the velvet bench. Julian picked it up to run after him, only to open the first page and see an intricate, hyper-realistic sketch of himself—sitting at that very table, drawn hours before he had even arrived.`;
+        } else if (hasPallathur || (hasRock && hasTemple)) {
+          mockResponse = `At the ancient temple grounds in Pallathur, the crowd gathered under the amber dusk for the annual rock lifting competition. The boy stood before the massive stone, exchanging a quiet glance of encouragement with the girl.\n\n"You've trained for this moment," she said softly, her belief steady and calm.\n\nTaking a deep breath, he gripped the rugged surface of the rock, feeling the weight of the moment and the quiet resolve echoing through the temple courtyards.`;
+        } else if (hasCollege || hasFarewell) {
+          mockResponse = `The sun set across the college quad as the farewell evening drew to a close. Years of shared laughter and late-night study sessions seemed to linger in the evening air.\n\n"Distance won't change what we built here," he promised, looking at his circle of friends.\n\nA quiet gratitude filled the space as they stepped forward into tomorrow.`;
         } else {
           mockResponse = `The autumn leaves crunched beneath Daniel's boots as the afternoon faded into lavender dusk.\n\n"You never thought you'd come back here, did you?" Maya asked, leaning against the wooden fence.\n\nDaniel gazed past the tree line toward the horizon. "I ran away thinking the world held better answers," he admitted softly, turning to meet her gaze. "Turns out, the only place that mattered was right here."\n\nA quiet understanding settled between them as nightfall embraced the valley.`;
         }

@@ -5,7 +5,7 @@ const redis = require('../services/redis');
 const geminiService = require('../services/gemini');
 const { detectLanguage } = require('../services/language');
 const { validateGuards } = require('../services/guards');
-const { buildSystemPrompt, buildActionPrompt, CLASSICAL_TAMIL_FORMS } = require('../config/prompts');
+const { buildSystemPrompt, buildActionPrompt, buildStructuredUserPrompt, CLASSICAL_TAMIL_FORMS } = require('../config/prompts');
 const { authenticate } = require('../middleware/auth');
 const { checkDailyLimit, getQuotaStatus, refundDailyLimit } = require('../middleware/rateLimit');
 const { sanitizeInput } = require('../middleware/sanitize');
@@ -168,11 +168,11 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
     let resolvedFormat = params.format;
 
     if (mode === 'creator' && prompt) {
-      resolvedPlatform = contentCreatorService.detectPlatformPreference(prompt, params.platform);
-      resolvedTone = contentCreatorService.detectTonePreference(prompt, params.tone);
-      resolvedStyle = contentCreatorService.detectStylePreference(prompt, params.style);
+      if (!resolvedPlatform) resolvedPlatform = contentCreatorService.detectPlatformPreference(prompt, params.platform);
+      if (!resolvedTone) resolvedTone = contentCreatorService.detectTonePreference(prompt, params.tone);
+      if (!resolvedStyle) resolvedStyle = contentCreatorService.detectStylePreference(prompt, params.style);
       const detected = contentCreatorService.detectContentType(prompt);
-      if (detected && detected !== 'caption') {
+      if (detected && detected !== 'caption' && !resolvedFormat) {
         resolvedFormat = detected;
       }
     }
@@ -297,7 +297,19 @@ CRITICAL INSTRUCTIONS:
 3. Ground the copy in the visible atmosphere, subjects, and setting.`;
         }
       } else {
-        userPrompt = prompt;
+        userPrompt = buildStructuredUserPrompt({
+          prompt,
+          mode,
+          poemType: resolvedPoemType,
+          genre: params.genre,
+          tone: resolvedTone,
+          length,
+          language: resolvedLanguage,
+          platform: resolvedPlatform,
+          style: resolvedStyle,
+          format: resolvedFormat,
+          mediaContext: null
+        });
       }
     }
 
@@ -367,22 +379,28 @@ CRITICAL INSTRUCTIONS:
     }
 
     // 6. Guards Check & Auto-Retry
-    const guardResult = validateGuards(finalOutput, {
+    let guardResult = validateGuards(finalOutput, {
       mode,
       language: resolvedLanguage,
       romanizedInput: isRomanized,
       originalPrompt: originalUserPrompt,
-      poemType: resolvedPoemType
+      poemType: resolvedPoemType,
+      mediaContext
     });
 
-    if (!guardResult.valid) {
-      console.warn(`[Guards] Triggered: ${guardResult.code} (${guardResult.message}). Executing 1 auto-retry...`);
+    let retryCount = 0;
+    const maxRetries = 2;
+
+    while (!guardResult.valid && retryCount < maxRetries) {
+      retryCount++;
+      console.warn(`[Guards] Triggered: ${guardResult.code} (${guardResult.message}). Executing retry ${retryCount}...`);
       sendEvent('retry', {
         reason: guardResult.code,
-        message: 'Refining composition to meet strict structural standards...'
+        message: guardResult.code === 'TOPIC_RELEVANCE_FAILED'
+          ? 'Refining composition to strictly ground in your requested topic...'
+          : 'Refining composition to meet strict structural standards...'
       });
 
-      // Execute single structured retry with corrective guidance
       try {
         const retryResult = await geminiService.generateComplete({
           systemPrompt: systemPrompt + '\n\n' + guardResult.retryPrompt,
@@ -390,13 +408,31 @@ CRITICAL INSTRUCTIONS:
           media: params.media
         });
 
-        if (retryResult && retryResult.fullText) {
+        if (retryResult && retryResult.fullText && retryResult.fullText.trim()) {
           finalOutput = retryResult.fullText;
+          guardResult = validateGuards(finalOutput, {
+            mode,
+            language: resolvedLanguage,
+            romanizedInput: isRomanized,
+            originalPrompt: originalUserPrompt,
+            poemType: resolvedPoemType,
+            mediaContext
+          });
           sendEvent('replace', { text: finalOutput });
         }
       } catch (retryErr) {
-        console.warn('Auto-retry failed, keeping original output:', retryErr.message);
+        console.warn('Auto-retry failed:', retryErr.message);
+        break;
       }
+    }
+
+    if (!guardResult.valid && guardResult.code === 'TOPIC_RELEVANCE_FAILED') {
+      await refundDailyLimit(req);
+      sendEvent('error', {
+        code: 'TOPIC_RELEVANCE_FAILED',
+        message: 'Could not generate content strictly matching your specific keywords. Please refine your prompt.'
+      });
+      return res.end();
     }
 
     // 7. Cache Output (24 hours)
@@ -423,6 +459,21 @@ CRITICAL INSTRUCTIONS:
 
     if (prisma && prisma.conversation) {
       try {
+        const effectiveUserId = req.user ? req.user.id : (req.anonId || 'anon_guest');
+
+        // Ensure user row exists so foreign key constraint is satisfied
+        if (prisma.user) {
+          await prisma.user.upsert({
+            where: { id: effectiveUserId },
+            update: {},
+            create: {
+              id: effectiveUserId,
+              name: req.user ? req.user.name : 'Guest User',
+              plan: 'FREE'
+            }
+          }).catch((uErr) => console.warn('User upsert fallback:', uErr.message));
+        }
+
         // Find or create conversation
         if (!conversationId) {
           const effectiveTitle = (originalUserPrompt || prompt || 'Creative Composition').trim();
@@ -431,10 +482,10 @@ CRITICAL INSTRUCTIONS:
             data: {
               title,
               mode,
-              userId: req.user ? req.user.id : (req.anonId || 'anon_guest')
+              userId: effectiveUserId
             }
           });
-          conversationId = conv.id;       1                       
+          conversationId = conv.id;
         }
 
         // Save User Message (only for brand new user prompts, not for sub-actions)
@@ -444,7 +495,7 @@ CRITICAL INSTRUCTIONS:
               conversationId,
               role: 'user',
               content: prompt,
-              model: generationResult.model || 'gemini-3.6-flash',
+              model: generationResult.model || 'gemini-3.8-flash',
               tokensUsed: Math.ceil(prompt.length / 4)
             }
           });
@@ -457,7 +508,7 @@ CRITICAL INSTRUCTIONS:
             role: 'assistant',
             content: finalOutput,
             metadata,
-            model: generationResult.model || 'gemini-3.6-flash',
+            model: generationResult.model || 'gemini-3.8-flash',
             tokensUsed: Math.ceil(finalOutput.length / 4)
           }
         });
@@ -468,7 +519,7 @@ CRITICAL INSTRUCTIONS:
             data: {
               userId: req.user?.id || null,
               ip: req.clientIp || '127.0.0.1',
-              model: generationResult.model || 'gemini-3.6-flash',
+              model: generationResult.model || 'gemini-3.8-flash',
               tokensUsed: Math.ceil((prompt.length + finalOutput.length) / 4),
               success: true
             }

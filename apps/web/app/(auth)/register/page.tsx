@@ -77,7 +77,7 @@ export default function RegisterPage() {
           <div className="w-14 h-14 rounded-2xl bg-white dark:bg-white/95 p-2 mx-auto border border-stone-200/60 dark:border-white/20 shadow-soft-sm flex items-center justify-center">
             <img
               src="/logo-transparent.png"
-              alt="PlanBot"
+              alt="DreamInk"
               width={40}
               height={40}
               className="w-full h-full max-w-[40px] max-h-[40px] object-contain"

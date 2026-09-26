@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { useChatStore } from '../../store/chatStore';
 import { CARD_TEMPLATES, renderCardToCanvas } from '../../lib/cardRenderer';
-import { api } from '../../lib/api';
 import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
 
@@ -89,59 +88,83 @@ export const ShareModal: React.FC = () => {
     if (!previewDataUrl) return;
     const link = document.createElement('a');
     link.href = previewDataUrl;
-    link.download = `planbot-${selectedTemplateId}-${Date.now()}.png`;
+    link.download = `dreamink-${selectedTemplateId}-${Date.now()}.png`;
     link.click();
-    toast.success('Downloaded image card!');
+    toast.success('Downloaded image card photo!');
   };
 
   const handleCopyCaption = () => {
-    const textToCopy = `${selectedMessageForShare.content}\n\n— Composed with ✨ PlanBot AI`;
+    const textToCopy = `${selectedMessageForShare.content}\n\n— Composed with ✨ DreamInk AI`;
     navigator.clipboard.writeText(textToCopy);
     setCopiedCaption(true);
-    toast.success('Caption copied with hashtags!');
+    toast.success('Caption copied!');
     setTimeout(() => setCopiedCaption(false), 2000);
   };
 
-  // WhatsApp Share Intent
-  const handleWhatsAppShare = () => {
-    const text = encodeURIComponent(
-      `"${selectedMessageForShare.content}"\n\n✨ Composed via PlanBot AI`
-    );
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+  // Convert DataURL to a real binary File object for native file sharing
+  const getCardImageFile = async (): Promise<File | null> => {
+    if (!previewDataUrl) return null;
+    try {
+      const res = await fetch(previewDataUrl);
+      const blob = await res.blob();
+      return new File([blob], `dreamink-${selectedTemplateId}-${Date.now()}.png`, { type: 'image/png' });
+    } catch {
+      return null;
+    }
   };
 
-  // Twitter / X Intent
-  const handleTwitterShare = () => {
-    const text = encodeURIComponent(
-      `${selectedMessageForShare.content.substring(0, 200)}...\n\n#PlanBotAI #Poetry`
-    );
-    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
-  };
+  // Generic Native File Share handler (shares photo directly to WhatsApp / Instagram / Photos)
+  const handleSharePhoto = async (customCaption?: string) => {
+    const file = await getCardImageFile();
+    const caption = customCaption || `${selectedMessageForShare.content}\n\n— Composed with ✨ DreamInk AI`;
 
-  // Instagram Share via Web Share API
-  const handleInstagramShare = async () => {
-    if (previewDataUrl && navigator.share && navigator.canShare) {
-      try {
-        const blob = await (await fetch(previewDataUrl)).blob();
-        const file = new File([blob], 'planbot-card.png', { type: 'image/png' });
-
-        if (navigator.canShare({ files: [file] })) {
+    if (file && typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+      if (navigator.canShare({ files: [file] })) {
+        try {
           await navigator.share({
             files: [file],
-            title: 'PlanBot AI Composition',
-            text: selectedMessageForShare.content
+            title: 'DreamInk AI Composition',
+            text: caption
           });
-          return;
+          toast.success('Photo shared successfully!');
+          return true;
+        } catch (err: any) {
+          if (err?.name === 'AbortError') return true; // User cancelled
+          console.warn('Native file share failed:', err);
         }
-      } catch (err) {
-        // Fallback below
       }
     }
 
-    // Desktop fallback: Download image + copy caption
+    // Fallback when browser doesn't support Web Share API with files (e.g. Desktop Chrome)
     handleDownloadPng();
     handleCopyCaption();
-    toast.info('Card downloaded and caption copied for Instagram!');
+    toast.info('Photo card downloaded & caption copied! Attach the photo in your app.', { duration: 4000 });
+    return false;
+  };
+
+  // WhatsApp Share: Share photo file directly via native share or download with link
+  const handleWhatsAppShare = async () => {
+    const caption = `"${selectedMessageForShare.content}"\n\n✨ Composed via DreamInk AI`;
+    const shared = await handleSharePhoto(caption);
+    if (!shared) {
+      const text = encodeURIComponent(caption);
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+  };
+
+  // Instagram Share: Share photo file directly
+  const handleInstagramShare = async () => {
+    await handleSharePhoto(selectedMessageForShare.content);
+  };
+
+  // Twitter / X Intent
+  const handleTwitterShare = async () => {
+    const caption = `${selectedMessageForShare.content.substring(0, 180)}...\n\n#DreamInkAI`;
+    const shared = await handleSharePhoto(caption);
+    if (!shared) {
+      const text = encodeURIComponent(caption);
+      window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+    }
   };
 
   const templatesList = Object.values(CARD_TEMPLATES);
@@ -166,7 +189,7 @@ export const ShareModal: React.FC = () => {
             )}
             <Share2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
             <h2 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-zinc-100 font-serif">
-              {step === 1 ? 'Design Social Card' : 'Share Composition'}
+              {step === 1 ? 'Design Social Card' : 'Share Photo Card'}
             </h2>
           </div>
 
@@ -259,7 +282,7 @@ export const ShareModal: React.FC = () => {
                         }}
                       >
                         <span className="text-[11px] font-bold line-clamp-1">{tpl.name}</span>
-                        <span className="text-[9px] opacity-75">✨ PlanBot</span>
+                        <span className="text-[9px] opacity-75">✨ DreamInk</span>
                         {isSelected && (
                           <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center">
                             <Check className="w-2.5 h-2.5" />
@@ -273,14 +296,19 @@ export const ShareModal: React.FC = () => {
             </div>
           ) : (
             /* STEP 2: Share Channels */
-            <div className="space-y-5">
-              <div className="text-center space-y-1">
-                <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                  Ready to Inspire the World
-                </div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Select your destination platform or export the high-res card.
-                </p>
+            <div className="space-y-4">
+              {/* Primary Direct Photo Share Button */}
+              <button
+                type="button"
+                onClick={() => handleSharePhoto()}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-primary hover:opacity-95 text-white font-semibold text-sm shadow-md transition-all active:scale-[0.99]"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>Share Photo Card (WhatsApp / Instagram / Apps)</span>
+              </button>
+
+              <div className="text-center">
+                <span className="text-xs text-zinc-400">or choose a specific channel:</span>
               </div>
 
               {/* Share Channels Grid */}
@@ -296,10 +324,10 @@ export const ShareModal: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-emerald-600 transition-colors">
-                      WhatsApp Status / Chat
+                      WhatsApp (Send Photo)
                     </div>
                     <div className="text-[11px] text-zinc-400">
-                      Direct share via wa.me link
+                      Shares card image directly
                     </div>
                   </div>
                 </button>
@@ -318,7 +346,7 @@ export const ShareModal: React.FC = () => {
                       Instagram Stories / Feed
                     </div>
                     <div className="text-[11px] text-zinc-400">
-                      Native share sheet or instant copy
+                      Shares card photo
                     </div>
                   </div>
                 </button>
@@ -337,7 +365,7 @@ export const ShareModal: React.FC = () => {
                       Twitter / 𝕏 Post
                     </div>
                     <div className="text-[11px] text-zinc-400">
-                      Tweet intent with hashtags
+                      Card photo with hashtags
                     </div>
                   </div>
                 </button>
@@ -356,21 +384,21 @@ export const ShareModal: React.FC = () => {
                       Copy Caption & Text
                     </div>
                     <div className="text-[11px] text-zinc-400">
-                      Includes poem & PlanBot credit
+                      Includes poem & DreamInk credit
                     </div>
                   </div>
                 </button>
               </div>
 
               {/* Download PNG Button */}
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
                   type="button"
                   onClick={handleDownloadPng}
                   className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#6B5488] hover:bg-[#5E477A] text-white font-semibold text-sm shadow-soft-sm hover:opacity-95 active:scale-[0.99] transition-all"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Download High-Res PNG Image</span>
+                  <span>Download High-Res PNG Photo</span>
                 </button>
               </div>
             </div>
@@ -386,7 +414,7 @@ export const ShareModal: React.FC = () => {
                 onClick={() => setStep(2)}
                 className="text-xs font-semibold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 py-2"
               >
-                ⏭️ Skip — share as text only
+                ⏭️ Skip to Share
               </button>
 
               <button
@@ -394,7 +422,7 @@ export const ShareModal: React.FC = () => {
                 onClick={() => setStep(2)}
                 className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 min-h-[44px] text-xs font-semibold text-white bg-[#6B5488] hover:bg-[#5E477A] rounded-xl shadow-soft-sm transition-all shrink-0"
               >
-                <span>Continue to Share</span>
+                <span>Continue to Share Photo</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </>

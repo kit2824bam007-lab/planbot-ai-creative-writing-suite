@@ -37,7 +37,6 @@ export default function MainLayout({
       <ResizableSidebar />
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {children}
-        <MobileBottomNav />
       </main>
       <ShareModal />
       <LimitModal />

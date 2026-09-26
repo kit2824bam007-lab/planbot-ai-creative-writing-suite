@@ -4,92 +4,168 @@
 
 @layer base {
   :root {
-    --background: 40 20% 98%; /* Warm cream #FAF8F5 */
-    --foreground: 260 8% 15%; /* Deep warm charcoal #252329 */
-    --primary: 270 24% 43%;   /* Serene dusty amethyst #6B5488 */
+    /* ===== Light Theme ===== */
+    --background: 270 100% 99%;
+    /* #FAF7FF - Soft lavender white */
+    --foreground: 270 25% 15%;
+    /* #241B2F - Deep violet text */
+
+    --primary: 270 38% 49%;
+    /* #7C4DAD - Amethyst */
     --primary-foreground: 0 0% 100%;
+    /* White */
+
     --card: 0 0% 100%;
-    --card-foreground: 260 8% 15%;
-    --border: 36 15% 90%;
-    --muted: 36 10% 95%;
-    --muted-foreground: 260 6% 48%;
+    /* Pure white */
+    --card-foreground: 270 25% 15%;
+
+    --border: 270 25% 91%;
+    /* Soft lavender border */
+
+    --muted: 270 35% 97%;
+    /* Very soft lavender */
+    --muted-foreground: 270 12% 46%;
+    /* Muted violet text */
   }
 
+  /* ===== Dark Theme ===== */
   .dark {
-    --background: 255 14% 8%; /* Deep warm obsidian #141318 */
-    --foreground: 260 15% 94%; /* Soft silvery white #EFEBF4 */
-    --primary: 270 26% 58%;    /* Muted lavender amethyst #9B7BB0 */
-    --primary-foreground: 255 14% 8%;
-    --card: 255 12% 11%;
-    --card-foreground: 260 15% 94%;
-    --border: 255 10% 18%;
-    --muted: 255 10% 15%;
-    --muted-foreground: 255 8% 60%;
+    --background: 270 25% 8%;
+    --foreground: 270 20% 96%;
+
+    --primary: 270 50% 64%;
+    --primary-foreground: 270 25% 8%;
+
+    --card: 270 20% 11%;
+    --card-foreground: 270 20% 96%;
+
+    --border: 270 18% 18%;
+
+    --muted: 270 18% 14%;
+    --muted-foreground: 270 12% 62%;
   }
+
+  /* =========================================================
+     BODY - LIGHT THEME
+     ========================================================= */
 
   body {
-    background-color: #FAF8F5;
-    color: #232128;
-    background-image: 
-      radial-gradient(ellipse 65% 45% at 50% -5%, rgba(206, 192, 226, 0.38) 0%, rgba(246, 226, 233, 0.22) 40%, rgba(250, 248, 245, 0) 75%),
-      radial-gradient(ellipse 40% 30% at 85% 95%, rgba(228, 218, 240, 0.18) 0%, transparent 60%);
+    background-color: #FAF7FF;
+    color: #241B2F;
+
+    background-image:
+      radial-gradient(ellipse 70% 50% at 50% -5%,
+        rgba(196, 164, 232, 0.30) 0%,
+        rgba(237, 225, 249, 0.20) 45%,
+        rgba(250, 247, 255, 0) 80%),
+      radial-gradient(circle at 10% 25%,
+        rgba(225, 207, 246, 0.20) 0%,
+        transparent 45%),
+      radial-gradient(circle at 90% 85%,
+        rgba(215, 198, 239, 0.18) 0%,
+        transparent 50%);
+
     background-attachment: fixed;
+
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
   }
 
+  /* =========================================================
+     BODY - DARK THEME
+     ========================================================= */
+
   .dark body {
-    background-color: #131217;
-    color: #ECE8F2;
-    background-image: 
-      radial-gradient(ellipse 60% 40% at 50% -5%, rgba(107, 84, 136, 0.22) 0%, rgba(70, 52, 90, 0.12) 45%, rgba(19, 18, 23, 0) 75%),
-      radial-gradient(ellipse 40% 30% at 85% 95%, rgba(68, 50, 84, 0.15) 0%, transparent 60%);
+    background-color: #120D1A;
+    color: #F3EDF8;
+
+    background-image:
+      radial-gradient(ellipse 70% 50% at 50% -2%,
+        rgba(147, 51, 234, 0.28) 0%,
+        rgba(88, 28, 135, 0.16) 45%,
+        rgba(18, 13, 26, 0) 80%),
+      radial-gradient(circle at 88% 85%,
+        rgba(126, 34, 206, 0.20) 0%,
+        transparent 50%);
+
     background-attachment: fixed;
   }
 }
 
-/* Streaming Blinking Cursor */
+
 .streaming-cursor {
   display: inline-block;
-  width: 5px;
+  width: 4px;
   height: 18px;
-  background-color: #6B5488;
+
+  background-color: #8B5FBF;
+
   margin-left: 4px;
   vertical-align: middle;
-  border-radius: 1px;
+
+  border-radius: 2px;
+
   animation: blink 0.9s infinite;
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
 }
 
-/* Typing Indicator 3-dots */
+/* =========================================================
+   TYPING INDICATOR - 3 DOTS
+   ========================================================= */
+
 .typing-dot {
   width: 6px;
   height: 6px;
-  background-color: #7E5E95;
+
+  background-color: #9B6BC3;
+
   border-radius: 50%;
+
   animation: bounceDot 1.4s infinite ease-in-out both;
 }
 
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
-.typing-dot:nth-child(3) { animation-delay: 0s; }
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0s;
+}
 
 @keyframes bounceDot {
-  0%, 80%, 100% {
+
+  0%,
+  80%,
+  100% {
     transform: scale(0);
     opacity: 0.35;
   }
+
   40% {
     transform: scale(1);
     opacity: 1;
   }
 }
 
-/* Custom Scrollbar */
+/* =========================================================
+   CUSTOM SCROLLBAR
+   ========================================================= */
+
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -100,31 +176,130 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(140, 125, 155, 0.25);
+  background: rgba(124, 77, 173, 0.20);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(140, 125, 155, 0.45);
+  background: rgba(124, 77, 173, 0.40);
 }
 
-/* Verse and Poem Line Preservations */
+/* =========================================================
+   VERSE / POEM LINE PRESERVATION
+   ========================================================= */
+
 .poem-content {
   white-space: pre-wrap;
+
   line-height: 1.85;
+
   letter-spacing: 0.015em;
+
   font-feature-settings: "kern" 1;
 }
 
-/* Desktop Polish Utilities */
-.card-warm {
-  background-color: rgba(255, 255, 255, 0.88);
-  border-color: rgba(226, 218, 208, 0.7);
-  box-shadow: 0 4px 20px -2px rgba(110, 90, 130, 0.05);
+/* =========================================================
+   REFERENCE CARD
+   ========================================================= */
+
+.ref-card {
+  background-color: rgba(255, 255, 255, 0.90);
+
+  border: 1px solid rgba(225, 213, 237, 0.85);
+
+  box-shadow:
+    0 6px 24px -4px rgba(91, 61, 116, 0.08);
 }
 
-.dark .card-warm {
-  background-color: rgba(26, 24, 32, 0.85);
-  border-color: rgba(62, 54, 76, 0.6);
-  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.35);
+.dark .ref-card {
+  background-color: rgba(26, 20, 36, 0.85);
+
+  border: 1px solid rgba(68, 52, 90, 0.60);
+
+  box-shadow:
+    0 4px 24px -2px rgba(0, 0, 0, 0.35);
+}
+
+/* =========================================================
+   3D GLOWING VOICE ORB
+   ========================================================= */
+
+@keyframes orbBreathing {
+
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+
+    filter:
+      drop-shadow(0 0 35px rgba(91, 61, 116, 0.22)) drop-shadow(0 0 70px rgba(192, 132, 252, 0.20));
+  }
+
+  50% {
+    transform: scale(1.05) rotate(180deg);
+
+    filter:
+      drop-shadow(0 0 50px rgba(139, 92, 196, 0.50)) drop-shadow(0 0 95px rgba(196, 126, 236, 0.28));
+  }
+}
+
+@keyframes orbInnerPulse {
+
+  0%,
+  100% {
+    transform: scale(0.95);
+    opacity: 0.85;
+  }
+
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+}
+
+.voice-orb {
+  animation: orbBreathing 8s ease-in-out infinite;
+}
+
+.voice-orb-inner {
+  animation: orbInnerPulse 3.5s ease-in-out infinite;
+}
+
+/* =========================================================
+   AUDIO WAVEFORM BAR ANIMATION
+   ========================================================= */
+
+@keyframes waveBar {
+
+  0%,
+  100% {
+    height: 6px;
+  }
+
+  50% {
+    height: 22px;
+  }
+}
+
+.wave-bar-1 {
+  animation: waveBar 1.2s ease-in-out infinite 0.1s;
+}
+
+.wave-bar-2 {
+  animation: waveBar 1.2s ease-in-out infinite 0.3s;
+}
+
+.wave-bar-3 {
+  animation: waveBar 1.2s ease-in-out infinite 0.2s;
+}
+
+.wave-bar-4 {
+  animation: waveBar 1.2s ease-in-out infinite 0.4s;
+}
+
+.wave-bar-5 {
+  animation: waveBar 1.2s ease-in-out infinite 0.15s;
+}
+
+.wave-bar-6 {
+  animation: waveBar 1.2s ease-in-out infinite 0.35s;
 }

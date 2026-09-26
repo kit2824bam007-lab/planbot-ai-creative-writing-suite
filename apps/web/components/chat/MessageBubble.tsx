@@ -3,7 +3,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Bot, User } from 'lucide-react';
 import { ChatMessage } from '../../types';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import { OriginalityScreeningCard } from './OriginalityScreeningCard';
@@ -20,13 +19,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isStreami
 
   if (isUser) {
     return (
-      <div className="flex justify-end mb-5 animate-fade-in">
-        <div className="flex items-end gap-2.5 max-w-[85%] sm:max-w-[75%]">
-          <div className="bg-[#6B5488] text-white px-4 py-3 rounded-2xl rounded-br-xs shadow-soft-sm text-sm sm:text-base leading-relaxed font-sans">
+      <div className="flex justify-end mb-4 animate-fade-in">
+        <div className="flex items-end gap-2 max-w-[85%] sm:max-w-[75%]">
+          {/* User Message Bubble */}
+          <div className="bg-white/95 dark:bg-[#1F192C]/95 text-zinc-900 dark:text-zinc-100 px-4 sm:px-5 py-3 rounded-3xl rounded-br-md shadow-[0_4px_20px_-2px_rgba(110,80,140,0.06)] border border-stone-200/70 dark:border-purple-900/40 text-sm sm:text-base leading-relaxed font-sans">
             <p className="whitespace-pre-wrap">{message.content}</p>
-          </div>
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-warm-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 flex items-center justify-center shrink-0 shadow-2xs">
-            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
         </div>
       </div>
@@ -36,23 +33,23 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isStreami
   // AI Message
   return (
     <div className="flex justify-start mb-6 animate-fade-in">
-      <div className="flex items-start gap-2 sm:gap-3.5 max-w-full sm:max-w-[92%] w-full">
-        {/* Official Feather/Quill Avatar */}
-        <div className="w-8 h-8 rounded-xl bg-white dark:bg-white/95 border border-stone-200/70 dark:border-white/20 flex items-center justify-center shrink-0 shadow-2xs mt-0.5 p-1">
-          <img
-            src="/logo-transparent.png"
-            alt="PlanBot AI"
-            width={24}
-            height={24}
-            className="w-full h-full max-w-[24px] max-h-[24px] object-contain"
-          />
+      <div className="flex items-start gap-2.5 sm:gap-3.5 max-w-full sm:max-w-[92%] w-full">
+        {/* Purple/Violet Gradient Avatar Dot */}
+        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 via-fuchsia-500 to-indigo-500 p-0.5 shadow-soft-sm shrink-0 mt-0.5 flex items-center justify-center">
+          <div className="w-full h-full rounded-full bg-white dark:bg-[#120D1A] flex items-center justify-center overflow-hidden p-1">
+            <img
+              src="/logo-transparent.png"
+              alt="DreamInk AI"
+              className="w-full h-full object-contain"
+            />
+          </div>
         </div>
 
         {/* Content Box */}
-        <div className="flex-1 space-y-2 overflow-hidden min-w-0">
+        <div className="flex-1 space-y-2.5 overflow-hidden min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight font-serif">
-              PlanBot AI
+              DreamInk AI
             </span>
             {message.metadata?.mode === 'story' ? (
               <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded-full">
@@ -72,20 +69,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isStreami
                 தமிழ்
               </span>
             )}
-            {message.metadata?.mediaType === 'image' && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 rounded-full flex items-center gap-1">
-                <span>📷</span> Image-aware
-              </span>
-            )}
-            {message.metadata?.mediaType === 'video' && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300 rounded-full flex items-center gap-1">
-                <span>🎥</span> Video-aware
-              </span>
-            )}
           </div>
 
+          {/* Message Content Bubble */}
           <div className={cn(
-            "bg-white/95 dark:bg-[#181622]/90 border border-[#E8E2D9] dark:border-[#282534] rounded-3xl p-5 sm:p-7 shadow-soft-md text-zinc-800 dark:text-zinc-100 poem-content transition-all",
+            "bg-white/95 dark:bg-[#181424]/90 border border-stone-200/70 dark:border-purple-900/40 rounded-3xl p-5 sm:p-7 shadow-[0_4px_24px_-2px_rgba(110,80,140,0.06)] text-zinc-800 dark:text-zinc-100 poem-content transition-all",
             isPoem ? "font-serif text-base sm:text-lg leading-loose tracking-wide" : "font-sans text-sm sm:text-base leading-relaxed"
           )}>
             <ReactMarkdown
