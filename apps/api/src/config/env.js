@@ -23,6 +23,7 @@ const envSchema = z.object({
   DAILY_LIMIT_FREE: z.string().default('10').transform((val) => parseInt(val, 10)),
   DAILY_LIMIT_ANON: z.string().default('3').transform((val) => parseInt(val, 10)),
   ADMIN_API_KEY: z.string().default('admin-secret-key-planbot'),
+  GOOGLE_CLIENT_ID: z.string().optional(),
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
   ORIGINALITY_CHECK_ENABLED: z.string().default('true').transform((val) => val === 'true'),

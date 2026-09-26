@@ -12,12 +12,38 @@ function getAnonId(): string {
 
 // No custom API keys: strictly server-side Gemini execution
 
+export function getStoredToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem('planbot_token');
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredToken(token: string | null): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (token) {
+      localStorage.setItem('planbot_token', token);
+    } else {
+      localStorage.removeItem('planbot_token');
+    }
+  } catch {}
+}
+
 async function request(path: string, options: RequestInit = {}) {
   const url = `${API_BASE_URL}${path}`;
   const headers = new Headers(options.headers || {});
 
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
+  }
+
+  // Attach persistent JWT if available
+  const token = getStoredToken();
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   // Attach anonymous identifier & timezone
@@ -56,11 +82,13 @@ export const api = {
   login: (body: { email: string; password: string }) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
 
-  googleLogin: (body: { email?: string; name?: string; googleId?: string; avatar?: string } = {}) =>
+  googleLogin: (body: { credential: string }) =>
     request('/api/auth/google', { method: 'POST', body: JSON.stringify(body) }),
 
-  logout: () =>
-    request('/api/auth/logout', { method: 'POST' }),
+  logout: async () => {
+    setStoredToken(null);
+    return request('/api/auth/logout', { method: 'POST' });
+  },
 
   getMe: () =>
     request('/api/auth/me', { method: 'GET' }),

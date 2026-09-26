@@ -95,11 +95,17 @@ export function useChatStream() {
       const anonId = typeof window !== 'undefined' ? localStorage.getItem('planbot_anon_id') || 'anon_guest' : 'anon_guest';
       const timezone = typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
 
+      const token = typeof window !== 'undefined' ? localStorage.getItem('planbot_token') : null;
+
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         'X-Anon-Id': anonId,
         'X-Timezone': timezone
       };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
       const currentMode = state.mode;
       const currentPoemType = state.poemType;

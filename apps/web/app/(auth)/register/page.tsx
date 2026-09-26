@@ -55,6 +55,9 @@ export default function RegisterPage() {
     setEmailError('');
     try {
       const res = await api.register({ email: cleanEmail, password, name });
+      if (res?.token) {
+        localStorage.setItem('planbot_token', res.token);
+      }
       setUser(res.user);
       toast.success('Account created successfully!');
       router.push('/');
