@@ -4,6 +4,11 @@
 
 @layer base {
   :root {
+    /* ===== Fonts ===== */
+    --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-serif: 'Newsreader', Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-noto-tamil: 'Noto Sans Tamil', 'Latha', 'Vijaya', 'Tamil Sangam MN', 'Mukta Malar', system-ui, sans-serif;
+
     /* ===== Light Theme ===== */
     --background: 270 100% 99%;
     /* #FAF7FF - Soft lavender white */
