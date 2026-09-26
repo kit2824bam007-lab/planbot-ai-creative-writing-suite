@@ -19,4 +19,4 @@ EXPOSE 4000
 
 ENV NODE_ENV=production
 
-CMD ["node", "src/server.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node src/server.js"]
