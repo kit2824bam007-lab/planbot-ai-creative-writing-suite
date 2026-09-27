@@ -10,6 +10,22 @@ const db = require('../services/db');
  */
 async function authenticate(req, res, next) {
   try {
+    // 1. Establish stable anonymous ID and client IP for all requests
+    const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    const clientIp = typeof rawIp === 'string' ? rawIp.split(',')[0].trim() : '127.0.0.1';
+    const rawHeaderAnonId = req.headers['x-anon-id'];
+    const isValidAnonFormat =
+      typeof rawHeaderAnonId === 'string' &&
+      /^anon_[a-zA-Z0-9_-]{4,64}$/.test(rawHeaderAnonId);
+
+    const clientAnonId = isValidAnonFormat
+      ? rawHeaderAnonId
+      : `anon_${clientIp.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+    req.user = null;
+    req.anonId = clientAnonId;
+    req.clientIp = clientIp;
+
     let token = null;
 
     // Check authorization header
@@ -42,7 +58,7 @@ async function authenticate(req, res, next) {
                 }
               });
               if (user) {
-                // Block unverified accounts from authenticated access
+                // Block unverified accounts from authenticated access (preserves anonId)
                 if (user.isEmailVerified === false) {
                   req.user = null;
                   return next();
@@ -71,14 +87,6 @@ async function authenticate(req, res, next) {
       }
     }
 
-    // Set anonymous ID
-    const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
-    const clientIp = typeof rawIp === 'string' ? rawIp.split(',')[0].trim() : '127.0.0.1';
-    const clientAnonId = req.headers['x-anon-id'] || `anon_${clientIp.replace(/[^a-zA-Z0-9]/g, '_')}`;
-
-    req.user = null;
-    req.anonId = clientAnonId;
-    req.clientIp = clientIp;
     next();
   } catch (err) {
     next(err);

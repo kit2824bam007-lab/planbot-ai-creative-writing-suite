@@ -30,6 +30,16 @@ class GeminiService {
         try {
           keyEntry = keyPool.getKey();
         } catch (keyErr) {
+          if (keyErr.message === 'DAILY_QUOTA_EXHAUSTED') {
+            console.warn('[GeminiService] All API keys have exhausted daily project quota.');
+            if (process.env.NODE_ENV !== 'test') {
+              const unavailableError = new Error('AI generation is temporarily unavailable. Please try again shortly.');
+              unavailableError.code = 'AI_UNAVAILABLE';
+              unavailableError.status = 503;
+              throw unavailableError;
+            }
+            return await this.mockStreamGeneration({ userPrompt, systemPrompt, onChunk, signal });
+          }
           if (keyErr.message === 'ALL_KEYS_EXHAUSTED' && attempts < maxAttempts) {
             console.warn(`[GeminiService] Keys temporarily cooling down, waiting 2s for attempt ${attempts}...`);
             await new Promise((r) => setTimeout(r, 2000));
@@ -102,7 +112,7 @@ class GeminiService {
         const isQuota = err.status === 429 || (err.message && (err.message.includes('429') || err.message.includes('RESOURCE_EXHAUSTED')));
         const isClientError = err.status === 400 || (err.message && err.message.includes('400'));
         if (keyEntry && !isClientError) {
-          keyPool.reportFailure(keyEntry, isQuota, err.message);
+          keyPool.reportFailure(keyEntry, isQuota, err.message, err);
         }
 
         if (attempts >= maxAttempts) {
@@ -609,7 +619,14 @@ Real moments don't need a filter—just the right light. 🌇
 #VisualStorytelling #CreativeVibes #Momentum #AestheticFeed #Photography`;
         }
       }
-    } else if (combined.includes('kanavu') || combined.includes('dream')) {
+    } else if (userPrompt && userPrompt.toLowerCase().includes('exam')) {
+      // Case: "exam fear" in Poem Mode without media
+      if (isTamil) {
+        mockResponse = `தேர்வின் பயமென்னும் இருளதனை நீக்கி\nநேர்மை அறிவென்னும் சுடரேற்றி நில்!\nஊக்கமே உன் கையில் வெற்றியின் வித்து\nதுணிவே உன் நெஞ்சில் சாதனையின் முத்து!`;
+      } else {
+        mockResponse = `The shadow of the test may softly loom,\nYet courage blossoms in the quiet room.\nTrust in the hours you have given deep,\nThe harvest of your wisdom you shall reap.`;
+      }
+    } else if (combined.includes('kanavu') || (userPrompt && userPrompt.toLowerCase().includes('dream'))) {
       if (isTamil) {
         if (systemPrompt.includes('[MODE: STORY GENERATION]')) {
           mockResponse = `நள்ளிரவின் நிசப்தத்தில் மாறன் கண்ட அந்த விசித்திரக் கனவு, வெறும் கற்பனையல்ல என்பதை அவனது மனம் ஆழமாக உணர்ந்தது. கனவில் தோன்றிய அதே பழைய கோயில் வாயில், இப்போது அவனது கண்முன்னே நிஜமாய் விரிந்திருந்தது.\n\n"இது எப்படி சாத்தியம்? நேற்றிரவு நான் கண்ட காட்சி அப்படியே என் கண்முன் நடக்கிறதே!" என்று அவன் திகைப்புடன் தனக்குள் முணுமுணுத்தான்.\n\nகனவில் ஒரு குரல் எச்சரித்த அதே தருணத்தில், பழங்கால கல் கதவின் இடுக்கிலிருந்து மர்மமான நீல ஒளி ஒன்று வெளியே கசியத் தொடங்கியது. காலத்தின் திரையைத் தாண்டி நிகழ்வுகளை முன்கூட்டியே உணர்த்திய அந்தக் கனவின் மர்மத்தை நோக்கி, மாறன் தனது முதல் அடியை எடுத்து வைத்தான். உண்மை அவனுக்காக அங்கே காத்திருந்தது.`;
@@ -618,13 +635,6 @@ Real moments don't need a filter—just the right light. 🌇
         }
       } else {
         mockResponse = `The dream that surfaced in the dead of night was no mere illusion—it was a premonition waiting to unfold.\n\nStanding before the ancient archway, Daniel froze as the exact scene from his sleep materialized before his waking eyes.\n\n"Some dreams don't just fade with the dawn," he whispered to the wind. "They are memories of what is yet to come."`;
-      }
-    } else if (userPrompt.toLowerCase().includes('exam') && userPrompt.toLowerCase().includes('fear')) {
-      // Case 5: "exam fear" in Poem Mode without media
-      if (isTamil) {
-        mockResponse = `தேர்வின் பயமென்னும் இருளதனை நீக்கி\nநேர்மை அறிவென்னும் சுடரேற்றி நில்!\nஊக்கமே உன் கையில் வெற்றியின் வித்து\nதுணிவே உன் நெஞ்சில் சாதனையின் முத்து!`;
-      } else {
-        mockResponse = `The shadow of the test may softly loom,\nYet courage blossoms in the quiet room.\nTrust in the hours you have given deep,\nThe harvest of your wisdom you shall reap.`;
       }
     } else if (isTamil) {
       if (systemPrompt.includes('[MODE: POEM GENERATION]')) {

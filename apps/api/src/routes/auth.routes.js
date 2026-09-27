@@ -227,6 +227,24 @@ router.post('/verify-otp', async (req, res, next) => {
           },
           select: { id: true, email: true, name: true, plan: true, isEmailVerified: true }
         });
+
+        // Safely reassign guest conversations created with X-Anon-Id to this newly verified user
+        const rawAnonId = req.headers['x-anon-id'];
+        const isValidAnonFormat =
+          typeof rawAnonId === 'string' &&
+          /^anon_[a-zA-Z0-9_-]{4,64}$/.test(rawAnonId);
+        if (isValidAnonFormat && rawAnonId !== user.id) {
+          await db.client.conversation.updateMany({
+            where: {
+              userId: rawAnonId,
+              user: {
+                email: null,
+                isEmailVerified: false
+              }
+            },
+            data: { userId: user.id }
+          }).catch((migErr) => console.warn('[OTP Migration] Fallback:', migErr.message));
+        }
       } catch (err) {
         // fallback
       }
@@ -357,6 +375,26 @@ router.post('/login', async (req, res, next) => {
     const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
       throw ApiError.unauthorized('Invalid email or password.');
+    }
+
+    // Safely reassign guest conversations created with X-Anon-Id to this user
+    if (db.isAvailable() && db.client) {
+      const rawAnonId = req.headers['x-anon-id'];
+      const isValidAnonFormat =
+        typeof rawAnonId === 'string' &&
+        /^anon_[a-zA-Z0-9_-]{4,64}$/.test(rawAnonId);
+      if (isValidAnonFormat && rawAnonId !== user.id) {
+        await db.client.conversation.updateMany({
+          where: {
+            userId: rawAnonId,
+            user: {
+              email: null,
+              isEmailVerified: false
+            }
+          },
+          data: { userId: user.id }
+        }).catch((migErr) => console.warn('[Login Migration] Fallback:', migErr.message));
+      }
     }
 
     const token = createToken(user);
@@ -495,6 +533,26 @@ router.post('/google', async (req, res, next) => {
           createdAt: new Date()
         };
         localUsers.set(cleanEmail || verifiedSub, user);
+      }
+    }
+
+    // Safely reassign guest conversations created with X-Anon-Id to this Google user
+    if (db.isAvailable() && db.client) {
+      const rawAnonId = req.headers['x-anon-id'];
+      const isValidAnonFormat =
+        typeof rawAnonId === 'string' &&
+        /^anon_[a-zA-Z0-9_-]{4,64}$/.test(rawAnonId);
+      if (isValidAnonFormat && rawAnonId !== user.id) {
+        await db.client.conversation.updateMany({
+          where: {
+            userId: rawAnonId,
+            user: {
+              email: null,
+              isEmailVerified: false
+            }
+          },
+          data: { userId: user.id }
+        }).catch((migErr) => console.warn('[Google Migration] Fallback:', migErr.message));
       }
     }
 

@@ -18,6 +18,30 @@ router.get('/', authenticate, async (req, res, next) => {
     }
 
     if (prisma && prisma.conversation) {
+      // Reassign guest conversations if user is verified and has prior anonymous conversations
+      if (
+        req.user &&
+        req.user.id &&
+        req.anonId &&
+        req.anonId.startsWith('anon_') &&
+        req.anonId !== req.user.id
+      ) {
+        try {
+          await prisma.conversation.updateMany({
+            where: {
+              userId: req.anonId,
+              user: {
+                email: null,
+                isEmailVerified: false
+              }
+            },
+            data: { userId: req.user.id }
+          });
+        } catch (migErr) {
+          console.warn('[Conversation Migration] Fallback:', migErr.message);
+        }
+      }
+
       const conversations = await prisma.conversation.findMany({
         where: { userId },
         take: limit + 1,
@@ -82,9 +106,33 @@ router.get('/:id', authenticate, async (req, res, next) => {
       throw ApiError.notFound('Conversation not found');
     }
 
-    // Security check: Must return 404 if not found or belongs to another user
-    if (!conv || conv.userId !== userId) {
+    if (!conv) {
       throw ApiError.notFound('Conversation not found');
+    }
+
+    // Security check: Must return 404 if not found or belongs to another user
+    if (conv.userId !== userId) {
+      // Allow seamless ownership migration if conversation was created under user's anonId
+      if (
+        req.user &&
+        req.user.id &&
+        req.anonId &&
+        req.anonId.startsWith('anon_') &&
+        conv.userId.startsWith('anon_') &&
+        conv.userId === req.anonId
+      ) {
+        try {
+          await prisma.conversation.update({
+            where: { id: conv.id },
+            data: { userId: req.user.id }
+          });
+          conv.userId = req.user.id;
+        } catch (migErr) {
+          throw ApiError.notFound('Conversation not found');
+        }
+      } else {
+        throw ApiError.notFound('Conversation not found');
+      }
     }
 
     res.json(conv);
@@ -100,6 +148,19 @@ router.post('/', authenticate, async (req, res, next) => {
     const { title = 'New Conversation', mode = 'poem' } = req.body;
 
     if (prisma && prisma.conversation) {
+      if (prisma.user) {
+        await prisma.user.upsert({
+          where: { id: userId },
+          update: {},
+          create: {
+            id: userId,
+            name: req.user ? req.user.name : 'Guest User',
+            plan: 'FREE',
+            isEmailVerified: req.user ? req.user.isEmailVerified : false
+          }
+        }).catch((uErr) => console.warn('User upsert fallback:', uErr.message));
+      }
+
       const conv = await prisma.conversation.create({
         data: {
           userId,

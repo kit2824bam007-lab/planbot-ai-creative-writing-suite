@@ -199,7 +199,14 @@ const COMMON_CONCEPT_MAP = {
   wedding: /wedding|திருமணம்|கல்யாணம்/i,
   alone: /alone|தனிமை|ஒற்றை/i,
   silent: /silent|மௌனம்|அமைதி/i,
-  silence: /silence|மௌனம்|அமைதி/i
+  silence: /silence|மௌனம்|அமைதி/i,
+  stone: /stone|கல்|பாறை|கற்பாறை/i,
+  pot: /pot|பானை|மண்பானை|குடம்/i,
+  water: /water|தண்ணீர்|நீர்|தீர்த்தம்/i,
+  competion: /competition|போட்டி|பந்தயம்/i,
+  nature: /nature|இயற்கை/i,
+  sky: /sky|வானம்|விண்|ஆகாயம்/i,
+  wind: /wind|காற்று|தென்றல்/i
 };
 
 function checkConceptMatch(keyword, text, language) {
@@ -221,7 +228,7 @@ function checkConceptMatch(keyword, text, language) {
       if (text.includes(stem)) return true;
     }
     // Simple English-to-Tamil phonetic heuristic for proper nouns (like Pallathur)
-    if (kw.length >= 5) {
+    if (kw.length >= 4) {
       const prefix = kw.slice(0, 4);
       if (textLower.includes(prefix)) return true;
     }
@@ -270,13 +277,8 @@ function validateTopicRelevance(output = '', originalPrompt = '', language = 'ta
     }
   }
 
-  // Determine required threshold
-  let minRequired = 1;
-  if (keywords.length >= 4) {
-    minRequired = Math.min(2, Math.ceil(keywords.length * 0.35));
-  } else if (keywords.length >= 2) {
-    minRequired = 1;
-  }
+  // In creative writing and poetry, 1 solid thematic anchor match confirms semantic grounding
+  const minRequired = 1;
 
   if (matchedCount < minRequired) {
     return {

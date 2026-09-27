@@ -36,6 +36,8 @@ class KeyPool {
       id: label,
       key,
       isCooldown: false,
+      isDailyQuota: false,
+      isPermanentlyFailed: false,
       cooldownUntil: 0,
       consecutiveFailures: 0,
       totalCalls: 0,
@@ -52,6 +54,9 @@ class KeyPool {
   getKey() {
     const now = Date.now();
     const available = this.keys.filter((k) => {
+      if (k.isPermanentlyFailed) {
+        return false;
+      }
       if (k.cooldownUntil && k.cooldownUntil > now) {
         return false;
       }
@@ -60,10 +65,11 @@ class KeyPool {
     });
 
     if (available.length === 0) {
-      // Calculate minimum retryAfter in seconds
+      const allDailyExhausted = this.keys.length > 0 && this.keys.every((k) => k.isDailyQuota || k.isPermanentlyFailed);
       const nextAvailableTime = Math.min(...this.keys.map((k) => k.cooldownUntil || (now + 60000)));
       const retryAfterSec = Math.max(1, Math.ceil((nextAvailableTime - now) / 1000));
-      const error = new Error('ALL_KEYS_EXHAUSTED');
+      const error = new Error(allDailyExhausted ? 'DAILY_QUOTA_EXHAUSTED' : 'ALL_KEYS_EXHAUSTED');
+      error.code = 'KEYS_EXHAUSTED';
       error.retryAfterSec = retryAfterSec;
       throw error;
     }
@@ -82,34 +88,79 @@ class KeyPool {
     if (target) {
       target.consecutiveFailures = 0;
       target.isCooldown = false;
+      target.isDailyQuota = false;
       target.cooldownUntil = 0;
       target.successfulCalls++;
       target.lastError = null;
     }
   }
 
-  reportFailure(keyEntry, isQuota = false, errMessage = '') {
+  reportFailure(keyEntry, isQuota = false, errMessage = '', errorObj = null) {
     if (!keyEntry || keyEntry.isBYOK) return;
     const target = this.keys.find((k) => k.id === keyEntry.id);
     if (!target) return;
 
+    const msg = String(errMessage || '');
+    const isInvalidKey = msg.includes('API_KEY_INVALID') || msg.includes('API key not valid') || msg.includes('invalid api key');
+    const isPermissionError = msg.includes('PERMISSION_DENIED') || msg.includes('ACCESS_TOKEN_SCOPE_INSUFFICIENT');
+
+    if (isInvalidKey) {
+      target.isPermanentlyFailed = true;
+      target.cooldownUntil = Infinity;
+      target.lastError = 'Invalid API key';
+      target.failedCalls++;
+      return;
+    }
+
+    if (isPermissionError) {
+      target.isPermanentlyFailed = true;
+      target.cooldownUntil = Infinity;
+      target.lastError = 'Permission denied / model access restricted';
+      target.failedCalls++;
+      return;
+    }
+
     // Do not penalize API keys for client-side argument or format errors
-    const isClientError = errMessage && (errMessage.includes('400') || errMessage.includes('invalid argument'));
+    const isClientError = msg.includes('400') || msg.includes('invalid argument');
     if (isClientError) {
-      target.lastError = errMessage;
+      target.lastError = msg;
       return;
     }
 
     target.failedCalls++;
     target.consecutiveFailures++;
-    target.lastError = errMessage || (isQuota ? '429 Rate Limit' : 'Unknown Error');
+    target.lastError = msg || (isQuota ? '429 Rate Limit' : 'Unknown Error');
 
     const now = Date.now();
     if (isQuota) {
-      // 429 quota exhaustion: 1 hour in production so healthy keys take over seamlessly (60s in tests)
-      const quotaCooldown = process.env.NODE_ENV === 'test' ? 60 * 1000 : 60 * 60 * 1000;
-      target.isCooldown = true;
-      target.cooldownUntil = now + quotaCooldown;
+      // Distinguish daily quota exhaustion from temporary per-minute burst rate limits
+      const isDailyQuota = /GenerateRequestsPerDay|PerDay|per day|free_tier_requests/i.test(msg) ||
+        (errorObj && errorObj.errorDetails && JSON.stringify(errorObj.errorDetails).includes('PerDay'));
+
+      if (isDailyQuota) {
+        // Daily quota exhausted: must NOT be treated as recovering in 60s
+        target.isDailyQuota = true;
+        const dailyCooldown = process.env.NODE_ENV === 'test' ? 60 * 1000 : 12 * 60 * 60 * 1000;
+        target.isCooldown = true;
+        target.cooldownUntil = now + dailyCooldown;
+        target.lastError = 'Daily quota exhausted (Free Tier limit)';
+      } else {
+        // Transient rate limit (RPM burst): check if Google specified retryDelay
+        let retrySec = 45; // Default safe transient cooldown
+        const retryMatch = msg.match(/(?:Please retry in\s+|retryDelay["':\s]+)([0-9.]+)\s*s/i);
+        if (retryMatch && parseFloat(retryMatch[1])) {
+          retrySec = Math.ceil(parseFloat(retryMatch[1])) + 2;
+        } else if (errorObj && errorObj.errorDetails) {
+          const detailsStr = JSON.stringify(errorObj.errorDetails);
+          const dMatch = detailsStr.match(/retryDelay["']?\s*:\s*["']?([0-9]+)s/i);
+          if (dMatch && parseInt(dMatch[1], 10)) {
+            retrySec = parseInt(dMatch[1], 10) + 2;
+          }
+        }
+        target.isCooldown = true;
+        target.cooldownUntil = now + (retrySec * 1000);
+        target.lastError = `429 Rate Limit (retry in ${retrySec}s)`;
+      }
     } else {
       // Temporary network/503 spikes: 3s cooldown
       target.isCooldown = true;

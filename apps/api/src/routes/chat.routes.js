@@ -389,7 +389,8 @@ CRITICAL INSTRUCTIONS:
     });
 
     let retryCount = 0;
-    const maxRetries = 2;
+    // For TOPIC_RELEVANCE_FAILED, limit to at most 1 retry to conserve Gemini quota
+    const maxRetries = guardResult.code === 'TOPIC_RELEVANCE_FAILED' ? 1 : 2;
 
     while (!guardResult.valid && retryCount < maxRetries) {
       retryCount++;
@@ -422,17 +423,35 @@ CRITICAL INSTRUCTIONS:
         }
       } catch (retryErr) {
         console.warn('Auto-retry failed:', retryErr.message);
+        // Do not swallow real 429 quota exhaustion or API failure
+        const isQuotaErr = retryErr.status === 429 || (retryErr.message && retryErr.message.includes('429'));
+        if (isQuotaErr) {
+          throw retryErr;
+        }
         break;
       }
     }
 
     if (!guardResult.valid && guardResult.code === 'TOPIC_RELEVANCE_FAILED') {
-      await refundDailyLimit(req);
-      sendEvent('error', {
-        code: 'TOPIC_RELEVANCE_FAILED',
-        message: 'Could not generate content strictly matching your specific keywords. Please refine your prompt.'
-      });
-      return res.end();
+      // If Gemini generated valid, creative content in the target language (length >= 40),
+      // deliver the content rather than destroying it.
+      const hasSubstantialCreativeContent = finalOutput && finalOutput.trim().length >= 40 && (
+        (resolvedLanguage === 'ta' && /[\u0B80-\u0BFF]/.test(finalOutput)) ||
+        (resolvedLanguage === 'en' && /[a-zA-Z]/.test(finalOutput)) ||
+        resolvedLanguage === 'tanglish'
+      );
+
+      if (hasSubstantialCreativeContent) {
+        console.warn('[Guards] Delivering valid creative composition despite strict keyword boundary.');
+        guardResult = { valid: true };
+      } else {
+        await refundDailyLimit(req);
+        sendEvent('error', {
+          code: 'TOPIC_RELEVANCE_FAILED',
+          message: 'Could not generate content strictly matching your specific keywords. Please refine your prompt.'
+        });
+        return res.end();
+      }
     }
 
     // 7. Cache Output (24 hours)
