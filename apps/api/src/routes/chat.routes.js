@@ -3,6 +3,7 @@ const { z } = require('zod');
 const prisma = require('../services/db');
 const redis = require('../services/redis');
 const geminiService = require('../services/gemini');
+const openRouterService = require('../services/openrouter');
 const { detectLanguage } = require('../services/language');
 const { validateGuards } = require('../services/guards');
 const { buildSystemPrompt, buildActionPrompt, buildStructuredUserPrompt, CLASSICAL_TAMIL_FORMS } = require('../config/prompts');
@@ -88,6 +89,7 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
     res.flush?.();
   };
 
+  let generatedText = '';
   try {
     const { prompt = '', mode, length, action, previousMessageId } = params;
     let conversationId = params.conversationId;
@@ -355,17 +357,71 @@ CRITICAL INSTRUCTIONS:
       streamMedia = params.media;
     }
 
-    let generatedText = '';
-    const generationResult = await geminiService.generateStream({
-      systemPrompt,
-      userPrompt,
-      media: streamMedia,
-      signal: abortController.signal,
-      onChunk: (chunk) => {
-        generatedText += chunk;
-        sendEvent('token', { text: chunk });
+    generatedText = '';
+    let generationResult = null;
+    let geminiErr = null;
+
+    try {
+      generationResult = await geminiService.generateStream({
+        systemPrompt,
+        userPrompt,
+        media: streamMedia,
+        signal: abortController.signal,
+        onChunk: (chunk) => {
+          generatedText += chunk;
+          sendEvent('token', { text: chunk });
+        }
+      });
+    } catch (gErr) {
+      geminiErr = gErr;
+    }
+
+    // Fallback to OpenRouter if Gemini failed with eligible quota/unavailability error
+    if (!generationResult && geminiErr) {
+      if (openRouterService.isFallbackEligible(geminiErr)) {
+        console.warn(`[AI] Gemini generation failed, attempting OpenRouter fallback`);
+        if (openRouterService.isAvailable()) {
+          try {
+            console.log('[OpenRouter] Fallback generation started');
+            if (generatedText) {
+              sendEvent('replace', { text: '' });
+              generatedText = '';
+            }
+            generationResult = await openRouterService.generateStream({
+              systemPrompt,
+              userPrompt,
+              media: streamMedia,
+              signal: abortController.signal,
+              onChunk: (chunk) => {
+                generatedText += chunk;
+                sendEvent('token', { text: chunk });
+              }
+            });
+            console.log('[OpenRouter] Fallback generation succeeded');
+          } catch (orErr) {
+            console.error(`[OpenRouter] Fallback generation failed`);
+            if (generatedText) {
+              sendEvent('replace', { text: '' });
+              generatedText = '';
+            }
+            throw geminiErr;
+          }
+        } else {
+          console.warn('[OpenRouter] Fallback unavailable: OPENROUTER_API_KEY is not configured');
+          if (generatedText) {
+            sendEvent('replace', { text: '' });
+            generatedText = '';
+          }
+          throw geminiErr;
+        }
+      } else {
+        if (generatedText) {
+          sendEvent('replace', { text: '' });
+          generatedText = '';
+        }
+        throw geminiErr;
       }
-    });
+    }
 
     let finalOutput = generationResult.fullText || generatedText;
 
@@ -566,6 +622,10 @@ CRITICAL INSTRUCTIONS:
     res.end();
   } catch (err) {
     console.error('Generation Stream Error:', err);
+    if (generatedText) {
+      sendEvent('replace', { text: '' });
+      generatedText = '';
+    }
     await refundDailyLimit(req);
     sendEvent('error', {
       code: err.code || 'AI_UNAVAILABLE',

@@ -212,6 +212,7 @@ export function useChatStream() {
       const decoder = new TextDecoder('utf-8');
       let buffer = '';
       let accumulatedText = '';
+      let hasError = false;
       let finalMetadata: any = null;
       let finalMessageId = `msg_${Date.now()}`;
       let finalConvId = currentConversationId;
@@ -242,8 +243,8 @@ export function useChatStream() {
               } else if (currentEvent === 'retry') {
                 toast.info(parsed.message || 'Polishing meter and structure...');
               } else if (currentEvent === 'replace') {
-                accumulatedText = parsed.text;
-                setStreamingContent(parsed.text);
+                accumulatedText = parsed.text || '';
+                setStreamingContent(parsed.text || '');
               } else if (currentEvent === 'done') {
                 accumulatedText = parsed.content || accumulatedText;
                 finalMetadata = parsed.metadata;
@@ -253,6 +254,9 @@ export function useChatStream() {
                 if (parsed.messageId) finalMessageId = parsed.messageId;
                 if (parsed.conversationId) finalConvId = parsed.conversationId;
               } else if (currentEvent === 'error') {
+                hasError = true;
+                accumulatedText = '';
+                setStreamingContent('');
                 api.getQuota().then(setQuota).catch(() => {});
                 if (parsed.code === 'MEDIA_ANALYSIS_FAILED') {
                   toast.error(parsed.message || 'Unable to analyze this media. Please try another file.');
@@ -272,7 +276,7 @@ export function useChatStream() {
       }
 
       // Add completed message
-      if (accumulatedText.trim()) {
+      if (!hasError && accumulatedText.trim()) {
         addMessage({
           id: finalMessageId,
           role: 'assistant',

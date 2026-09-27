@@ -30,7 +30,9 @@ const envSchema = z.object({
   ORIGINALITY_SIMILARITY_THRESHOLD_LOW: z.string().default('0.70').transform((val) => parseFloat(val)),
   ORIGINALITY_SIMILARITY_THRESHOLD_HIGH: z.string().default('0.85').transform((val) => parseFloat(val)),
   BREVO_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().optional()
+  EMAIL_FROM: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_MODEL: z.string().default('openrouter/free')
 });
 
 const parsed = envSchema.safeParse(process.env);
