@@ -147,18 +147,121 @@ describe('Authentication & Email Verification Tests', () => {
     expect(res.body.error.code).toBe('INVALID_GOOGLE_TOKEN');
   });
 
-  test('sendVerificationOtp rejects in production if SMTP variables are missing', async () => {
+  test('sendVerificationOtp rejects in production if BREVO_API_KEY is missing', async () => {
     const { env } = require('../src/config/env');
     const originalNodeEnv = env.NODE_ENV;
-    const originalSmtpHost = env.SMTP_HOST;
+    const originalBrevoKey = env.BREVO_API_KEY;
+    const originalEmailFrom = env.EMAIL_FROM;
     env.NODE_ENV = 'production';
-    env.SMTP_HOST = '';
+    env.BREVO_API_KEY = '';
+    env.EMAIL_FROM = 'verified-sender@planbot.ai';
 
     await expect(emailService.sendVerificationOtp('prodtest@example.com', '123456'))
       .rejects
       .toThrow('Email delivery service is currently not configured');
 
     env.NODE_ENV = originalNodeEnv;
-    env.SMTP_HOST = originalSmtpHost;
+    env.BREVO_API_KEY = originalBrevoKey;
+    env.EMAIL_FROM = originalEmailFrom;
+  });
+
+  test('sendVerificationOtp rejects in production if EMAIL_FROM is missing', async () => {
+    const { env } = require('../src/config/env');
+    const originalNodeEnv = env.NODE_ENV;
+    const originalBrevoKey = env.BREVO_API_KEY;
+    const originalEmailFrom = env.EMAIL_FROM;
+    env.NODE_ENV = 'production';
+    env.BREVO_API_KEY = 'test-brevo-api-key-12345';
+    env.EMAIL_FROM = '';
+
+    await expect(emailService.sendVerificationOtp('prodtest@example.com', '123456'))
+      .rejects
+      .toThrow('Email delivery service is currently not configured');
+
+    env.NODE_ENV = originalNodeEnv;
+    env.BREVO_API_KEY = originalBrevoKey;
+    env.EMAIL_FROM = originalEmailFrom;
+  });
+
+  test('sendVerificationOtp delivers email via Brevo HTTPS API in production when configured', async () => {
+    const { env } = require('../src/config/env');
+    const originalNodeEnv = env.NODE_ENV;
+    const originalBrevoKey = env.BREVO_API_KEY;
+    const originalEmailFrom = env.EMAIL_FROM;
+    env.NODE_ENV = 'production';
+    env.BREVO_API_KEY = 'test-brevo-api-key-12345';
+    env.EMAIL_FROM = 'verified-sender@planbot.ai';
+
+    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: async () => ({ messageId: '<brevo-msg-id-789>' }),
+      text: async () => ''
+    });
+
+    const result = await emailService.sendVerificationOtp('user@example.com', '654321', 'Test User');
+
+    expect(result.success).toBe(true);
+    expect(result.simulated).toBe(false);
+    expect(result.messageId).toBe('<brevo-msg-id-789>');
+    expect(fetchSpy).toHaveBeenCalledWith('https://api.brevo.com/v3/smtp/email', expect.objectContaining({
+      method: 'POST',
+      headers: expect.objectContaining({
+        'api-key': 'test-brevo-api-key-12345',
+        'Content-Type': 'application/json'
+      }),
+      body: expect.stringContaining('"PlanBot AI"')
+    }));
+
+    fetchSpy.mockRestore();
+    env.NODE_ENV = originalNodeEnv;
+    env.BREVO_API_KEY = originalBrevoKey;
+    env.EMAIL_FROM = originalEmailFrom;
+  });
+
+  test('sendVerificationOtp rejects safely in production if Brevo returns error status', async () => {
+    const { env } = require('../src/config/env');
+    const originalNodeEnv = env.NODE_ENV;
+    const originalBrevoKey = env.BREVO_API_KEY;
+    const originalEmailFrom = env.EMAIL_FROM;
+    env.NODE_ENV = 'production';
+    env.BREVO_API_KEY = 'test-brevo-api-key-12345';
+    env.EMAIL_FROM = 'verified-sender@planbot.ai';
+
+    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      text: async () => JSON.stringify({ code: 'invalid_parameter', message: 'unauthorized sender' })
+    });
+
+    await expect(emailService.sendVerificationOtp('failuser@example.com', '654321'))
+      .rejects
+      .toThrow('Unable to deliver verification email. Please try again later.');
+
+    fetchSpy.mockRestore();
+    env.NODE_ENV = originalNodeEnv;
+    env.BREVO_API_KEY = originalBrevoKey;
+    env.EMAIL_FROM = originalEmailFrom;
+  });
+
+  test('sendVerificationOtp rejects safely in production if Brevo network request fails', async () => {
+    const { env } = require('../src/config/env');
+    const originalNodeEnv = env.NODE_ENV;
+    const originalBrevoKey = env.BREVO_API_KEY;
+    const originalEmailFrom = env.EMAIL_FROM;
+    env.NODE_ENV = 'production';
+    env.BREVO_API_KEY = 'test-brevo-api-key-12345';
+    env.EMAIL_FROM = 'verified-sender@planbot.ai';
+
+    const fetchSpy = jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Connection timeout'));
+
+    await expect(emailService.sendVerificationOtp('timeout@example.com', '654321'))
+      .rejects
+      .toThrow('Unable to deliver verification email. Please try again later.');
+
+    fetchSpy.mockRestore();
+    env.NODE_ENV = originalNodeEnv;
+    env.BREVO_API_KEY = originalBrevoKey;
+    env.EMAIL_FROM = originalEmailFrom;
   });
 });
