@@ -19,6 +19,9 @@ model User {
   avatar        String?
   passwordHash  String?         @map("password_hash")
   googleId      String?         @unique @map("google_id")
+  isEmailVerified        Boolean         @default(false) @map("is_email_verified")
+  verificationOtp        String?         @map("verification_otp")
+  verificationExpires    DateTime?       @map("verification_expires")
   plan                   Plan            @default(FREE)
   subscriptionStatus     String?         @default("ACTIVE") @map("subscription_status")
   subscriptionStartDate  DateTime?       @map("subscription_start_date")

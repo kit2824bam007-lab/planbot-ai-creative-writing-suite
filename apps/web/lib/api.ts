@@ -79,6 +79,12 @@ export const api = {
   register: (body: { email: string; password: string; name?: string }) =>
     request('/api/auth/register', { method: 'POST', body: JSON.stringify(body) }),
 
+  verifyOtp: (body: { email: string; otp: string }) =>
+    request('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify(body) }),
+
+  resendOtp: (body: { email: string }) =>
+    request('/api/auth/resend-otp', { method: 'POST', body: JSON.stringify(body) }),
+
   login: (body: { email: string; password: string }) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
 

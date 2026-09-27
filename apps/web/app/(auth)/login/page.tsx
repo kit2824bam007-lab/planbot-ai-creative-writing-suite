@@ -7,6 +7,7 @@ import { Sparkles, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 import { api } from '../../../lib/api';
 import { useChatStore } from '../../../store/chatStore';
 import { toast } from 'sonner';
+import { showAuthErrorToast, showAuthSuccessToast } from '../../../lib/authToast';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function LoginPage() {
 
   const handleGoogleCredentialResponse = async (response: { credential?: string }) => {
     if (!response?.credential) {
-      toast.error('No credential received from Google.');
+      showAuthErrorToast('Google sign-in was cancelled or no credential was received.');
       return;
     }
 
@@ -31,10 +32,10 @@ export default function LoginPage() {
         localStorage.setItem('planbot_token', res.token);
       }
       setUser(res.user);
-      toast.success('Signed in with Google!');
+      showAuthSuccessToast('google');
       router.push('/');
     } catch (err: any) {
-      toast.error(err?.message || 'Google authentication failed.');
+      showAuthErrorToast(err, 'Google sign-in was unsuccessful. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -100,17 +101,24 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email || !password) return;
 
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      showAuthErrorToast('INVALID_EMAIL');
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await api.login({ email, password });
+      const res = await api.login({ email: cleanEmail, password });
       if (res?.token) {
         localStorage.setItem('planbot_token', res.token);
       }
       setUser(res.user);
-      toast.success('Welcome back!');
+      showAuthSuccessToast('login');
       router.push('/');
     } catch (err: any) {
-      toast.error(err.message || 'Invalid credentials.');
+      showAuthErrorToast(err, 'Sign-in failed. Please check your email and password.');
     } finally {
       setLoading(false);
     }

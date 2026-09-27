@@ -26,30 +26,41 @@ async function authenticate(req, res, next) {
         if (decoded && decoded.id) {
           // If database is available, fetch user or use decoded payload
           if (db.isAvailable() && db.client) {
-            const user = await db.client.user.findUnique({
-              where: { id: decoded.id },
-              select: {
-                id: true,
-                email: true,
-                name: true,
-                avatar: true,
-                plan: true,
-                subscriptionStatus: true,
-                subscriptionStartDate: true,
-                subscriptionExpiryDate: true
+            try {
+              const user = await db.client.user.findUnique({
+                where: { id: decoded.id },
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                  avatar: true,
+                  plan: true,
+                  isEmailVerified: true,
+                  subscriptionStatus: true,
+                  subscriptionStartDate: true,
+                  subscriptionExpiryDate: true
+                }
+              });
+              if (user) {
+                // Block unverified accounts from authenticated access
+                if (user.isEmailVerified === false) {
+                  req.user = null;
+                  return next();
+                }
+
+                if (user.plan === 'PRO' && user.subscriptionExpiryDate && new Date(user.subscriptionExpiryDate) < new Date()) {
+                  user.plan = 'FREE';
+                  user.subscriptionStatus = 'EXPIRED';
+                  db.client.user.update({
+                    where: { id: user.id },
+                    data: { plan: 'FREE', subscriptionStatus: 'EXPIRED' }
+                  }).catch(() => {});
+                }
+                req.user = user;
+                return next();
               }
-            });
-            if (user) {
-              if (user.plan === 'PRO' && user.subscriptionExpiryDate && new Date(user.subscriptionExpiryDate) < new Date()) {
-                user.plan = 'FREE';
-                user.subscriptionStatus = 'EXPIRED';
-                db.client.user.update({
-                  where: { id: user.id },
-                  data: { plan: 'FREE', subscriptionStatus: 'EXPIRED' }
-                }).catch(() => {});
-              }
-              req.user = user;
-              return next();
+            } catch (dbErr) {
+              console.warn('[Auth Middleware] DB lookup error:', dbErr.message);
             }
           }
           req.user = { id: decoded.id, email: decoded.email, plan: decoded.plan || 'FREE' };

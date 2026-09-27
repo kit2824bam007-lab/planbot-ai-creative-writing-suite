@@ -27,6 +27,10 @@ class ApiError extends Error {
     return new ApiError('DAILY_LIMIT_REACHED', 429, message, meta);
   }
 
+  static tooManyRequests(message = 'Too many requests', code = 'TOO_MANY_REQUESTS', meta = {}) {
+    return new ApiError(code, 429, message, meta);
+  }
+
   static providerBusy(message = 'AI provider is currently busy. Please retry shortly.', meta = {}) {
     return new ApiError('PROVIDER_BUSY', 503, message, meta);
   }

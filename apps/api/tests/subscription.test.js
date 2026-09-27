@@ -9,14 +9,24 @@ describe('Subscription, Usage & Rate Limiting System', () => {
   let userToken = null;
   let testUserId = null;
   const testEmail = `sub_test_${Date.now()}@example.com`;
+  const testOtp = '999888';
 
   beforeAll(async () => {
-    // Register a test user
-    const res = await request(app)
+    const emailService = require('../src/services/email.service');
+    jest.spyOn(emailService, 'generateOtp').mockReturnValue(testOtp);
+
+    // Register test user
+    await request(app)
       .post('/api/auth/register')
       .send({ email: testEmail, password: 'password123', name: 'Subscription Tester' });
-    userToken = res.body.token;
-    testUserId = res.body.user.id;
+
+    // Verify OTP to get authenticated token
+    const verifyRes = await request(app)
+      .post('/api/auth/verify-otp')
+      .send({ email: testEmail, otp: testOtp });
+
+    userToken = verifyRes.body.token;
+    testUserId = verifyRes.body.user.id;
   });
 
   test('GET /api/subscription/status returns 10 daily limit for anonymous/free users', async () => {

@@ -28,7 +28,13 @@ const envSchema = z.object({
   RAZORPAY_KEY_SECRET: z.string().optional(),
   ORIGINALITY_CHECK_ENABLED: z.string().default('true').transform((val) => val === 'true'),
   ORIGINALITY_SIMILARITY_THRESHOLD_LOW: z.string().default('0.70').transform((val) => parseFloat(val)),
-  ORIGINALITY_SIMILARITY_THRESHOLD_HIGH: z.string().default('0.85').transform((val) => parseFloat(val))
+  ORIGINALITY_SIMILARITY_THRESHOLD_HIGH: z.string().default('0.85').transform((val) => parseFloat(val)),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 587)),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_SECURE: z.string().optional().transform((val) => val === 'true'),
+  EMAIL_FROM: z.string().default('DreamInk AI <noreply@dreamink.ai>')
 });
 
 const parsed = envSchema.safeParse(process.env);
