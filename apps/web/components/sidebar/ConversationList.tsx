@@ -32,6 +32,9 @@ export const ConversationList: React.FC<ConversationListProps> = ({ searchQuery 
 
   const handleSelectConversation = async (conv: ConversationItem) => {
     setCurrentConversationId(conv.id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('planbot_active_conv_id', conv.id);
+    }
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       useChatStore.getState().setIsSidebarOpen(false);
     }
@@ -56,9 +59,15 @@ export const ConversationList: React.FC<ConversationListProps> = ({ searchQuery 
     try {
       await api.deleteConversation(id);
       removeConversation(id);
+      if (typeof window !== 'undefined' && localStorage.getItem('planbot_active_conv_id') === id) {
+        localStorage.removeItem('planbot_active_conv_id');
+      }
       toast.success('Conversation removed.');
     } catch (err) {
       removeConversation(id);
+      if (typeof window !== 'undefined' && localStorage.getItem('planbot_active_conv_id') === id) {
+        localStorage.removeItem('planbot_active_conv_id');
+      }
     }
   };
 

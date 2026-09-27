@@ -71,6 +71,9 @@ export const ChatArea: React.FC = () => {
   const handleNewChat = () => {
     setCurrentConversationId(null);
     setMessages([]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('planbot_active_conv_id');
+    }
   };
 
   return (

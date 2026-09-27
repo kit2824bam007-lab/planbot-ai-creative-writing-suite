@@ -292,13 +292,18 @@ export function useChatStream() {
           createdAt: new Date()
         });
 
-        if (finalConvId && !currentConversationId) {
-          addConversation({
-            id: finalConvId,
-            title: userPrompt.substring(0, 40),
-            mode,
-            updatedAt: new Date().toISOString()
-          });
+        if (finalConvId) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('planbot_active_conv_id', finalConvId);
+          }
+          if (!currentConversationId) {
+            addConversation({
+              id: finalConvId,
+              title: userPrompt.substring(0, 40),
+              mode,
+              updatedAt: new Date().toISOString()
+            });
+          }
         }
       } else if (!controller.signal.aborted) {
         // Stream ended with no content: refresh quota so refunded token reflects immediately

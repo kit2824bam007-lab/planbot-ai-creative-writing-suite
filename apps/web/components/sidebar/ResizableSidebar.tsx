@@ -45,13 +45,39 @@ export const ResizableSidebar: React.FC = () => {
       setSidebarWidth(Math.min(Math.max(parseInt(savedWidth, 10), 260), 400));
     }
 
-    // Fetch conversations list
-    api.getConversations().then((res) => {
+    // Fetch conversations list and restore active conversation history
+    api.getConversations().then(async (res) => {
       if (res && res.conversations) {
         setConversations(res.conversations);
+
+        if (res.conversations.length > 0) {
+          const savedConvId = typeof window !== 'undefined' ? localStorage.getItem('planbot_active_conv_id') : null;
+          const targetId = savedConvId && res.conversations.some((c: any) => c.id === savedConvId)
+            ? savedConvId
+            : res.conversations[0].id;
+
+          if (targetId) {
+            setCurrentConversationId(targetId);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('planbot_active_conv_id', targetId);
+            }
+            try {
+              const fullConv = await api.getConversation(targetId);
+              if (fullConv && fullConv.messages) {
+                setMessages(fullConv.messages);
+                const lastWithMedia = [...fullConv.messages].reverse().find((m: any) => m.metadata?.mediaContext);
+                if (lastWithMedia?.metadata?.mediaContext) {
+                  useChatStore.getState().setMediaContext(lastWithMedia.metadata.mediaContext);
+                }
+              }
+            } catch (err) {
+              console.warn('[Sidebar] Failed to load initial conversation messages:', err);
+            }
+          }
+        }
       }
     }).catch(() => {});
-  }, [setSidebarWidth, setConversations]);
+  }, [setSidebarWidth, setConversations, setCurrentConversationId, setMessages]);
 
   // Global Ctrl+K shortcut to focus search
   useEffect(() => {
@@ -96,6 +122,9 @@ export const ResizableSidebar: React.FC = () => {
   const handleNewChat = () => {
     setCurrentConversationId(null);
     setMessages([]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('planbot_active_conv_id');
+    }
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setIsSidebarOpen(false);
     }

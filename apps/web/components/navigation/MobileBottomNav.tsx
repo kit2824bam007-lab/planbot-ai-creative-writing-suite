@@ -39,6 +39,9 @@ export const MobileBottomNav: React.FC = () => {
     }
     setCurrentConversationId(null);
     setMessages([]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('planbot_active_conv_id');
+    }
     // Smooth scroll to composer
     setTimeout(() => {
       const textarea = document.querySelector('textarea');
