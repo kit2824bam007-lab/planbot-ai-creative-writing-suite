@@ -31,6 +31,7 @@ const GENRES = [
 
 // 3. TONES (All modes - expansive choices)
 const TONES = [
+  { value: 'creative', label: 'Creative & Imaginative / கற்பனை நயம்' },
   { value: 'inspirational', label: 'Inspiring / ஈடுபடுத்தும்' },
   { value: 'romantic', label: 'Romantic / காதல் நயம்' },
   { value: 'playful', label: 'Playful / விளையாட்டுத்தனம்' },

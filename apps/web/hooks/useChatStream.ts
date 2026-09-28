@@ -123,7 +123,8 @@ export function useChatStream() {
         data: currentMedia.data,
         fileName: currentMedia.fileName,
         fileSize: currentMedia.fileSize,
-        duration: currentMedia.duration
+        duration: currentMedia.duration,
+        frames: currentMedia.frames
       } : undefined;
 
       const effectiveMediaContext = options?.mediaContext || state.mediaContext || undefined;

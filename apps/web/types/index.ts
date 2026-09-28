@@ -10,6 +10,7 @@ export interface UploadedMedia {
   fileSize: number;
   previewUrl: string;
   duration?: number;
+  frames?: string[]; // sampled video frames for visual frame analysis
 }
 
 export interface PoemMetadata {

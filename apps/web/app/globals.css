@@ -33,28 +33,29 @@
     /* Muted violet text */
   }
 
-  /* ===== Dark Theme ===== */
+  /* ===== Dark Theme (Neutralized for strict Light Mode Only) ===== */
   .dark {
-    --background: 270 25% 8%;
-    --foreground: 270 20% 96%;
+    --background: 270 100% 99%;
+    --foreground: 270 25% 15%;
 
-    --primary: 270 50% 64%;
-    --primary-foreground: 270 25% 8%;
+    --primary: 270 38% 49%;
+    --primary-foreground: 0 0% 100%;
 
-    --card: 270 20% 11%;
-    --card-foreground: 270 20% 96%;
+    --card: 0 0% 100%;
+    --card-foreground: 270 25% 15%;
 
-    --border: 270 18% 18%;
+    --border: 270 25% 91%;
 
-    --muted: 270 18% 14%;
-    --muted-foreground: 270 12% 62%;
+    --muted: 270 35% 97%;
+    --muted-foreground: 270 12% 46%;
   }
 
   /* =========================================================
-     BODY - LIGHT THEME
+     BODY - LIGHT THEME ONLY
      ========================================================= */
 
-  body {
+  body,
+  .dark body {
     background-color: #FAF7FF;
     color: #241B2F;
 
@@ -74,26 +75,6 @@
 
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
-  }
-
-  /* =========================================================
-     BODY - DARK THEME
-     ========================================================= */
-
-  .dark body {
-    background-color: #120D1A;
-    color: #F3EDF8;
-
-    background-image:
-      radial-gradient(ellipse 70% 50% at 50% -2%,
-        rgba(147, 51, 234, 0.28) 0%,
-        rgba(88, 28, 135, 0.16) 45%,
-        rgba(18, 13, 26, 0) 80%),
-      radial-gradient(circle at 88% 85%,
-        rgba(126, 34, 206, 0.20) 0%,
-        transparent 50%);
-
-    background-attachment: fixed;
   }
 }
 

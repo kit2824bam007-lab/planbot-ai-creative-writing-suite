@@ -5,8 +5,119 @@
  */
 
 const WHITELIST_WORDS = new Set([
-  'planbot', 'ai', 'instagram', 'whatsapp', 'x', 'twitter', 'post', 'status', 'reel'
+  'planbot', 'ai', 'instagram', 'whatsapp', 'x', 'twitter', 'post', 'status', 'reel',
+  'option', 'options', 'cinematic', 'natural', 'human', 'trendy', 'social', 'original',
+  'line', 'hashtags', 'hashtag', 'aesthetic', 'caption', 'quote', 'hook', 'shorts',
+  'youtube', 'linkedin', 'facebook', 'dialogue', 'reason', 'mood', 'action', 'punch', 'short', 'call'
 ]);
+
+/**
+ * Strips content that is legitimately language-neutral before language proportion analysis:
+ * - URLs (https://... or www....)
+ * - Hashtags (#word)
+ * - Numbers and punctuation
+ * - Markdown symbols (*, #, **, __, etc.)
+ * - Emoji (handled by removing non-alpha non-script chars)
+ * - Standalone proper nouns / names will still be present but are expected
+ * @param {string} text
+ * @returns {string} cleaned substantive text
+ */
+function stripLanguageNeutralContent(text) {
+  return text
+    .replace(/https?:\/\/\S+/gi, ' ')          // URLs
+    .replace(/www\.\S+/gi, ' ')                 // www links
+    .replace(/#\w+/g, ' ')                       // hashtags
+    .replace(/```[\s\S]*?```/g, ' ')             // code blocks
+    .replace(/`[^`]*`/g, ' ')                    // inline code
+    .replace(/[0-9]+/g, ' ')                     // numbers
+    .replace(/[*_~`#\[\]()>|\\=+\-]/g, ' ')     // markdown symbols
+    .replace(/[^\u0000-\u007F\u0B80-\u0BFF\u0900-\u097F\s]/g, ' ') // remove emoji/other special chars
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Validates that AI-generated output is in the expected language.
+ * Uses proportion-based analysis of substantive text (after stripping neutral content).
+ *
+ * For Tamil ('ta'):  substantive text must be ≥ 35% Tamil Unicode script characters.
+ * For English ('en'): substantive text must be ≥ 60% Latin alphabet characters,
+ *                     AND Tamil/Devanagari must not dominate (< 20% of total chars).
+ *
+ * Returns { valid: boolean, reason: string }
+ * @param {string} text - AI generated output
+ * @param {string} language - 'ta' | 'en' | 'tanglish'
+ */
+function validateOutputLanguage(text = '', language = 'ta') {
+  if (!text || typeof text !== 'string' || !text.trim()) {
+    return { valid: false, reason: 'empty_output' };
+  }
+
+  // Tanglish is a mixed output — no strict single-script requirement
+  if (language === 'tanglish') {
+    return { valid: true };
+  }
+
+  const substantive = stripLanguageNeutralContent(text);
+  if (!substantive || substantive.trim().length < 5) {
+    // Too short to measure meaningfully — trust it
+    return { valid: true };
+  }
+
+  const allChars = substantive.replace(/\s/g, '');
+  const totalChars = allChars.length;
+
+  if (totalChars < 10) {
+    return { valid: true }; // too short to make a meaningful determination
+  }
+
+  const tamilChars = (allChars.match(/[\u0B80-\u0BFF]/g) || []).length;
+  const latinChars = (allChars.match(/[a-zA-Z]/g) || []).length;
+  const devanagariChars = (allChars.match(/[\u0900-\u097F]/g) || []).length;
+
+  const tamilRatio = tamilChars / totalChars;
+  const latinRatio = latinChars / totalChars;
+  const devanagariRatio = devanagariChars / totalChars;
+
+  if (language === 'ta') {
+    // Tamil output must have substantial Tamil script
+    // Threshold: at least 35% of substantive chars must be Tamil Unicode
+    if (tamilRatio < 0.35) {
+      return {
+        valid: false,
+        reason: `Tamil script proportion too low: ${(tamilRatio * 100).toFixed(1)}% (need ≥35%). Likely generated in wrong language.`
+      };
+    }
+    return { valid: true };
+  }
+
+  if (language === 'en') {
+    // English output: Latin must dominate; Tamil/Devanagari must not dominate
+    if (tamilRatio > 0.25) {
+      return {
+        valid: false,
+        reason: `Tamil script proportion too high for English output: ${(tamilRatio * 100).toFixed(1)}% (must be <25%).`
+      };
+    }
+    if (devanagariRatio > 0.15) {
+      return {
+        valid: false,
+        reason: `Devanagari script proportion too high for English output: ${(devanagariRatio * 100).toFixed(1)}%.`
+      };
+    }
+    // English must have majority Latin chars
+    if (latinRatio < 0.50) {
+      return {
+        valid: false,
+        reason: `Latin character proportion too low for English output: ${(latinRatio * 100).toFixed(1)}% (need ≥50%).`
+      };
+    }
+    return { valid: true };
+  }
+
+  // Unknown language — pass through
+  return { valid: true };
+}
 
 function looksLikePoem(text = '') {
   const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
@@ -96,8 +207,10 @@ Target language is English. Output strictly in English Latin script.`
 
   // 3. ROMANIZED_LEAK
   if (romanizedInput && (language === 'ta' || language === 'hi')) {
+    // Strip hashtags and URLs so social tags don't trigger false positives
+    const textWithoutTags = cleanOutput.replace(/https?:\/\/\S+/gi, ' ').replace(/#\w+/g, ' ');
     // Check if there are English words >= 4 letters leaked into native text
-    const latinWords = cleanOutput.match(/[a-zA-Z]{4,}/g) || [];
+    const latinWords = textWithoutTags.match(/[a-zA-Z]{4,}/g) || [];
     const leakedWords = latinWords.filter((w) => !WHITELIST_WORDS.has(w.toLowerCase()));
 
     if (leakedWords.length >= 3) {
@@ -150,6 +263,12 @@ CRITICAL CORRECTION: Rewrite the work 100% in native script. Zero English alphab
 
 const COMMON_CONCEPT_MAP = {
   pallathur: /pallathur|பல்லாத்தூர்|பள்ளத்தூர்|பல்லவத்தூர்/i,
+  sabari: /sabari|சபரி/i,
+  kani: /kani|கனி/i,
+  lover: /lover|lovers|காதலன்|காதலி|காதலர்கள்|காதல்/i,
+  lovers: /lover|lovers|காதலன்|காதலி|காதலர்கள்|காதல்/i,
+  kadhalargal: /kadhalargal|காதலர்கள்|காதல்|lovers|lover/i,
+  iruvarum: /iruvarum|இருவரும்|இருவர்|both/i,
   temple: /temple|கோயில்|கோவில்|ஆலயம்|கோபுரம்|சன்னதி/i,
   boy: /boy|சிறுவன்|பையன்|இளைஞன்|ஆண்/i,
   girl: /girl|சிறுமி|பெண்|இளம்பெண்|மகள்/i,
@@ -162,6 +281,7 @@ const COMMON_CONCEPT_MAP = {
   love: /love|காதல்|அன்பு/i,
   rain: /rain|மழை/i,
   moon: /moon|நிலா|நிலவு|சந்திரன்|மதி/i,
+  moonlight: /moonlight|நிலா|நிலவு|நிலவொளி|வெண்மதி|சந்திரன்|மதி/i,
   sun: /sun|சூரியன்|கதிர்|செங்கதிர்/i,
   sunset: /sunset|அந்தி|அஸ்தமனம்|மாலை|செவ்வானம்/i,
   beach: /beach|கடற்கரை|கடல்|மணல்|அலை|அலைகள்/i,
@@ -299,6 +419,8 @@ Do NOT invent an unrelated story or fallback to generic templates. Ground every 
 module.exports = {
   validateGuards,
   looksLikePoem,
-  validateTopicRelevance
+  validateTopicRelevance,
+  validateOutputLanguage,
+  stripLanguageNeutralContent
 };
 

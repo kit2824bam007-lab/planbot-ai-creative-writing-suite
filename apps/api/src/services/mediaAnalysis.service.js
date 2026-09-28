@@ -35,6 +35,10 @@ class MediaAnalysisService {
       if (fileSize > MAX_VIDEO_SIZE) {
         throw new Error('Video size exceeds maximum limit of 50MB.');
       }
+      // Bound frames count and sanitize
+      if (Array.isArray(media.frames)) {
+        media.frames = media.frames.slice(0, 12).filter((f) => typeof f === 'string' && f.length > 50 && f.length < 3 * 1024 * 1024);
+      }
     }
 
     return await contentCreatorService.buildVisualContext(media);
@@ -48,7 +52,18 @@ class MediaAnalysisService {
     if (type === 'video') {
       return {
         mediaType: 'video',
+        category: 'lifestyle',
         scene: cleanName || 'dynamic video scene',
+        subjects: ['subject in motion'],
+        actions: ['dynamic movement through scene', 'visual progression'],
+        emotion: 'engaging, energetic',
+        setting: 'cinematic environment',
+        visual_style: 'modern social media video',
+        important_events: ['opening hook frame', 'movement sequence', 'closing takeaway'],
+        dialogueMood: 'cinematic',
+        captionIdeas: [`Captivating moment captured in ${cleanName || 'this video'}.`],
+        dialogueSuggestions: [`சில தருணங்கள் காலத்தால் அழியாதவை...`],
+        matchReason: `The scene depicts ${cleanName || 'visual progression'} matching an energetic cinematic tone.`,
         objects: ['motion', 'visual elements'],
         mood: 'engaging, energetic',
         visualTheme: 'modern social media video',

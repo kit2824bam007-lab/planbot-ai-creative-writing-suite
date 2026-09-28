@@ -272,10 +272,10 @@ Excited for what lies ahead on this journey.
       } else if (isReel) {
         if (isTamil) {
           mockResponse = isSunset
-            ? `🎬 Reel Hook:\n"வானம் நிறம் மாறும் இந்த ஒரு நொடி... 🌅"\n\n📝 Caption:\nகடற்கரை அலைகளில் மறையும் செங்கதிர் போலே, உள்ளத்தின் பாரங்களும் மெல்லக் கரைகின்றன. அமைதியான மாலை நேரம் தரும் நிம்மதி அலாதியானது.\n\n🔥 Short Punch Line:\n"அமைதியைத் தேடிப் போகத் தேவையில்லை, இந்த மாலையே போதும்."\n\n#️⃣ Hashtags:\n#SunsetReels #அந்திவானம் #கடற்கரை #தமிழ்ரீல்ஸ் #AestheticTamil\n\n📣 Call to Action:\nஇந்த அமைதியான மாலை உங்களுக்குப் பிடித்திருந்தால் சேமித்து பகிருங்கள்!`
+            ? `🎬 ரீல் ஹூக்:\n"வானம் நிறம் மாறும் இந்த ஒரு நொடி... 🌅"\n\n📝 தலைப்பு:\nகடற்கரை அலைகளில் மறையும் செங்கதிர் போலே, உள்ளத்தின் பாரங்களும் மெல்லக் கரைகின்றன. அமைதியான மாலை நேரம் தரும் நிம்மதி அலாதியானது.\n\n🔥 பஞ்ச் வரி:\n"அமைதியைத் தேடிப் போகத் தேவையில்லை, இந்த மாலையே போதும்."\n\n#️⃣ Hashtags:\n#SunsetReels #அந்திவானம் #கடற்கரை #தமிழ்ரீல்ஸ் #AestheticTamil\n\n📣 செயலழைப்பு:\nஇந்த அமைதியான மாலை உங்களுக்குப் பிடித்திருந்தால் சேமித்து பகிருங்கள்!`
             : isMountain
-            ? `🎬 Reel Hook:\n"மேகங்களைத் தொடும் மலைச்சிகரங்களின் நடுவே ஒரு புத்தம் புதிய பயணம்! ⛰️"\n\n📝 Caption:\nவாழ்க்கை என்பது சேருமிடம் அல்ல, வழியில் நாம் சுவாசிக்கும் காற்று. ஒவ்வொரு மலையேற்றமும் புதிய நம்பிக்கையைத் தருகிறது.\n\n🔥 Short Punch Line:\n"உயரங்கள் சவாலானவை, ஆனால் உச்சி தரும் காட்சி அற்புதம்."\n\n#️⃣ Hashtags:\n#Shorts #தமிழ் #பயணம் #மலைச்சாரல் #TravelVlog #TamilTravel\n\n📣 Call to Action:\nமுழுப் பயணத்தையும் காண சப்ஸ்கிரைப் செய்யுங்கள்!`
-            : `🎬 Reel Hook:\n"இந்த ஒரு நொடி அழகு போதுமே... ✨"\n\n📝 Caption:\nகாட்சிகள் உணர்த்தும் மெல்லிய மௌனம் கவிதையாய் மலர்கிறது. பார்த்த கணத்தில் மனதைத் தொட்ட இந்த அழகு என்றும் நிலைத்திருக்கட்டும்.\n\n🔥 Short Punch Line:\n"கண்ணில் பதிந்த காட்சி, நெஞ்சில் நிறைந்த நிம்மதி."\n\n#️⃣ Hashtags:\n#தமிழ்ரீல்ஸ் #காட்சி #கவிதை #TamilVibes\n\n📣 Call to Action:\nலைக் மற்றும் ஷேர் செய்யுங்கள்!`;
+            ? `🎬 ரீல் ஹூக்:\n"மேகங்களைத் தொடும் மலைச்சிகரங்களின் நடுவே ஒரு புத்தம் புதிய பயணம்! ⛰️"\n\n📝 தலைப்பு:\nவாழ்க்கை என்பது சேருமிடம் அல்ல, வழியில் நாம் சுவாசிக்கும் காற்று. ஒவ்வொரு மலையேற்றமும் புதிய நம்பிக்கையைத் தருகிறது.\n\n🔥 பஞ்ச் வரி:\n"உயரங்கள் சவாலானவை, ஆனால் உச்சி தரும் காட்சி அற்புதம்."\n\n#️⃣ Hashtags:\n#Shorts #தமிழ் #பயணம் #மலைச்சாரல் #TravelVlog #TamilTravel\n\n📣 செயலழைப்பு:\nமுழுப் பயணத்தையும் காண சப்ஸ்கிரைப் செய்யுங்கள்!`
+            : `🎬 ரீல் ஹூக்:\n"இந்த ஒரு நொடி அழகு போதுமே... ✨"\n\n📝 தலைப்பு:\nகாட்சிகள் உணர்த்தும் மெல்லிய மௌனம் கவிதையாய் மலர்கிறது. பார்த்த கணத்தில் மனதைத் தொட்ட இந்த அழகு என்றும் நிலைத்திருக்கட்டும்.\n\n🔥 பஞ்ச் வரி:\n"கண்ணில் பதிந்த காட்சி, நெஞ்சில் நிறைந்த நிம்மதி."\n\n#️⃣ Hashtags:\n#தமிழ்ரீல்ஸ் #காட்சி #கவிதை #TamilVibes\n\n📣 செயலழைப்பு:\nலைக் மற்றும் ஷேர் செய்யுங்கள்!`;
         } else if (isTanglish) {
           mockResponse = isSunset
             ? `🎬 Reel Hook:\n"POV: The sunset understood the assignment. 🌅"\n\n📝 Caption:\nSun sets, waves hit, zero worries. Konjam neram idhula immerse aana, mind-ku apdiye relief kidakkum.\n\n🔥 Short Punch Line:\n"Golden hour scenes > everything else."\n\n#️⃣ Hashtags:\n#SunsetVibes #BeachMood #GoldenHour #TanglishReels #PeaceMode\n\n📣 Call to Action:\nSave this for your next beach evening!`
@@ -296,6 +296,49 @@ Excited for what lies ahead on this journey.
           mockResponse = `🎬 Title:\nமலைச்சாரலின் மௌனப் பயணம் ⛰️\n\n🔥 Hook:\nமேகங்களைத் தொடும் மலைச்சிகரங்களின் நடுவே ஒரு புத்தம் புதிய பயணம்!\n\n📝 Short Description:\nவாழ்க்கை என்பது சேருமிடம் அல்ல, வழியில் நாம் சுவாசிக்கும் காற்று. இயற்கையோடு ஒரு பயணம்.\n\n#️⃣ Hashtags:\n#Shorts #தமிழ் #பயணம் #மலைச்சாரல் #TravelVlog #TamilTravel`;
         } else {
           mockResponse = `🎬 Title:\nSummit Views Beyond The Clouds 🏔️\n\n🔥 Hook:\nThe climb is steep, but the view from the summit proves every drop of effort was worth it.\n\n📝 Short Description:\nThrough misty peaks and winding roads, finding stillness above the clouds. Never stop ascending.\n\n#️⃣ Hashtags:\n#Shorts #MountainTravel #Wanderlust #TravelDiaries #AdventureShorts #ClimbHigher`;
+        }
+      } else if (systemPrompt.includes('Media Type: video') || systemPrompt.includes('[MEDIA-AWARE VIDEO GENERATION REQUEST]') || (mcMatch && mcMatch[1].includes('video'))) {
+        // Structured Video Response: Caption + Dialogue-style suggestion + Mood + Reason
+        const isNightWalk = contextLower.includes('walk') || contextLower.includes('night') || contextLower.includes('alone') || contextLower.includes('look') || contextLower.includes('emotional');
+        const isDance = contextLower.includes('dance') || contextLower.includes('choreograph') || contextLower.includes('rhythm');
+        const isAction = contextLower.includes('fight') || contextLower.includes('action') || contextLower.includes('punch');
+        const isRomantic = contextLower.includes('romantic') || contextLower.includes('kadhal') || contextLower.includes('love') || contextLower.includes('couple');
+
+        if (isTamil) {
+          if (isNightWalk) {
+            mockResponse = `Caption:\n"திரும்பிப் பார்க்க வைத்தது பாதை இல்லை... நினைவுகள்."\n\nDialogue-style:\n"சில பிரிவுகள் முடிவல்ல... ஒரு புதிய கதையின் தொடக்கம்."\n\nMood:\nEmotional + Cinematic\n\nReason:\n"இரவு தெருவிளக்கின் ஒளியில் தனிமையான நடையும், திரும்பிப் பார்க்கும் உணர்ச்சிகரமான தருணமும் காட்சிகளில் பதிவாகியுள்ளன."`;
+          } else if (isDance) {
+            mockResponse = `Caption:\n"தாளமும் பாதமும் இணையும் நொடியில்... நடனம் உயிர் பெறுகிறது! 🔥"\n\nDialogue-style:\n"ஆட்டம் ஆடலாம்... ஆனா ஸ்டைல் நம்முடையதா இருக்கணும்! 🔥"\n\nMood:\nEnergetic + Vibrant\n\nReason:\n"துடிப்பான உடல் அசைவுகளும் இசைக்கேற்ப ஆடும் நடனமும் வீடியோ காட்சிகளில் தெளிவாகப் பதிவாகியுள்ளன."`;
+          } else if (isAction) {
+            mockResponse = `Caption:\n"அமைதியை பலவீனமாய் நினைக்காதே... புயலுக்கு முன் வரும் நிசப்தம் இது! 🔥"\n\nDialogue-style:\n"ஒரு பார்வை போதும்... கதை மாறிடும்! 🔥"\n\nMood:\nIntense + Mass\n\nReason:\n"கூரிய பார்வையும் வேகமான சண்டை அசைவுகளும் காட்சிகளில் மாஸ் உணர்வை ஏற்படுத்துகின்றன."`;
+          } else if (isRomantic) {
+            mockResponse = `Caption:\n"வார்த்தைகள் தேவையில்லை... உன் விழிகளின் மௌனமே எனக்குக் கவிதை. ❤️"\n\nDialogue-style:\n"உலகம் முழுக்கத் தேடிய அமைதி... உன் ஒற்றைப் புன்னகையில் கிடைத்தது."\n\nMood:\nRomantic + Poetic\n\nReason:\n"மென்மையான பார்வை பரிமாற்றமும் இயற்கை வெளிச்சத்தில் நிகழும் அருகாமையும் காட்சிகளில் பதிவாகியுள்ளன."`;
+          } else if (isMountain) {
+            mockResponse = `Caption:\n"உயரங்களைத் தொட எட்டிப் பார்க்கும் ஒவ்வொரு கணமும் ஒரு புதிய நம்பிக்கை. ⛰️"\n\nDialogue-style:\n"வழிகள் முடிவதில்லை... நாம் நடக்கும் தூரம் தான் மாறுகிறது."\n\nMood:\nInspirational + Adventurous\n\nReason:\n"பனிமூட்டமான சிகரங்களும் மலைப்பாதையின் பயணமும் காட்சிகளில் தெளிவாகப் பதிவாகியுள்ளன."`;
+          } else {
+            mockResponse = `Caption:\n"ஒவ்வொரு நகர்விலும் ஒரு கதை... காட்சியின் ஓட்டமே தனி அழகு. ✨"\n\nDialogue-style:\n"சில தருணங்கள் காலத்தால் அழியாதவை... நெஞ்சில் நிலைத்து நிற்பவை."\n\nMood:\nCinematic + Aesthetic\n\nReason:\n"காட்சிகளின் இயல்பான இயக்கமும் காட்சி அழகியலும் இக்கவிதையான வரிகளுக்குப் பொருத்தமாக அமைந்துள்ளன."`;
+          }
+        } else if (isTanglish) {
+          if (isNightWalk) {
+            mockResponse = `Caption:\n"Thirumbi paaka vechathu paadhai illa... ninaivugal thaan."\n\nDialogue-style:\n"Sila pirivugal mudivu illa... pudhu kadhaiyoda thodakkam."\n\nMood:\nEmotional + Cinematic\n\nReason:\n"Visual frames-la solitary walk and emotional look-back moment cinematic lighting-la kaatapadudhu."`;
+          } else {
+            mockResponse = `Caption:\n"Scene moves fast, but the vibe stays forever. ✨"\n\nDialogue-style:\n"Sila moments marakkave mudiyadhu... frames-la freeze aana magic idhu!"\n\nMood:\nCinematic + Reel Style\n\nReason:\n"The dynamic visual progression across the video frames matches this engaging tone."`;
+          }
+        } else {
+          // English
+          if (isNightWalk) {
+            mockResponse = `Caption:\n"What made me look back wasn't the road... but the memories."\n\nDialogue-style:\n"Some goodbyes are not endings—they are the quiet beginning of a whole new chapter."\n\nMood:\nEmotional + Cinematic\n\nReason:\n"The frames show a solitary walk with an emotional look-back moment and cinematic night lighting."`;
+          } else if (isDance) {
+            mockResponse = `Caption:\n"When rhythm meets passion, every step becomes pure art. 🔥"\n\nDialogue-style:\n"Every beat has a story; our rhythm speaks for itself."\n\nMood:\nEnergetic + Vibrant\n\nReason:\n"The sampled frames capture synchronized choreography, expressive footwork, and vibrant movement."`;
+          } else if (isAction) {
+            mockResponse = `Caption:\n"Never mistake stillness for hesitation—it is the gathering of the storm. 🔥"\n\nDialogue-style:\n"One decisive look is enough to shift the entire narrative."\n\nMood:\nIntense + Cinematic Action\n\nReason:\n"The frames display focused intensity, rapid physical action, and dramatic shadow framing."`;
+          } else if (isRomantic) {
+            mockResponse = `Caption:\n"No words needed when the quietest glances speak the loudest poetry. ❤️"\n\nDialogue-style:\n"The peace I sought across the world was found in a single smile."\n\nMood:\nRomantic + Poetic\n\nReason:\n"The sampled visual frames capture intimate eye contact and tender expressions under soft natural lighting."`;
+          } else if (isMountain) {
+            mockResponse = `Caption:\n"The climb is steep, but the view from the summit proves every drop of effort was worth it. ⛰️"\n\nDialogue-style:\n"Paths never truly end—it is the horizon that invites us further."\n\nMood:\nInspirational + Adventurous\n\nReason:\n"The sampled frames capture an active ascent across winding mountain roads and misty summits."`;
+          } else {
+            mockResponse = `Caption:\n"Captured in motion, alive in the moment. ✨"\n\nDialogue-style:\n"Some moments are not measured in time, but in the impressions they leave behind."\n\nMood:\nCinematic + Aesthetic\n\nReason:\n"The visual frames show a fluid narrative progression and expressive composition."`;
+          }
         }
       } else if (isTamil) {
         // Standard Tamil Captions (3 Options + Original line + Hashtags)
@@ -637,11 +680,57 @@ Real moments don't need a filter—just the right light. 🌇
         mockResponse = `The dream that surfaced in the dead of night was no mere illusion—it was a premonition waiting to unfold.\n\nStanding before the ancient archway, Daniel froze as the exact scene from his sleep materialized before his waking eyes.\n\n"Some dreams don't just fade with the dawn," he whispered to the wind. "They are memories of what is yet to come."`;
       }
     } else if (isTamil) {
-      if (systemPrompt.includes('[MODE: POEM GENERATION]')) {
+      const hasSabari = combined.includes('sabari') || combined.includes('சபரி');
+      const hasKani = combined.includes('kani') || combined.includes('கனி');
+      const isLoveStory = (hasSabari && hasKani) || combined.includes('kadhal') || combined.includes('lovers') || combined.includes('காதல்');
+
+      const toneMatch = systemPrompt.match(/TONE DIRECTIVE:\s*([^\n\r]+)/i) || (userPrompt && userPrompt.match(/"tone":\s*"([^"]+)"/i));
+      const toneStr = toneMatch ? toneMatch[1].toLowerCase() : '';
+      const actionMatch = userPrompt && userPrompt.match(/ACTION:\s*([^\n\r]+)/i);
+      const actionStr = actionMatch ? actionMatch[1].toLowerCase() : '';
+
+      const toneCreative = toneStr.includes('creative') || actionStr.includes('creative');
+      const toneEmotional = toneStr.includes('emotion') || actionStr.includes('emotion');
+      const toneHumorous = toneStr.includes('humor') || toneStr.includes('funny') || actionStr.includes('humor');
+      const toneSimpler = toneStr.includes('simple') || actionStr.includes('simpl');
+      const toneShorter = toneStr.includes('short') || actionStr.includes('short');
+      const toneLonger = toneStr.includes('long') || actionStr.includes('long');
+
+      if (isLoveStory) {
+        const sName = hasSabari ? 'சபரி' : 'மாறன்';
+        const kName = hasKani ? 'கனி' : 'நிலா';
+        if (toneCreative) {
+          mockResponse = `${sName}யும் ${kName}யும் கடலோர மணல்வெளியில் அமர்ந்து, எழும் அலைகளைக் கற்பனைக் கவிதைகளாக மொழிபெயர்த்துக் கொண்டிருந்தனர். அவர்களின் காதல் வெறும் வழக்கமான வார்த்தைகளில் அடங்காத ஒரு புதிய வண்ண ஓவியமாய் விரிந்தது. வானத்து மேகங்கள் அவர்களின் நினைவுகளை விண்மீன்களாய் வரைந்து கொண்டிருந்தன.`;
+        } else if (toneEmotional) {
+          mockResponse = `கடற்கரையின் அந்தி வெளிச்சத்தில் ${sName}யின் கைகளை மெல்லப் பிடித்தபடி ${kName} நின்றிருந்தாள். மௌனமாய் வழிந்த விழியோரத் துளிகளுக்குள் பல வருடப் பிரிவு, சொல்லப்படாத தவிப்பு மற்றும் ஆழமான அன்பு எல்லாம் ஒருங்கே உறைந்திருந்தது. "நீ என்னோடு இருக்கும் இந்த நொடி போதும்," என்றாள் அவள் குரல் தழுதழுக்க.`;
+        } else if (toneHumorous) {
+          mockResponse = `${sName}யும் ${kName}யும் காதலர்கள் தான், ஆனால் அந்த காதல் பெரும்பாலும் 'இன்னைக்கு என்ன சாப்பிடுறது?' என்ற சுவையான விவாதத்தில்தான் ஆரம்பமாகும்! கடற்கரையில் தீவிரமாக பேசிக்கொண்டிருந்தபோது, "என் மனசுல நீ மட்டும்தான் இருக்க" என்று ${sName} சொல்ல, "சரி முதல்ல அந்த சுண்டல் வாங்கித் தாங்க!" என்று ${kName} சிரித்தாள்.`;
+        } else if (toneSimpler) {
+          mockResponse = `${sName}யும் ${kName}யும் ஒருவரையொருவர் உண்மையாக நேசித்தனர். அவர்களின் அன்பு மிகவும் எளிமையானது. தினமும் ஒன்றாக நடப்பதும், மனம் விட்டுப் பேசுவதும் மட்டுமே அவர்களுக்குப் பிடித்திருந்தது.`;
+        } else if (toneShorter) {
+          mockResponse = `${sName}யும் ${kName}யும் கடற்கரையில் நின்றனர். அமைதியான அந்திப் பொழுதில் அவர்களின் உள்ளங்கள் அன்பால் இணைந்தன.`;
+        } else if (toneLonger) {
+          mockResponse = `${sName}யும் ${kName}யும் மாலை வேளையில் பழமையான துறைமுகப் பாலத்தில் அமைதியாக நடந்து கொண்டிருந்தனர். கடலின் குளிர்ந்த காற்று மெல்லிய இசையாக அவர்கள் மேல் தவழ்ந்தது. கடந்த கால நினைவுகள், அவர்கள் கடந்து வந்த சவாலான பாதைகள், ஒருவருக்கொருவர் துணையாய் நின்ற தருணங்கள் என எல்லாவற்றையும் நினைத்துப் பார்த்தனர்.\n\n"${sName}, இத்தனை தூரம் நாம் ஒன்றாக வருவோம் என்று நான் நினைக்கவே இல்லை," என்று கடலை வெறித்தபடி மெல்லிய குரலில் சொன்னாள் ${kName}.\n\nஅவன் அவளது கண்களைப் பார்த்து புன்னகைத்தான். "${kName}, தூரங்கள் மாறலாம், ஆனால் நாம் பகிர்ந்த அன்பு என்றும் மாறாது." என்றான் உறுதியோடு. அந்த மாலை அவர்களின் வாழ்வின் மறக்க முடியாத அழகான அத்தியாயமாகப் பதிவானது.`;
+        } else {
+          mockResponse = `${sName}யும் ${kName}யும் கடற்கரையில் நின்றனர். அந்தி வானத்தின் செவ்வொளியில் அவர்களின் காதல் அமைதியாகப் பூத்துக் குலுங்கியது. இருவரின் கண்களிலும் எதிர்காலம் பற்றிய நம்பிக்கை சுடராய் ஒளிர்ந்தது.`;
+        }
+      } else if (systemPrompt.includes('[MODE: POEM GENERATION]')) {
         if (systemPrompt.includes('STRUCTURAL FORM: Haiku')) {
           mockResponse = `நிலவின் மென்வெளிச்சம்\nஉன் நினைவைச் சுமந்து\nஇரவை நனைக்குதே!`;
         } else if (systemPrompt.includes('வெண்பா')) {
           mockResponse = `வானத்து வெண்மதியைக் கண்டுமகிழ் நெஞ்சமே\nகானத்து வேய்ங்குழலின் இன்னிசையும் - தானுணர்ந்து\nபாடலின்பம் பொங்கப் பரவசமாய் நின்றாட\nநாளுமெழும் தூயநல் லன்பு!`;
+        } else if (toneCreative) {
+          mockResponse = `விண்மீன்கள் கோர்த்தெடுத்த விசித்திர வீணையிலே\nமண்ணாளும் தென்றலது மாயங்கள் செய்யுதடி!\nகற்பனைக் குதிரையிலே காலத்தைக் கடந்தோடி\nசிற்பமாய் நெஞ்சினிலே சேர்ந்தாயே செந்தேனே!`;
+        } else if (toneEmotional) {
+          mockResponse = `விழியோரம் வழியும் மெல்லிய துளியினிலே\nவழிகின்ற மௌனத்தின் பாரங்கள் எத்தனைதான்!\nசொல்லாத துயரமெல்லாம் சொல்லாமல் புரிகின்ற\nஉன் அன்பின் மடியில் உலகம் மறக்குதடி!`;
+        } else if (toneHumorous) {
+          mockResponse = `கவிதை எழுத வந்து காலைக் காபி ஆறிப்போச்சு\nசெவி சாய்க்கும் அழகியவள் சிரிச்சுட்டே ஓடிப்போச்சு!\nவார்த்தைகள் வரலைன்னா வடையாவது வாங்கித்தாரேன்\nபார்த்து நீ சிரிச்சாத்தான் பாட்டெல்லாம் பாடிவாரேன்!`;
+        } else if (toneSimpler) {
+          mockResponse = `காலைத் தென்றல் வீசுது\nமனதில் அமைதி பேசுது!\nஉன் புன்னகை போதுமே\nஇந்த நாளும் இனிக்குமே!`;
+        } else if (toneShorter) {
+          mockResponse = `அந்தி வானம் சிவக்குது\nஅன்பு நெஞ்சில் இனிக்குது!`;
+        } else if (toneLonger) {
+          mockResponse = `காற்றினில் தவழும் கானகம் போலே\nதோற்றுவித்தாய் ஓர் புதுநிலா ஒளியை!\nகாதலின் ஆழம் கடலிலும் பெரிதாய்\nநெஞ்சினில் நின்றே நிலைபெறு மானே!\n\nவிண்ணின் தாரகை கண் சிமிட்டும் நேரம்\nமண்ணின் மலர்கள் மனம் மயக்கும் நறுமணம்\nஉன்னோடு வாழும் ஒவ்வொரு நொடியும்\nஎன்னோடு இணையும் அழியாத கவிதை!\n\nகாலத்தின் சுவடுகள் மாறினாலும்\nகோலத்து நிலவின் ஒளி மங்கினாலும்\nநெஞ்சத்து நினைவுகள் நீங்குவதில்லை\nஎன்றுமே நம் அன்பு குறைவதில்லை!`;
         } else {
           mockResponse = `காற்றினில் தவழும் கானகம் போலே\nதோற்றுவித்தாய் ஓர் புதுநிலா ஒளியை!\nகாதலின் ஆழம் கடலிலும் பெரிதாய்\nநெஞ்சினில் நின்றே நிலைபெறு மானே!\n\nவிண்ணின் தாரகை கண் சிமிட்டும் நேரம்\nமண்ணின் மலர்கள் மனம் மயக்கும் நறுமணம்\nஉன்னோடு வாழும் ஒவ்வொரு நொடியும்\nஎன்னோடு இணையும் அழியாத கவிதை!`;
         }
@@ -679,9 +768,55 @@ Real moments don't need a filter—just the right light. 🌇
         mockResponse = `காற்றினில் தவழும் கானகம் போலே\nதோற்றுவித்தாய் ஓர் புதுநிலா ஒளியை!\nகாதலின் ஆழம் கடலிலும் பெரிதாய்\nநெஞ்சினில் நின்றே நிலைபெறு மானே!`;
       }
     } else {
-      if (systemPrompt.includes('[MODE: POEM GENERATION]')) {
+      const hasSabari = combined.includes('sabari');
+      const hasKani = combined.includes('kani');
+      const isLoveStory = (hasSabari && hasKani) || combined.includes('lovers') || combined.includes('love');
+
+      const toneMatch = systemPrompt.match(/TONE DIRECTIVE:\s*([^\n\r]+)/i) || (userPrompt && userPrompt.match(/"tone":\s*"([^"]+)"/i));
+      const toneStr = toneMatch ? toneMatch[1].toLowerCase() : '';
+      const actionMatch = userPrompt && userPrompt.match(/ACTION:\s*([^\n\r]+)/i);
+      const actionStr = actionMatch ? actionMatch[1].toLowerCase() : '';
+
+      const toneCreative = toneStr.includes('creative') || actionStr.includes('creative');
+      const toneEmotional = toneStr.includes('emotion') || actionStr.includes('emotion');
+      const toneHumorous = toneStr.includes('humor') || toneStr.includes('funny') || actionStr.includes('humor');
+      const toneSimpler = toneStr.includes('simple') || actionStr.includes('simpl');
+      const toneShorter = toneStr.includes('short') || actionStr.includes('short');
+      const toneLonger = toneStr.includes('long') || actionStr.includes('long');
+
+      if (isLoveStory) {
+        const sName = hasSabari ? 'Sabari' : 'Daniel';
+        const kName = hasKani ? 'Kani' : 'Maya';
+        if (toneCreative) {
+          mockResponse = `${sName} and ${kName} strolled along the twilight shoreline where the tide sculpted intricate constellations into the wet amber sand. Their love felt like an unspoken language composed of quiet glances, fresh ocean mist, and vivid dreams woven under an emerald-tinted horizon.`;
+        } else if (toneEmotional) {
+          mockResponse = `Standing beside the restless waves, ${sName} gently held ${kName}'s hand as evening settled over the sea. Years of quiet sacrifices, gentle patience, and deep devotion surfaced in the tender silence between them. "No matter what changes," ${sName} whispered, "my home will always be with you."`;
+        } else if (toneHumorous) {
+          mockResponse = `${sName} and ${kName} were completely in love, though their grandest romantic debates usually revolved around who stole the last slice of pizza! As ${sName} leaned in with dramatic cinematic flair to profess his eternal devotion, ${kName} simply laughed and said, "That's very poetic, but did you remember to bring the umbrella?"`;
+        } else if (toneSimpler) {
+          mockResponse = `${sName} and ${kName} loved each other very much. Their bond was simple and honest. They enjoyed walking together by the beach, talking about their day, and sharing quiet moments.`;
+        } else if (toneShorter) {
+          mockResponse = `${sName} and ${kName} stood by the evening sea, their hearts joined in quiet love.`;
+        } else if (toneLonger) {
+          mockResponse = `The amber sun dipped below the horizon as ${sName} and ${kName} walked along the weathered wooden pier, listening to the rhythmic swell of the incoming tide. Over the years, they had weathered doubts, shared triumphs, and built an unshakable trust that deepened with every changing season.\n\n"Do you ever think about the day we first met?" ${kName} asked, smiling as the salt breeze stirred her hair.\n\n${sName} met her gaze with quiet tenderness. "Every single day," he answered. Looking out across the boundless water, they realized that the greatest adventure wasn't chasing distant horizons, but choosing to stand side by side through every unfolding chapter of life.`;
+        } else {
+          mockResponse = `${sName} and ${kName} stood by the shore as the amber sky faded into dusk, their bond steady and calm against the rolling waves.`;
+        }
+      } else if (systemPrompt.includes('[MODE: POEM GENERATION]')) {
         if (systemPrompt.includes('STRUCTURAL FORM: Haiku')) {
           mockResponse = `Pale moon softly glows,\nWhispering ancient secrets,\nLove stirs in the heart.`;
+        } else if (toneCreative) {
+          mockResponse = `Stardust entangled in the weaver's loom,\nBreathes silver lanterns through the midnight gloom.\nAn uncharted voyage where the wild winds play,\nTurning the shadows into vibrant day.`;
+        } else if (toneEmotional) {
+          mockResponse = `In the quiet spaces where our whispers fall,\nA tender sorrow heeds the heart's deep call.\nThrough every teardrop and each breathless plea,\nYour gentle spirit anchors peace in me.`;
+        } else if (toneHumorous) {
+          mockResponse = `I sat to write a deeply moving verse,\nThen spilled my tea, which made the stanza worse!\nIf rhymes escape me in the morning sun,\nAt least we shared a warm and hearty pun!`;
+        } else if (toneSimpler) {
+          mockResponse = `The morning brings a gentle light,\nAnd chases away the cold dark night.\nA peaceful smile upon your face,\nMakes this the warmest, sweetest place.`;
+        } else if (toneShorter) {
+          mockResponse = `Sunlight on the sea,\nPeace is here with me.`;
+        } else if (toneLonger) {
+          mockResponse = `The whispers of the midnight breeze,\nAwaken slumber in the ancient trees.\nA tapestry of golden light,\nDispels the sorrow of the night.\n\nIn every step, a truth reclaimed,\nA silent wonder yet unnamed.\nAcross the hills where rivers run,\nWe greet the promise of the sun.`;
         } else {
           mockResponse = `The whispers of the midnight breeze,\nAwaken slumber in the ancient trees.\nA tapestry of golden light,\nDispels the sorrow of the night.\n\nIn every step, a truth reclaimed,\nA silent wonder yet unnamed.`;
         }

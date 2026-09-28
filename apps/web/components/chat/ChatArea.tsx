@@ -7,12 +7,9 @@ import {
   Check,
   PanelLeft,
   Menu,
-  Sun,
-  Moon,
   Sparkles,
   Share2
 } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useChatStore } from '../../store/chatStore';
 import { useChatStream } from '../../hooks/useChatStream';
 import { MessageBubble } from './MessageBubble';
@@ -24,7 +21,6 @@ import { cn } from '../../lib/utils';
 
 export const ChatArea: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { theme, setTheme } = useTheme();
 
   const {
     messages,
@@ -138,16 +134,6 @@ export const ChatArea: React.FC = () => {
             <Sparkles className="w-3 h-3 text-amber-500" />
             <span className="hidden sm:inline">PRO</span>
             <span>{quota?.isPro ? 'Active' : `${quota?.remaining ?? 10} left`}</span>
-          </button>
-
-          {/* Theme Toggle */}
-          <button
-            type="button"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-2xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-white/80 dark:hover:bg-zinc-800 transition-colors shadow-2xs"
-            title="Toggle Theme"
-          >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
 
           {/* New Piece Button */}

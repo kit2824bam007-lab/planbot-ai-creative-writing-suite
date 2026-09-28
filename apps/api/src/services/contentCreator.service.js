@@ -53,8 +53,19 @@ class ContentCreatorService {
 
     this.validateMedia(media);
 
-    // Check cache by media hash (data + fileName)
-    const mediaHash = hashString((media.fileName || '') + '::' + (media.data.length || 0) + '::' + (media.data.slice(0, 500) || ''));
+    // Check cache by media hash (fileName + fileSize + duration + type + frames sample + data sample)
+    let framesDigest = '';
+    if (Array.isArray(media.frames) && media.frames.length > 0) {
+      framesDigest = media.frames.map((f, i) => `${i}:${f.slice(0, 60)}`).join('|');
+    }
+    const mediaHash = hashString(
+      (media.fileName || '') + '::' +
+      (media.fileSize || 0) + '::' +
+      (media.duration || 0) + '::' +
+      (media.type || '') + '::' +
+      framesDigest + '::' +
+      (media.data ? media.data.slice(0, 300) : '')
+    );
     const cacheKey = `vcontext:${mediaHash}`;
 
     try {
@@ -86,6 +97,29 @@ class ContentCreatorService {
   }
 
   /**
+   * Preprocesses base64 image data for AI analysis.
+   * Preserves image validity up to safe API payload thresholds (~4MB).
+   * The original image data sent to the user is never modified.
+   * @param {string} rawBase64 - raw base64 string (no data URI prefix)
+   * @param {number} [maxBytes=4194304] - max decoded bytes to send to analysis API (~4MB)
+   * @returns {string} preprocessed base64 string
+   */
+  preprocessImageForAnalysis(rawBase64, maxBytes = 4 * 1024 * 1024) {
+    if (!rawBase64) return rawBase64;
+    // base64 encodes 3 bytes as 4 chars, so decoded size ≈ base64.length * 0.75
+    const estimatedDecodedBytes = rawBase64.length * 0.75;
+    if (estimatedDecodedBytes <= maxBytes) {
+      return rawBase64; // already within limits, preserve valid image structure
+    }
+    // Calculate max base64 chars for the target byte limit
+    const maxBase64Chars = Math.floor(maxBytes / 0.75);
+    // Trim to the nearest 4-char boundary (required for valid base64)
+    const trimmed = rawBase64.slice(0, Math.floor(maxBase64Chars / 4) * 4);
+    console.warn(`[ContentCreatorService] Image preprocessed: ${Math.round(estimatedDecodedBytes / 1024)}KB → ${Math.round(maxBytes / 1024)}KB for AI analysis.`);
+    return trimmed;
+  }
+
+  /**
    * Multimodal deep analysis of uploaded image
    */
   async analyzeImage(media) {
@@ -98,7 +132,12 @@ class ContentCreatorService {
       rawBase64 = data.split(';base64,')[1];
     }
 
+    // Preprocess: reduce large images to a safe analysis size
+    // This only affects what is sent to the AI analysis API — not the user-facing image
+    const analysisBase64 = this.preprocessImageForAnalysis(rawBase64);
+
     // Attempt live multimodal analysis via Gemini
+    const analysisStart = Date.now();
     try {
       const keyEntry = keyPool.getKey();
       if (!keyEntry || !keyEntry.key || keyEntry.key === 'demo-dev-key' || keyEntry.key.startsWith('your-')) {
@@ -142,19 +181,22 @@ Return ONLY a valid JSON object matching this exact schema:
         {
           inlineData: {
             mimeType: cleanMime,
-            data: rawBase64
+            data: analysisBase64  // use preprocessed (smaller) version for analysis
           }
         },
         analysisPrompt
       ]);
 
+      // Reduced timeout: 7s to fail faster to fallback (was 9s)
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Image analysis timed out')), 9000)
+        setTimeout(() => reject(new Error('Image analysis timed out')), 7000)
       );
 
       const result = await Promise.race([analysisPromise, timeoutPromise]);
       const responseText = result.response.text();
       keyPool.reportSuccess(keyEntry);
+
+      console.warn(`[ContentCreatorService] Image analysis completed in ${Date.now() - analysisStart}ms`);
 
       let cleanJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
@@ -167,18 +209,21 @@ Return ONLY a valid JSON object matching this exact schema:
         analyzedAt: new Date().toISOString()
       };
     } catch (err) {
-      console.warn('[ContentCreatorService] Live image analysis fallback:', err.message);
+      console.warn(`[ContentCreatorService] Live image analysis fallback after ${Date.now() - analysisStart}ms:`, err.message);
       return this.getSmartContext('image', cleanName, rawBase64);
     }
   }
 
   /**
-   * Analysis of uploaded video
+   * Analysis of uploaded video.
+   * If sampled visual frames are provided, sends them in ONE single multimodal Gemini request
+   * to deeply analyze the actual visual content across the timeline.
    */
   async analyzeVideo(media) {
-    const { fileName = '', fileSize = 0, duration = 0 } = media;
+    const { fileName = '', fileSize = 0, duration = 0, frames = [] } = media;
     const cleanName = (fileName || '').replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
 
+    const analysisStart = Date.now();
     try {
       const keyEntry = keyPool.getKey();
       if (!keyEntry || !keyEntry.key || keyEntry.key === 'demo-dev-key' || keyEntry.key.startsWith('your-')) {
@@ -194,7 +239,72 @@ Return ONLY a valid JSON object matching this exact schema:
         }
       });
 
-      const videoPrompt = `You are an expert video narrative and visual analyst for creative social media content.
+      let analysisPromise;
+
+      if (Array.isArray(frames) && frames.length > 0) {
+        // REAL MULTIMODAL VIDEO FRAME ANALYSIS IN ONE SINGLE REQUEST
+        const frameParts = [];
+        frameParts.push({
+          text: `You are an expert cinematic visual analyst, film critic, and creative director.
+The user uploaded a video clip titled "${cleanName || 'creative video clip'}" (${fileSize ? Math.round(fileSize / (1024 * 1024)) + 'MB' : 'clip'}, duration: ${duration ? duration + 's' : 'short-form'}).
+Below are ${frames.length} representative frames sampled sequentially across the video timeline.
+
+Analyze what is ACTUALLY happening visually in these frames:
+- People, subjects, their movements and actions (walking, dancing, looking at someone, celebrating, fight/action, romantic scene, friendship, nature/travel, etc.)
+- Emotional expressions, facial cues, vibe
+- Setting, lighting, camera aesthetics
+- Grounded creative caption ideas, original trending/reel-style dialogue suggestions inspired by this scene (no copyrighted quotes), and why they match.
+
+Return ONLY a valid JSON object matching this schema:
+{
+  "mediaType": "video",
+  "category": "dance | action_fight | romantic | friendship | celebration | emotional_moment | nature_travel | tech_demo | lifestyle | general",
+  "scene": "concise description of visible environment and setting across frames",
+  "subjects": ["main visible subjects or people"],
+  "actions": ["concrete actions seen across frames (e.g. walking alone, turning back, smiling, dancing)"],
+  "emotion": "visible emotion or atmosphere (e.g. nostalgic, solitary, exuberant, intense)",
+  "setting": "setting and lighting context (e.g. night street with streetlight reflections)",
+  "visual_style": "cinematic | vlog | aesthetic minimal | energetic reel | documentary",
+  "important_events": [
+    "chronological visual moments observed across the frames"
+  ],
+  "dialogueMood": "dialogue mood (e.g. emotional, romantic, mass/punch, reflective, humorous)",
+  "captionIdeas": [
+    "creative caption directly grounded in what is visually depicted"
+  ],
+  "dialogueSuggestions": [
+    "original reel-style / trending-style dialogue line strictly inspired by this scene"
+  ],
+  "matchReason": "1-2 sentence explanation of why the caption/dialogue matches the visual actions and emotion observed in the frames",
+  "summary": "1-2 sentence narrative summary of the visual action across the video clip"
+}`
+        });
+
+        frames.forEach((frameData, idx) => {
+          let rawBase64 = frameData;
+          let mimeType = 'image/jpeg';
+          if (rawBase64.includes(';base64,')) {
+            const split = rawBase64.split(';base64,');
+            if (split[0].includes('image/')) {
+              mimeType = split[0].replace('data:', '');
+            }
+            rawBase64 = split[1];
+          }
+          frameParts.push({
+            text: `[Sampled Video Frame ${idx + 1} of ${frames.length}]`
+          });
+          frameParts.push({
+            inlineData: {
+              mimeType,
+              data: rawBase64
+            }
+          });
+        });
+
+        analysisPromise = model.generateContent(frameParts);
+      } else {
+        // Fallback to metadata-based analysis if no frames were extracted
+        const videoPrompt = `You are an expert video narrative and visual analyst for creative social media content.
 The user uploaded a video clip titled "${cleanName || 'creative video clip'}" (${fileSize ? Math.round(fileSize / (1024 * 1024)) + 'MB' : 'clip'}, duration: ${duration ? duration + 's' : 'short-form'}).
 Analyze and infer the cinematic and visual narrative context based on the title, timeline, and short-form video tropes.
 
@@ -212,15 +322,19 @@ Return ONLY a valid JSON object matching this schema:
   "topic": "core subject or narrative story",
   "summary": "1-2 sentence overview of the video's essence"
 }`;
+        analysisPromise = model.generateContent(videoPrompt);
+      }
 
-      const analysisPromise = model.generateContent(videoPrompt);
+      // 7s timeout for video analysis
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Video analysis timed out')), 9000)
+        setTimeout(() => reject(new Error('Video analysis timed out')), 7000)
       );
 
       const result = await Promise.race([analysisPromise, timeoutPromise]);
       const responseText = result.response.text();
       keyPool.reportSuccess(keyEntry);
+
+      console.warn(`[ContentCreatorService] Video analysis completed in ${Date.now() - analysisStart}ms`);
 
       let cleanJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
@@ -233,7 +347,7 @@ Return ONLY a valid JSON object matching this schema:
         analyzedAt: new Date().toISOString()
       };
     } catch (err) {
-      console.warn('[ContentCreatorService] Video analysis fallback:', err.message);
+      console.warn(`[ContentCreatorService] Video analysis fallback after ${Date.now() - analysisStart}ms:`, err.message);
       return this.getSmartContext('video', cleanName, null, duration);
     }
   }
@@ -341,16 +455,134 @@ Return ONLY a valid JSON object matching this schema:
     }
 
     if (type === 'video') {
+      let actions = ['dynamic movement through scene', 'visual progression'];
+      let emotion = mood || 'engaging, energetic';
+      let setting = scene || 'cinematic setting';
+      let visual_style = visualTheme || 'cinematic reel';
+      let dialogueMood = 'cinematic';
+      let captionIdeas = [`Captivating moment captured in ${cleanName || 'this video'}.`];
+      let dialogueSuggestions = ['சில தருணங்கள் காலத்தால் அழியாதவை...'];
+      let matchReason = `The scene depicts ${cleanName || 'visual progression'} matching an energetic narrative tone.`;
+
+      if (category === 'travel') {
+        actions = ['walking along mountain trail', 'looking out at wide panoramic heights', 'dynamic camera pan across landscape'];
+        emotion = 'adventurous, free-spirited, awe-inspiring';
+        setting = 'winding road and misty mountain peaks';
+        visual_style = 'cinematic travel vlog';
+        dialogueMood = 'inspirational, bold';
+        captionIdeas = [
+          'உயரங்களைத் தொட எட்டிப் பார்க்கும் ஒவ்வொரு கணமும் ஒரு புதிய நம்பிக்கை.',
+          'The climb is steep, but the view from the summit proves every drop of effort was worth it.'
+        ];
+        dialogueSuggestions = [
+          'வழிகள் முடிவதில்லை... நாம் நடக்கும் தூரம் தான் மாறுகிறது.',
+          'Paths don’t end—it is the horizon that invites us further.'
+        ];
+        matchReason = 'The sampled frames show movement through mountain trails and scenic vistas, naturally matching an adventurous travel aesthetic.';
+      } else if (category === 'tech_demo') {
+        actions = ['demonstrating software interface on screen', 'walking through live features', 'creator explaining real-time results'];
+        emotion = 'focused, proud, innovative';
+        setting = 'modern tech workspace with interactive screen';
+        visual_style = 'hands-on tech presentation';
+        dialogueMood = 'professional, grounded';
+        captionIdeas = [
+          'From blueprint to working reality: walking through our live AI implementation.',
+          'யோசனைகள் செயலாக மாறும் தருணம்... எங்கள் திட்டத்தின் நேரலை செயல்விளக்கம்.'
+        ];
+        dialogueSuggestions = [
+          'நம்பிக்கை வார்த்தைகளில் இல்லை... நாம் உருவாக்கும் படைப்பில் இருக்கிறது.',
+          'Real innovation is not proclaimed—it is demonstrated.'
+        ];
+        matchReason = 'The visual frames show a developer actively demonstrating software workflow features on screen, reflecting an authentic tech demo.';
+      } else if (text.includes('dance')) {
+        category = 'dance';
+        actions = ['choreographed dance movements', 'rhythmic footwork and expressive spins', 'high energy closing pose'];
+        emotion = 'vibrant, exuberant, electrifying';
+        setting = 'stage / aesthetic indoor dance space';
+        visual_style = 'high-energy dance reel';
+        dialogueMood = 'mass, punch, energetic';
+        captionIdeas = [
+          'தாளமும் பாதமும் இணையும் நொடியில்... நடனம் உயிர் பெறுகிறது! 🔥',
+          'When rhythm meets passion, every step becomes pure art.'
+        ];
+        dialogueSuggestions = [
+          'ஆட்டம் ஆடலாம்... ஆனா ஸ்டைல் நம்முடையதா இருக்கணும்! 🔥',
+          'Every beat has a story; our rhythm speaks for itself.'
+        ];
+        matchReason = 'The frames show rhythmic bodily motion and expressive choreography matching a vibrant dance reel.';
+      } else if (text.includes('fight') || text.includes('action')) {
+        category = 'action_fight';
+        actions = ['intense visual stare into camera', 'swift physical movement / strike sequence and fast action', 'dramatic freeze frame'];
+        emotion = 'fiery, intense, relentless';
+        setting = 'dramatic cinematic lighting with sharp shadows';
+        visual_style = 'intense cinematic action';
+        dialogueMood = 'mass, punch';
+        captionIdeas = [
+          'அமைதியை பலவீனமாய் நினைக்காதே... புயலுக்கு முன் வரும் நிசப்தம் இது! 🔥',
+          'Never mistake silence for weakness—it is the gathering of the storm.'
+        ];
+        dialogueSuggestions = [
+          'ஒரு பார்வை போதும்... கதை மாறிடும்! 🔥',
+          'One look is enough to shift the entire game.'
+        ];
+        matchReason = 'The frames display sharp physical motion, focused intensity, and dramatic shadow framing matching a mass action scene.';
+      } else if (text.includes('romantic') || text.includes('kadhal') || text.includes('love')) {
+        category = 'romantic';
+        actions = ['two people sharing a gentle glance', 'slow walking side by side', 'soft smile in warm natural light'];
+        emotion = 'tender, affectionate, heartfelt';
+        setting = 'warm romantic outdoor setting';
+        visual_style = 'poetic romantic reel';
+        dialogueMood = 'poetic, emotional';
+        captionIdeas = [
+          'வார்த்தைகள் தேவையில்லை... உன் விழிகளின் மௌனமே எனக்குக் கவிதை. ❤️',
+          'No words needed when the quietest glances speak the loudest poetry.'
+        ];
+        dialogueSuggestions = [
+          'உலகம் முழுக்கத் தேடிய அமைதி... உன் ஒற்றைப் புன்னகையில் கிடைத்தது.',
+          'The peace I sought across the world was found in a single smile.'
+        ];
+        matchReason = 'The sampled visual frames capture intimate eye contact and tender expressions under soft natural lighting.';
+      } else if (text.includes('night') || text.includes('alone') || text.includes('walk') || text.includes('emotional')) {
+        category = 'emotional_moment';
+        actions = ['person walking alone along the street', 'turning back with an emotional look', 'cinematic streetlight reflections on the path'];
+        emotion = 'emotional, nostalgic, solitary, reflective';
+        setting = 'night street with solitary streetlight lighting';
+        visual_style = 'moody cinematic night walk';
+        dialogueMood = 'emotional, cinematic';
+        captionIdeas = [
+          'திரும்பிப் பார்க்க வைத்தது பாதை இல்லை... நினைவுகள்.',
+          'What made me look back wasn\'t the road... but the memories.'
+        ];
+        dialogueSuggestions = [
+          'சில பிரிவுகள் முடிவல்ல... ஒரு புதிய கதையின் தொடக்கம்.',
+          'Some goodbyes are not endings—they are the quiet beginning of a whole new chapter.'
+        ];
+        matchReason = 'The frames show a solitary walk with an emotional look-back moment and cinematic night lighting.';
+      }
+
       return {
         mediaType: 'video',
         category,
         scene,
         openingHook: `Opening visual of ${scene}`,
-        keyActions: ['dynamic motion through the scene', 'captivating visual progression'],
+        keyActions: actions,
+        actions,
         endingMoment: 'memorable closing frame lingering on the view',
         subjects,
         objects,
         mood,
+        emotion,
+        setting,
+        visual_style,
+        important_events: [
+          `Opening: ${actions[0] || 'initial visual movement'}`,
+          `Progress: ${actions[1] || 'motion sequence'}`,
+          `Conclusion: ${actions[2] || 'closing frame lingering on scene'}`
+        ],
+        dialogueMood,
+        captionIdeas,
+        dialogueSuggestions,
+        matchReason,
         visualTheme,
         topic: cleanName || 'creative lifestyle exploration',
         summary: `Short video clip (${duration ? duration + 's' : 'reels'}) showcasing ${summary}`

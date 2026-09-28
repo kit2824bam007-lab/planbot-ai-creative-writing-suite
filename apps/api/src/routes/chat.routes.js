@@ -5,13 +5,27 @@ const redis = require('../services/redis');
 const geminiService = require('../services/gemini');
 const openRouterService = require('../services/openrouter');
 const { detectLanguage } = require('../services/language');
-const { validateGuards } = require('../services/guards');
+const { validateGuards, validateOutputLanguage } = require('../services/guards');
 const { buildSystemPrompt, buildActionPrompt, buildStructuredUserPrompt, CLASSICAL_TAMIL_FORMS } = require('../config/prompts');
 const { authenticate } = require('../middleware/auth');
 const { checkDailyLimit, getQuotaStatus, refundDailyLimit } = require('../middleware/rateLimit');
 const { sanitizeInput } = require('../middleware/sanitize');
 const { hashString } = require('../utils/crypto');
 const { ApiError } = require('../utils/errors');
+
+/**
+ * Builds a language-correction retry prompt for when the AI generated
+ * content in the wrong language despite instructions.
+ * @param {string} language - 'ta' | 'en'
+ * @returns {string}
+ */
+function buildLanguageCorrectionPrompt(language) {
+  const targetName = language === 'ta' ? 'Tamil (தமிழ்)' : 'English';
+  const script = language === 'ta'
+    ? 'native Tamil script (Unicode \u0B80-\u0BFF). Do NOT use Romanized Tamil (Tanglish) or English letters.'
+    : 'English (Latin script). Do NOT use Tamil, Hindi, or any other script.';
+  return `\n\n[LANGUAGE CORRECTION — MANDATORY OVERRIDE]\nThe previous generation did NOT follow the required output language.\n\nRequired output language: ${targetName}\n\nRewrite the COMPLETE response from scratch.\nIMPORTANT:\n- Output ONLY in ${targetName}.\n- Write every word in ${script}\n- Do not switch to another language mid-response.\n- Proper nouns, names, URLs, and unavoidable technical terms may remain unchanged.\n- No Tanglish, no Hindi, no Malayalam. Only ${targetName}.`;
+}
 
 const mediaAnalysisService = require('../services/mediaAnalysis.service');
 
@@ -94,11 +108,18 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
     const { prompt = '', mode, length, action, previousMessageId } = params;
     let conversationId = params.conversationId;
 
-    // 1. Language Determination & Tanglish Detection:
+    // 1. Language Determination:
+    // IMPORTANT: params.language ('en' | 'ta') is the AUTHORITATIVE OUTPUT language selected by the user.
+    // isTanglish is an INPUT-detection flag only — it tells the AI how to READ the input,
+    // NOT what language to write the output in.
     const contentCreatorService = require('../services/contentCreator.service');
     const preferredLang = contentCreatorService.detectLanguagePreference(prompt, params.language);
+    // isTanglish = true means the user typed in Romanized Tamil (Tanglish) input style.
+    // This must NEVER override the selected output language.
     const isTanglish = preferredLang === 'tanglish';
-    let resolvedLanguage = isTanglish ? 'tanglish' : (params.language === 'en' ? 'en' : 'ta');
+    // resolvedLanguage is always the user-selected output language ('ta' or 'en').
+    // Tanglish is only used as output when explicitly selected as a format (legacy path).
+    let resolvedLanguage = params.language === 'en' ? 'en' : 'ta';
 
     // 2. Classical Form -> Force language to 'ta' (only in poem mode)
     let resolvedPoemType = mode === 'poem'
@@ -109,10 +130,13 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
     }
 
     // Detect script and translanguaging of input prompt
-    const detection = detectLanguage(prompt, resolvedLanguage === 'tanglish' ? 'ta' : resolvedLanguage);
+    // detectLanguage is used to understand the INPUT format, not determine the output language.
+    const detection = detectLanguage(prompt, resolvedLanguage);
     const hasTamilUnicode = /[\u0B80-\u0BFF]/.test(prompt);
     const hasLatinWords = /[a-zA-Z]/.test(prompt);
-    const isRomanized = detection.romanizedInput || (resolvedLanguage === 'ta' && !hasTamilUnicode && hasLatinWords);
+    // isRomanized = true means the user typed their prompt in Romanized Tamil (Tanglish).
+    // The output language is still governed by resolvedLanguage.
+    const isRomanized = detection.romanizedInput || (resolvedLanguage === 'ta' && !hasTamilUnicode && hasLatinWords && isTanglish);
 
     sendEvent('status', {
       detectedLanguage: resolvedLanguage,
@@ -126,10 +150,16 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
     if (!mediaContext && params.media) {
       sendEvent('status', {
         step: 'media_analysis',
-        message: `Analyzing uploaded ${params.media.type}...`
+        message: params.media.type === 'video' ? 'Analyzing video frames...' : 'Analyzing uploaded image...'
       });
       try {
         mediaContext = await mediaAnalysisService.analyzeMedia(params.media);
+        if (params.media.type === 'video') {
+          sendEvent('status', {
+            step: 'media_analyzed',
+            message: 'Video frames analyzed successfully.'
+          });
+        }
       } catch (mErr) {
         console.warn('[ChatRoutes] Media analysis warning:', mErr.message);
         await refundDailyLimit(req);
@@ -264,6 +294,13 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
           mediaContext.category ? `Category: ${mediaContext.category}` : '',
           mediaContext.scene ? `Setting: ${mediaContext.scene}` : '',
           (mediaContext.subjects || mediaContext.objects)?.length ? `Subjects: ${(mediaContext.subjects || mediaContext.objects).join(', ')}` : '',
+          mediaContext.actions?.length ? `Observed Actions: ${mediaContext.actions.join(' -> ')}` : '',
+          mediaContext.emotion ? `Emotion: ${mediaContext.emotion}` : '',
+          mediaContext.setting ? `Lighting & Environment: ${mediaContext.setting}` : '',
+          mediaContext.visual_style ? `Visual Style: ${mediaContext.visual_style}` : '',
+          mediaContext.important_events?.length ? `Timeline Events: ${mediaContext.important_events.join(' | ')}` : '',
+          mediaContext.dialogueMood ? `Dialogue Mood: ${mediaContext.dialogueMood}` : '',
+          mediaContext.matchReason ? `Visual Grounding Context: ${mediaContext.matchReason}` : '',
           mediaContext.peopleContext ? `People: ${mediaContext.peopleContext}` : '',
           mediaContext.foodDetails ? `Food: ${mediaContext.foodDetails}` : '',
           mediaContext.productDetails ? `Product: ${mediaContext.productDetails}` : '',
@@ -279,7 +316,21 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
           mediaContext.summary ? `Summary: ${mediaContext.summary}` : ''
         ].filter(Boolean).join(' | ');
 
-        if (userInstruction) {
+        if (mediaContext.mediaType === 'video') {
+          userPrompt = `[MEDIA-AWARE VIDEO GENERATION REQUEST]
+Uploaded Video Context: ${mediaVisualSummary}
+${userInstruction ? `User Instruction: "${userInstruction}"` : ''}
+
+CRITICAL VIDEO INSTRUCTIONS:
+1. Genuinely ground every line in what is visually depicted in these video frames (${mediaVisualSummary}). Do NOT generate generic filler or ignore the visual actions.
+2. Produce a complete video package:
+   - Caption: A scene-grounded creative caption directly reflecting the visual movement and selected tone (${resolvedTone || 'aesthetic'}).
+   - Dialogue-style: An original trending-style / reel-style dialogue suggestion inspired by the visual mood. (Do NOT copy long copyrighted movie dialogues; provide 100% original cinematic lines).
+   - Mood: The emotional and aesthetic mood of the scene.
+   - Reason: A concise 1-2 sentence explanation of why the caption and dialogue match the actual visual scene in the frames.
+3. The selected output language is ${resolvedLanguage === 'ta' ? 'Tamil (தமிழ்)' : 'English'}. The entire output (Caption, Dialogue-style, and Reason) must be written in ${resolvedLanguage === 'ta' ? 'native Tamil script' : 'English'}.
+4. Selected tone: "${resolvedTone || 'aesthetic'}" must guide the emotional intensity and phrasing.`;
+        } else if (userInstruction) {
           userPrompt = `[MEDIA-AWARE GENERATION REQUEST]
 Uploaded ${mediaContext.mediaType || 'visual media'}: ${mediaVisualSummary}
 User Instruction: "${userInstruction}"
@@ -316,8 +367,9 @@ CRITICAL INSTRUCTIONS:
     }
 
     // 4. Cache Check (24h TTL)
+    const isTestEnv = process.env.NODE_ENV === 'test';
     const cacheKey = `cache:${hashString(systemPrompt + ':::' + userPrompt)}`;
-    const cachedResponse = await redis.get(cacheKey);
+    const cachedResponse = isTestEnv ? null : await redis.get(cacheKey);
 
     if (cachedResponse) {
       // Stream cached content in chunks
@@ -353,8 +405,13 @@ CRITICAL INSTRUCTIONS:
 
     // Only pass lightweight image to generateStream; video context is already embedded into prompt
     let streamMedia = null;
-    if (params.media && params.media.type === 'image' && (!params.media.fileSize || params.media.fileSize < 4 * 1024 * 1024)) {
-      streamMedia = params.media;
+    if (params.media && params.media.type === 'image') {
+      const commaIdx = params.media.data ? params.media.data.indexOf(',') : -1;
+      const rawPayload = commaIdx !== -1 ? params.media.data.slice(commaIdx + 1) : (params.media.data || '');
+      const actualBytes = rawPayload ? Math.round(rawPayload.length * 0.75) : (params.media.fileSize || 0);
+      if (!actualBytes || actualBytes < 4 * 1024 * 1024) {
+        streamMedia = params.media;
+      }
     }
 
     generatedText = '';
@@ -434,6 +491,81 @@ CRITICAL INSTRUCTIONS:
       return res.end();
     }
 
+    // 5b. Output Language Validation & Bounded Correction Retry
+    // This runs BEFORE guard checks. A wrong-language response must not reach the user.
+    // The quota is NOT re-deducted on correction retries — checkDailyLimit already ran once.
+    const langValidation = validateOutputLanguage(finalOutput, resolvedLanguage);
+    let langRetryCount = 0;
+    const maxLangRetries = 1; // bounded: max 1 language correction attempt
+
+    while (!langValidation.valid && langRetryCount < maxLangRetries) {
+      langRetryCount++;
+      const langCorrectionPrompt = buildLanguageCorrectionPrompt(resolvedLanguage);
+      console.warn(`[LangGuard] Output language validation failed (attempt ${langRetryCount}): ${langValidation.reason}. Retrying with correction prompt.`);
+
+      sendEvent('retry', {
+        reason: 'LANGUAGE_MISMATCH',
+        message: resolvedLanguage === 'ta'
+          ? 'தேர்ந்தெடுத்த மொழியில் மீண்டும் உருவாக்குகிறோம்...'
+          : 'Regenerating in the selected language...'
+      });
+
+      // Clear the wrong-language partial/full stream from the client
+      if (generatedText) {
+        sendEvent('replace', { text: '' });
+        generatedText = '';
+      }
+
+      try {
+        // Use whichever provider succeeded for the original generation
+        const providerLabel = generationResult.provider === 'openrouter' ? 'openrouter' : 'gemini';
+        let correctionResult = null;
+
+        if (providerLabel === 'openrouter') {
+          correctionResult = await openRouterService.generateComplete({
+            systemPrompt: systemPrompt + langCorrectionPrompt,
+            userPrompt,
+            media: streamMedia
+          });
+        } else {
+          correctionResult = await geminiService.generateComplete({
+            systemPrompt: systemPrompt + langCorrectionPrompt,
+            userPrompt,
+            media: streamMedia
+          });
+        }
+
+        if (correctionResult && correctionResult.fullText && correctionResult.fullText.trim()) {
+          finalOutput = correctionResult.fullText;
+          generatedText = finalOutput;
+          // Re-validate
+          const revalidation = validateOutputLanguage(finalOutput, resolvedLanguage);
+          if (revalidation.valid) {
+            // Stream the corrected output to the client
+            sendEvent('replace', { text: finalOutput });
+            langValidation.valid = true;
+          } else {
+            langValidation.valid = false;
+            langValidation.reason = revalidation.reason;
+          }
+        }
+      } catch (langRetryErr) {
+        console.warn('[LangGuard] Language correction retry failed:', langRetryErr.message);
+        break;
+      }
+    }
+
+    // If language validation still fails after all retries, return a clear error
+    if (!langValidation.valid && langRetryCount > 0) {
+      await refundDailyLimit(req);
+      sendEvent('replace', { text: '' });
+      const langErrorMsg = resolvedLanguage === 'ta'
+        ? 'தேர்ந்தெடுத்த மொழியில் பதிலை உருவாக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'
+        : 'Could not generate a response in the selected language. Please try again.';
+      sendEvent('error', { code: 'LANGUAGE_GENERATION_FAILED', message: langErrorMsg });
+      return res.end();
+    }
+
     // 6. Guards Check & Auto-Retry
     let guardResult = validateGuards(finalOutput, {
       mode,
@@ -462,7 +594,7 @@ CRITICAL INSTRUCTIONS:
         const retryResult = await geminiService.generateComplete({
           systemPrompt: systemPrompt + '\n\n' + guardResult.retryPrompt,
           userPrompt,
-          media: params.media
+          media: streamMedia
         });
 
         if (retryResult && retryResult.fullText && retryResult.fullText.trim()) {
@@ -510,8 +642,8 @@ CRITICAL INSTRUCTIONS:
       }
     }
 
-    // 7. Cache Output (24 hours)
-    if (finalOutput.length > 20) {
+    // 7. Cache Output (24 hours) - only in production/non-test environment
+    if (!isTestEnv && finalOutput.length > 20) {
       await redis.set(cacheKey, finalOutput, 'EX', 86400);
     }
 
@@ -621,15 +753,22 @@ CRITICAL INSTRUCTIONS:
     });
     res.end();
   } catch (err) {
-    console.error('Generation Stream Error:', err);
+    console.error('Generation Stream Error:', err.code || err.message);
     if (generatedText) {
       sendEvent('replace', { text: '' });
       generatedText = '';
     }
     await refundDailyLimit(req);
+    // Use a descriptive but safe error message — never expose API keys or stack traces
+    let userMessage = 'AI generation is temporarily unavailable. Please try again shortly.';
+    if (err.code === 'LANGUAGE_GENERATION_FAILED') {
+      userMessage = resolvedLanguage === 'ta'
+        ? 'தேர்ந்தெடுத்த மொழியில் பதிலை உருவாக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'
+        : 'Could not generate a response in the selected language. Please try again.';
+    }
     sendEvent('error', {
       code: err.code || 'AI_UNAVAILABLE',
-      message: 'AI generation is temporarily unavailable. Please try again shortly.'
+      message: userMessage
     });
     res.end();
   }

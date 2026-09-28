@@ -10,6 +10,7 @@ const LANGUAGE_NAMES = {
 };
 
 function langName(lang) {
+  if (lang === 'tanglish') return 'Tanglish (Romanized Tamil + English)';
   return lang === 'ta' ? 'Tamil (தமிழ்)' : 'English';
 }
 
@@ -426,106 +427,195 @@ function getStyleGuideline(style) {
 }
 
 /**
- * Returns tone guideline with bilingual cues
+ * Comprehensive Semantic Tone Definitions
+ * Ensures tone actually influences style, vocabulary, emotional depth, pacing, and dialogue
+ * while strictly preserving user intent and selected language.
+ */
+const TONE_INSTRUCTIONS = {
+  creative: {
+    name: 'Creative & Imaginative / கற்பனை நயம்',
+    en: 'Use fresh, imaginative ideas and original phrasing. Create vivid scenes and memorable descriptions. Avoid generic or predictable wording. Introduce interesting details, imagery, and creative perspectives while preserving the user\'s original topic and intent.',
+    ta: 'புதிய, கற்பனை நயமிக்க சொற்களையும் வரிகளையும் பயன்படுத்துக. உயிருள்ள காட்சிகளையும் நினைவில் நிற்கும் வர்ணனைகளையும் உருவாக்குக. பொதுவான வழக்கமான சொற்களைத் தவிர்க்கவும். பயனரின் மூலக் கருத்தை மாற்றாமல், புதிய கோணங்களையும் உவமைகளையும் சேர்க்கவும்.'
+  },
+  emotional: {
+    name: 'Emotional / உணர்ச்சிப்பூர்வம்',
+    en: 'Create genuine emotional depth. Focus on feelings, relationships, internal reactions, meaningful moments, atmosphere, and emotional progression. Avoid simply adding words like "sad", "love", or "heart". Show emotion through situations, thoughts, actions, dialogue, and meaningful details.',
+    ta: 'உண்மையான உணர்ச்சி ஆழத்தை உருவாக்குக. உணர்வுகள், உறவுகள், அகப்போராட்டங்கள், அர்த்தமுள்ள தருணங்கள் மற்றும் உணர்வு ரீதியான மாற்றங்களில் கவனம் செலுத்துக. "கண்ணீர்", "துக்கம்" போன்ற வெற்று வார்த்தைகளை மட்டும் திணிக்காமல், காட்சிகள், எண்ணங்கள், உரையாடல்கள் மற்றும் சூழல்கள் மூலம் உணர்வை வெளிப்படுத்துக.'
+  },
+  humorous: {
+    name: 'Humorous / நகைச்சுவையான',
+    en: 'Use natural, context-appropriate humor. Prefer witty observations, playful situations, light irony, or amusing dialogue where appropriate. Do not force jokes into serious situations. Keep the original meaning and topic.',
+    ta: 'இயற்கையான, சூழலுக்குப் பொருத்தமான நகைச்சுவையைப் பயன்படுத்துக. கூர்மையான அவதானிப்புகள், விளையாட்டுத்தனமான தருணங்கள், மெல்லிய அங்கதம் மற்றும் நகைச்சுவை உரையாடல்களை முன்வைக்க. மூலக் கருத்தை மாற்றாமல் நகைச்சுவை நயத்தை வெளிப்படுத்துக.'
+  },
+  simpler: {
+    name: 'Simpler / எளிய நடை',
+    en: 'Use simple, natural, easy-to-understand language. Prefer shorter sentences and familiar vocabulary. Do not unnecessarily simplify away important meaning.',
+    ta: 'எளிமையான, இயல்பான, எளிதில் புரியும் நடையைப் பயன்படுத்துக. சிறிய வாக்கியங்களையும் பழக்கமான சொற்களையும் தேர்ந்தெடுக்க. கருத்தின் ஆழம் குறையாமல் எளிய நடையில் வடிக்க.'
+  },
+  shorter: {
+    name: 'Shorter / சுருக்கமான',
+    en: 'Produce a genuinely shorter version. Remove repetition, unnecessary descriptions, and filler. Preserve the central idea, important details, and emotional meaning.',
+    ta: 'தேவையற்ற விவரங்கள் மற்றும் மீள்வரிப்புகளை நீக்கி, சுருக்கமான வடிவத்தை உருவாக்குக. மையக்கருத்து, முக்கிய உண்மைகள் மற்றும் உணர்வின் ஆழத்தை முழுமையாகப் பாதுகாக்க.'
+  },
+  longer: {
+    name: 'Longer / விரிவான',
+    en: 'Expand the content meaningfully. Add relevant details, scenes, explanations, descriptions, dialogue, emotions, or context. Do not repeat the same information just to increase length.',
+    ta: 'உள்ளடக்கத்தை அர்த்தமுள்ள வகையில் விரிவுபடுத்துக. பொருத்தமான காட்சிகள், உரையாடல்கள், வர்ணனைகள், பின்னணி மற்றும் உணர்வு அடுக்குகளைச் சேர்க்க. வார்த்தைகளை வீணாக இழுக்காமல் வளமான காட்சிகளை விரிக்குக.'
+  },
+  inspirational: {
+    name: 'Inspiring / ஈடுபடுத்தும் ஊக்கம்',
+    en: 'Inspiring, uplifting, and empowering. Focus on resilience, inner strength, purposeful action, and overcoming challenges with unwavering determination.',
+    ta: 'நெஞ்சில் உரம் சேர்க்கும் எழுச்சியூட்டும் நடை. விடாமுயற்சி, உள்வலிமை, தன்னம்பிக்கை மற்றும் இலக்கை நோக்கிய தெளிவான உத்வேகத்தை விதைக்க.'
+  },
+  romantic: {
+    name: 'Romantic / காதல் நயம்',
+    en: 'Romantic, intimate, and tender. Capture subtle chemistry, gentle longing, warmth of connection, and poetic beauty of love.',
+    ta: 'காதல் நயம், மென்மை மற்றும் கவித்துவ உணர்வு. இரு உள்ளங்களின் மெல்லிய பிணைப்பு, ஏக்கம், அன்பு மற்றும் பாசத்தின் தூய்மையை வெளிப்படுத்துக.'
+  },
+  playful: {
+    name: 'Playful / விளையாட்டுத்தனம்',
+    en: 'Playful, lighthearted, and spirited. Infuse delightful mischief, cheerful banter, and whimsical joy while keeping the core topic.',
+    ta: 'துள்ளலான, விளையாட்டுத்தனமான மற்றும் கலகலப்பான நடை. சுட்டித்தனமான குறும்புகள், உற்சாகமான உரையாடல்கள் மற்றும் மகிழ்ச்சியைத் தூவுக.'
+  },
+  serious: {
+    name: 'Serious / தீவிரம்',
+    en: 'Serious, grave, and thoughtful. Treat the subject with dignity, deep contemplative weight, and earnest focus.',
+    ta: 'ஆழமான, தீவிரமான மற்றும் சிந்தனையைத் தூண்டும் கம்பீரமான நடை. கருத்தின் கனத்தையும் முக்கியத்துவத்தையும் நிலைநிறுத்துக.'
+  },
+  dark: {
+    name: 'Dark / இருண்ட சிந்தனை',
+    en: 'Dark, haunting, and atmospheric. Explore shadowy introspection, tension, gothic depth, and emotional gravity.',
+    ta: 'இருண்ட, மர்மமான மற்றும் ஆழமான சிந்தனை நடை. நிழல்கள், மன அழுத்தங்கள் மற்றும் தீவிர உணர்வு அலைகளை விவரிக்க.'
+  },
+  melancholic: {
+    name: 'Melancholic / புலம்பல் நயம்',
+    en: 'Melancholic and soulful. Evoke tender sorrow, longing, bittersweet reflection, and the quiet ache of absence.',
+    ta: 'புலம்பல் நயம், நெகிழ்ச்சி மற்றும் மெல்லிய சோகம். பிரிவின் வலி, ஏக்கம், ஏக்கத்தின் இனிமை மற்றும் நினைவுகளின் சுவடுகளைப் பதிவு செய்க.'
+  },
+  epic: {
+    name: 'Epic / காவிய நயம்',
+    en: 'Epic and grand. Monumental scale, legendary resonance, striking heroism, and historic grandeur.',
+    ta: 'காவிய நயம், பிரம்மாண்டமான களம், வரலாற்று வீரம் மற்றும் கம்பீரமான சொல்லாட்சியை வெளிப்படுத்துக.'
+  },
+  philosophical: {
+    name: 'Philosophical / தத்துவார்த்த',
+    en: 'Philosophical and reflective. Explore existential insight, metaphysical questions, meaning, and timeless wisdom.',
+    ta: 'தத்துவார்த்த பார்வை, வாழ்க்கை மெய்ஞானம், காலத்தின் சுழற்சி மற்றும் ஆழ்ந்த வாழ்வியல் உண்மைகளை வெளிப்படுத்துக.'
+  },
+  spiritual: {
+    name: 'Spiritual & Devotional / பக்தி & ஆன்மீகம்',
+    en: 'Spiritual, sacred, and serene. Foster divine reverence, inner peace, stillness, and surrendered devotion.',
+    ta: 'பக்தி நயம், ஆன்மீக அமைதி, தெய்வீக அருள் மற்றும் சரணாகதி உணர்வை மெய்யுருக விவரிக்க.'
+  },
+  heroic: {
+    name: 'Heroic & Patriotic / வீர முழக்கம்',
+    en: 'Heroic, courageous, and proud. Resound with bravery, valor, duty, and victorious conviction.',
+    ta: 'வீர முழக்கம், துணிவு, தாயகப்பற்று மற்றும் வெற்றிப் பாதையின் தியாகத்தை உணர்த்தும் நடை.'
+  },
+  nostalgic: {
+    name: 'Nostalgic / பசுமை நினைவுகள்',
+    en: 'Nostalgic and evocative. Rekindle fond memories, bittersweet remembrance, vintage warmth, and the gentle echoes of yesterday.',
+    ta: 'பசுமை நினைவுகள், கடந்த காலத் தென்றல், பால்யத்தின் நினைவுகள் மற்றும் பழமையின் கதகதப்பை மீட்டுத்தருக.'
+  },
+  peaceful: {
+    name: 'Peaceful & Serene / அமைதி & சாந்தம்',
+    en: 'Peaceful, tranquil, and serene. Calm waters, gentle breathing, quiet stillness, and soothing harmony.',
+    ta: 'அமைதி மற்றும் சாந்தம். சலனமற்ற நதி, மெல்லிய காற்று மற்றும் மனதிற்கு இதமளிக்கும் நிசப்தத்தைப் பொழிக.'
+  },
+  passionate: {
+    name: 'Passionate & Fiery / அனல் பறக்கும் ஆர்வம்',
+    en: 'Passionate, fiery, and intense. Unstoppable drive, ardent longing, burning devotion, and electrified emotion.',
+    ta: 'அனல் பறக்கும் ஆர்வம், தீவிர உணர்ச்சி மற்றும் தணியாத வேட்கையை அனல் தெறிக்கும் வார்த்தைகளால் வடிக்க.'
+  },
+  sarcastic: {
+    name: 'Sarcastic & Witty / அங்கதம் & கேலி',
+    en: 'Sarcastic, sharp, and witty. Clever irony, dry humor, sharp observations, and satirical edge.',
+    ta: 'அங்கதம், கூர்மையான கேலி மற்றும் சமயோசித அறிவு. நகைச்சுவை கலந்த முரண்களையும் கூர்மையான பார்வைகளையும் வெளிப்படுத்துக.'
+  },
+  hopeful: {
+    name: 'Hopeful & Optimistic / நம்பிக்கை ஒளி',
+    en: 'Hopeful, radiant, and optimistic. Dawn after darkness, gentle renewal, bright horizons, and faith in tomorrow.',
+    ta: 'நம்பிக்கை ஒளி, இருள் விலகும் விடியல், புது வசந்தம் மற்றும் நாளைய வெற்றிக்கான உறுதிமொழியைத் தருக.'
+  },
+  heartbreak: {
+    name: 'Heartbreak / இதய வலி & பிரிவு',
+    en: 'Heartbreak and poignant grief. The raw ache of separation, fractured trust, unspoken tears, and the silence of loss.',
+    ta: 'இதய வலி, தாங்கொணா பிரிவு, மௌனக் கண்ணீர் மற்றும் உடைந்த கனவுகளின் சோகத்தை உள்ளுருக வடிக்க.'
+  },
+  'nature-vibe': {
+    name: 'Nature & Earthy / இயற்கை எழில்',
+    en: 'Nature-infused and earthy. Fragrant soil, rustling leaves, rivers, birdsong, and deep organic harmony.',
+    ta: 'இயற்கை எழில், மண்வாசம், சலசலக்கும் ஓடை, மரங்களின் பசுமை மற்றும் இயற்கையோடு இயைந்த மெல்லிய உணர்வை வரைக.'
+  }
+};
+
+/**
+ * Returns tone guideline with semantic depth and bilingual cues
  */
 function getToneGuideline(tone, lang = 'ta') {
   const norm = (tone || '').toLowerCase().replace(/[\s_]+/g, '-');
-  if (norm.includes('inspire') || norm.includes('inspirational')) {
-    return lang === 'ta'
-      ? 'TONE: Inspiring / ஈடுபடுத்தும் ஊக்கம் (Uplifting, fiery, encouraging, building unwavering inner strength).'
-      : 'TONE: Inspiring (Uplifting, fiery, encouraging, building unwavering inner strength).';
+  let matchKey = null;
+
+  if (norm.includes('creative') || norm.includes('imagin') || norm.includes('artistic')) {
+    matchKey = 'creative';
+  } else if (norm.includes('emotional') || norm.includes('emotion') || norm.includes('heart')) {
+    matchKey = 'emotional';
+  } else if (norm.includes('humor') || norm.includes('funny') || norm.includes('comedy') || norm.includes('joke')) {
+    matchKey = 'humorous';
+  } else if (norm.includes('simpler') || norm.includes('simple')) {
+    matchKey = 'simpler';
+  } else if (norm.includes('shorter') || norm.includes('short') || norm.includes('concise')) {
+    matchKey = 'shorter';
+  } else if (norm.includes('longer') || norm.includes('long') || norm.includes('expand')) {
+    matchKey = 'longer';
+  } else if (norm.includes('inspire') || norm.includes('inspirational')) {
+    matchKey = 'inspirational';
+  } else if (norm.includes('romantic') || norm.includes('romance') || norm.includes('kadhal')) {
+    matchKey = 'romantic';
+  } else if (norm.includes('playful')) {
+    matchKey = 'playful';
+  } else if (norm.includes('serious')) {
+    matchKey = 'serious';
+  } else if (norm.includes('dark')) {
+    matchKey = 'dark';
+  } else if (norm.includes('melanchol')) {
+    matchKey = 'melancholic';
+  } else if (norm.includes('epic')) {
+    matchKey = 'epic';
+  } else if (norm.includes('philosoph')) {
+    matchKey = 'philosophical';
+  } else if (norm.includes('spirit') || norm.includes('devotion')) {
+    matchKey = 'spiritual';
+  } else if (norm.includes('heroic') || norm.includes('patriot')) {
+    matchKey = 'heroic';
+  } else if (norm.includes('nostalg')) {
+    matchKey = 'nostalgic';
+  } else if (norm.includes('peace') || norm.includes('serene')) {
+    matchKey = 'peaceful';
+  } else if (norm.includes('passion') || norm.includes('fiery')) {
+    matchKey = 'passionate';
+  } else if (norm.includes('sarcas') || norm.includes('witty')) {
+    matchKey = 'sarcastic';
+  } else if (norm.includes('hope')) {
+    matchKey = 'hopeful';
+  } else if (norm.includes('heartbreak') || norm.includes('sorrow')) {
+    matchKey = 'heartbreak';
+  } else if (norm.includes('nature') || norm.includes('earthy')) {
+    matchKey = 'nature-vibe';
   }
-  if (norm.includes('romantic') || norm.includes('romance')) {
-    return lang === 'ta'
-      ? 'TONE: Romantic / காதல் நயம் (Sweet tenderness, longing, passionate devotion, poetic warmth).'
-      : 'TONE: Romantic (Sweet tenderness, longing, passionate devotion, poetic warmth).';
+
+  const def = matchKey ? TONE_INSTRUCTIONS[matchKey] : null;
+  const isTa = lang === 'ta';
+  const targetScript = isTa ? 'Tamil (தமிழ்)' : 'English';
+
+  if (def) {
+    return `TONE DIRECTIVE: ${def.name}
+- SEMANTIC WRITING INSTRUCTION: ${isTa ? `${def.ta}\n(${def.en})` : def.en}
+- TONE PRINCIPLE: The tone modifies the emotional atmosphere, pacing, vocabulary, and dialogue style. It must NEVER change the user's requested topic or switch away from ${targetScript}.`;
   }
-  if (norm.includes('playful')) {
-    return lang === 'ta'
-      ? 'TONE: Playful / விளையாட்டுத்தனம் (Witty, lighthearted, cheerful, delightfully mischievous).'
-      : 'TONE: Playful (Witty, lighthearted, cheerful, delightfully mischievous).';
-  }
-  if (norm.includes('serious')) {
-    return lang === 'ta'
-      ? 'TONE: Serious / தீவிரம் (Grave, profound, earnest, deep contemplative weight).'
-      : 'TONE: Serious (Grave, profound, earnest, deep contemplative weight).';
-  }
-  if (norm.includes('emotional')) {
-    return lang === 'ta'
-      ? 'TONE: Emotional / உணர்ச்சிப்பூர்வம் (Deeply moving, tearful, stirring the depths of the heart).'
-      : 'TONE: Emotional (Deeply moving, stirring the depths of the heart).';
-  }
-  if (norm.includes('humor')) {
-    return lang === 'ta'
-      ? 'TONE: Humorous / நகைச்சுவை (Witty, comedic, chuckle-inducing, clever observation).'
-      : 'TONE: Humorous (Witty, comedic, chuckle-inducing, clever observation).';
-  }
-  if (norm.includes('dark')) {
-    return lang === 'ta'
-      ? 'TONE: Dark / இருண்ட சிந்தனை (Haunting, gothic, shadowy introspective intensity).'
-      : 'TONE: Dark (Haunting, gothic, shadowy introspective intensity).';
-  }
-  if (norm.includes('melanchol')) {
-    return lang === 'ta'
-      ? 'TONE: Melancholic / புலம்பல் நயம் (Sorrowful, aching, sweet sadness, tender lament).'
-      : 'TONE: Melancholic (Sorrowful, aching, sweet sadness, tender lament).';
-  }
-  if (norm.includes('epic')) {
-    return lang === 'ta'
-      ? 'TONE: Epic / காவிய நயம் (Grand scale, legendary heroism, monumental grandeur).'
-      : 'TONE: Epic (Grand scale, legendary heroism, monumental grandeur).';
-  }
-  if (norm.includes('philosoph')) {
-    return lang === 'ta'
-      ? 'TONE: Philosophical / தத்துவார்த்த (Existential wisdom, nature of reality, metaphysical inquiry).'
-      : 'TONE: Philosophical (Existential wisdom, nature of reality, metaphysical inquiry).';
-  }
-  if (norm.includes('spirit') || norm.includes('devotion')) {
-    return lang === 'ta'
-      ? 'TONE: Spiritual & Devotional / பக்தி & ஆன்மீகம் (Sacred reverence, inner divine peace, surrendered grace).'
-      : 'TONE: Spiritual & Devotional (Sacred reverence, inner divine peace, surrendered grace).';
-  }
-  if (norm.includes('heroic') || norm.includes('patriot')) {
-    return lang === 'ta'
-      ? 'TONE: Heroic / வீர முழக்கம் (Courageous valor, martial spirit, resounding pride).'
-      : 'TONE: Heroic (Courageous valor, martial spirit, resounding pride).';
-  }
-  if (norm.includes('nostalg')) {
-    return lang === 'ta'
-      ? 'TONE: Nostalgic / பசுமை நினைவுகள் (Fond remembrance of past days, vintage warmth, yearning for childhood/homeland).'
-      : 'TONE: Nostalgic (Fond remembrance of past days, vintage warmth, yearning for yesterday).';
-  }
-  if (norm.includes('peace') || norm.includes('serene')) {
-    return lang === 'ta'
-      ? 'TONE: Peaceful & Serene / அமைதி & சாந்தம் (Calm waters, tranquil breath, serene stillness).'
-      : 'TONE: Peaceful & Serene (Calm waters, tranquil breath, serene stillness).';
-  }
-  if (norm.includes('passion') || norm.includes('fiery')) {
-    return lang === 'ta'
-      ? 'TONE: Passionate / அனல் பறக்கும் ஆர்வம் (Intense flame, fiery yearning, unstoppable emotion).'
-      : 'TONE: Passionate (Intense flame, fiery yearning, unstoppable emotion).';
-  }
-  if (norm.includes('sarcas') || norm.includes('witty')) {
-    return lang === 'ta'
-      ? 'TONE: Sarcastic & Witty / அங்கதம் & கேலி (Satirical edge, clever irony, biting wit).'
-      : 'TONE: Sarcastic & Witty (Satirical edge, clever irony, biting wit).';
-  }
-  if (norm.includes('hope')) {
-    return lang === 'ta'
-      ? 'TONE: Hopeful / நம்பிக்கை ஒளி (Dawn after darkness, beacon of optimism, bright horizon).'
-      : 'TONE: Hopeful (Dawn after darkness, beacon of optimism, bright horizon).';
-  }
-  if (norm.includes('heartbreak') || norm.includes('sorrow')) {
-    return lang === 'ta'
-      ? 'TONE: Heartbreak / இதய வலி & பிரிவு (Wounded soul, unspoken grief, love departed).'
-      : 'TONE: Heartbreak (Wounded soul, unspoken grief, love departed).';
-  }
-  if (norm.includes('nature')) {
-    return lang === 'ta'
-      ? 'TONE: Nature & Earthy / இயற்கை எழில் (Fragrant soil, rustling leaves, flowing rivers, green serenity).'
-      : 'TONE: Nature & Earthy (Fragrant soil, rustling leaves, flowing rivers, green serenity).';
-  }
-  return `TONE: ${tone}`;
+
+  return `TONE DIRECTIVE: ${tone || 'Natural'}
+- Apply the requested tone/mood appropriately while maintaining the user's requested topic, characters, and ${targetScript} output language.`;
 }
 
 /**
@@ -745,7 +835,8 @@ MANDATORY GENERATION DIRECTIVES:
 1. WHAT TO WRITE ABOUT: The user's actual input is the primary source of the content. Every generated scene or verse MUST revolve around the anchors above (${anchors.summary || rawInput}).
 2. NO GENERIC SUBSTITUTION: Never replace the user's topic with a generic template or invent an unrelated story.
 3. GENRE ROLE: The selected genre ("${genre || 'General'}") provides the stylistic framework/backdrop only. It must NEVER override the user's specific topic.
-4. TONE ROLE: The selected tone ("${tone}") controls HOW the content is emotionally written, not WHAT it is about.
+4. TONE ROLE: The selected tone ("${tone}") controls HOW the content is written (style, vocabulary, emotional depth, pacing, dialogue), not WHAT it is about.
+${getToneGuideline(tone, language)}
 5. LANGUAGE: Write strictly in ${language === 'tanglish' ? 'Tanglish' : langDisplay}.
 6. NO FILLER OR CLICHÉS: Begin immediately with the first line of creative content. No preamble, no meta-announcements, no markdown header titles.`;
 }
@@ -755,7 +846,7 @@ MANDATORY GENERATION DIRECTIVES:
  */
 function buildSystemPrompt(params = {}) {
   const mode = params.mode || 'poem';
-  const language = params.language === 'en' ? 'en' : 'ta';
+  const language = params.language === 'en' ? 'en' : (params.language === 'tanglish' ? 'tanglish' : 'ta');
   const poemType = params.poemType || (language === 'ta' ? 'வெண்பா' : 'Free Verse');
   const genre = params.genre || 'generic';
   const tone = params.tone || 'inspirational';
@@ -804,6 +895,7 @@ TARGET PLATFORM: ${platform}
 ${getPlatformRules(platform)}
 ${getStyleGuideline(style)}
 ${getFormatRules(format)}
+${getToneGuideline(tone, language)}
 
 ==================================================
 CONTENT CREATOR PHILOSOPHY & HUMAN VOICE DIRECTIVE:
@@ -907,33 +999,56 @@ CONTENT CREATOR PHILOSOPHY & HUMAN VOICE DIRECTIVE:
 
   // Translanguaging & Language Enforcement
   let languageDirective = '';
-  if (language === 'tanglish' || params.isTanglish) {
+  if (language === 'tanglish') {
     languageDirective = `
 ==================================================
 CRITICAL MANDATORY LANGUAGE DIRECTIVE: TARGET = TANGLISH (தமிழ் + ஆங்கிலம் கலவை)
+INPUT UNDERSTANDING: Understand the user's input regardless of whether it is written in Tamil script, Romanized Tamil (Tanglish), plain English, or a mix.
 1. TARGET OUTPUT LANGUAGE IS NATURAL CONVERSATIONAL TANGLISH.
 2. Write in authentic Romanized Tamil words blended naturally with English (e.g. "Sunset paakumbodhu, life konjam slow-ah poganum pola irukku. 🌅").
 3. Keep the cadence rhythmic, authentic, youth-centric, and natural to modern Tamil social media conversation.
-4. Do NOT output textbook formal Tamil or pure English when Tanglish is requested.
+4. Do NOT output textbook formal Tamil script or pure English when Tanglish is requested.
+5. OUTPUT LANGUAGE RULE: The selected output language (Tanglish) is the FINAL AUTHORITY. Do not switch to formal Tamil or pure English mid-response.
 ==================================================
 `;
   } else if (language === 'ta') {
     languageDirective = `
 ==================================================
 CRITICAL MANDATORY LANGUAGE DIRECTIVE: TARGET = TAMIL (தமிழ்)
-1. TARGET OUTPUT LANGUAGE IS STRICTLY TAMIL (தமிழ்).
-2. EVERY SINGLE WORD OF THE OUTPUT MUST BE WRITTEN IN NATIVE TAMIL SCRIPT (தமிழ் எழுத்துகளில் மட்டுமே).
-3. ABSOLUTELY FORBIDDEN: Writing in English, Latin alphabet letters, or Hindi.
-4. TRANSLANGUAGING RULE: Even if the user typed their prompt in Tanglish (Romanized Tamil words like "nilavidam solli mudithen unnidam solvadharkku mun", "kadhal", "kavithai") or in English, you MUST interpret its meaning and express the final creative work EXCLUSIVELY IN AUTHENTIC NATIVE TAMIL SCRIPT (தமிழ்).
-5. ZERO LATIN SCRIPT ALLOWED: Do NOT copy, transliterate, or echo the user's English letters into the output.
+INPUT UNDERSTANDING: Understand the user's input regardless of whether it is written in:
+- Native Tamil script (தமிழ் எழுத்துகள்)
+- Romanized Tamil / Tanglish (e.g. "sabari matrum kani iruvarum kadhalargal", "kadhal kavithai")
+- Plain English (e.g. "Sabari and Kani are lovers")
+- Any mixed-language combination
+
+OUTPUT LANGUAGE RULE: The selected output language is TAMIL. This is the FINAL AUTHORITY.
+1. EVERY SINGLE WORD OF THE OUTPUT MUST BE WRITTEN IN NATIVE TAMIL SCRIPT (தமிழ் எழுத்துகளில் மட்டுமே).
+2. NEVER infer the output language from the input language. Even if the user typed in English or Tanglish, the OUTPUT must be in Tamil.
+3. ABSOLUTELY FORBIDDEN: Writing in English, Latin alphabet letters, Hindi, Malayalam, Telugu, or any other script for prose/verse content.
+4. Do NOT copy, transliterate, or echo the user's English or Romanized Tamil letters into the output.
+5. Do NOT switch languages in the middle of the response.
+6. Do NOT randomly introduce Hindi, Malayalam, Telugu, Kannada, Bengali, or other languages.
+7. EXCEPTION (allowed): Proper nouns (names like Sabari, Kani), unavoidable technical terms, URLs, hashtags, and brand names may appear where contextually appropriate — but the surrounding prose must be Tamil.
+8. Prefer natural, expressive Tamil prose. Do NOT generate Romanized Tamil/Tanglish output unless Tanglish is explicitly selected as the output format.
 ==================================================
 `;
   } else {
     languageDirective = `
 ==================================================
 CRITICAL MANDATORY LANGUAGE DIRECTIVE: TARGET = ENGLISH
-1. TARGET OUTPUT LANGUAGE IS STRICTLY ENGLISH.
-2. Output exclusively in English Latin script.
+INPUT UNDERSTANDING: Understand the user's input regardless of whether it is written in:
+- English
+- Tamil script (தமிழ்)
+- Romanized Tamil / Tanglish (e.g. "sabari matrum kani kadhalargal")
+- Any mixed-language combination
+
+OUTPUT LANGUAGE RULE: The selected output language is ENGLISH. This is the FINAL AUTHORITY.
+1. Output exclusively in English Latin script.
+2. NEVER infer the output language from the input language. Even if the user typed in Tamil or Tanglish, the OUTPUT must be in English.
+3. Do NOT switch to Tamil, Tanglish, Hindi, or any other language mid-response.
+4. Do NOT randomly introduce Tamil script, Devanagari, or other non-Latin scripts into the prose.
+5. EXCEPTION (allowed): Proper nouns (names, places), unavoidable technical terms, URLs, and hashtags may remain as-is where appropriate.
+6. Generate natural, fluent English prose. Do not use broken English or echo the input language.
 ==================================================
 `;
   }
@@ -951,6 +1066,15 @@ VISUAL MEDIA CONTEXT:
 ${mc.category ? `- Category: ${mc.category}` : ''}
 ${mc.scene ? `- Setting/Location: ${mc.scene}` : ''}
 ${(mc.subjects || mc.objects) && (mc.subjects || mc.objects).length ? `- Main Subjects/Objects: ${(mc.subjects || mc.objects).join(', ')}` : ''}
+${mc.actions && mc.actions.length ? `- Observed Actions in Frames: ${mc.actions.join(' -> ')}` : ''}
+${mc.emotion ? `- Emotion & Expressions: ${mc.emotion}` : ''}
+${mc.setting ? `- Setting & Lighting: ${mc.setting}` : ''}
+${mc.visual_style ? `- Visual Style: ${mc.visual_style}` : ''}
+${mc.important_events && mc.important_events.length ? `- Key Events Across Frames: ${mc.important_events.join(' | ')}` : ''}
+${mc.dialogueMood ? `- Dialogue Mood: ${mc.dialogueMood}` : ''}
+${mc.captionIdeas && mc.captionIdeas.length ? `- Grounded Caption Concepts: ${mc.captionIdeas.join(' | ')}` : ''}
+${mc.dialogueSuggestions && mc.dialogueSuggestions.length ? `- Dialogue Suggestions: ${mc.dialogueSuggestions.join(' | ')}` : ''}
+${mc.matchReason ? `- Visual Grounding Context: ${mc.matchReason}` : ''}
 ${mc.peopleContext ? `- People Context: ${mc.peopleContext}` : ''}
 ${mc.foodDetails ? `- Food Presentation: ${mc.foodDetails}` : ''}
 ${mc.productDetails ? `- Product Styling: ${mc.productDetails}` : ''}
@@ -970,6 +1094,22 @@ MANDATORY RULES FOR MEDIA-AWARE OUTPUT:
 2. Connect the visual details, mood, and setting with the selected platform (${platform}), visual style (${style}), card format (${format}), and language (${langDisplay}).
 3. Do NOT invent completely unrelated storylines or generic motivational quotes that contradict the image/video.
 4. Do NOT simply mechanically list objects or say "In this image we see...". Instead, creatively channel the imagery, atmosphere, and essence of the media into captivating literature/social copy.
+${mc.mediaType === 'video' ? `
+SPECIAL RULES FOR VIDEO GENERATION:
+- Ground your output in the actual observed movements and scene actions (${mc.actions?.join(', ') || mc.scene || 'video scene'}).
+- Unless the user specifically asks for another format (like haiku or short story), provide:
+  * Caption: A scene-grounded creative caption matching the tone (${tone}).
+  * Dialogue-style: An original trending-style / reel-style dialogue suggestion inspired by the visual mood. (Do NOT copy long copyrighted movie dialogues; create 100% original cinematic lines).
+  * Mood: The emotional and visual aesthetic mood.
+  * Reason: A concise 1-2 sentence explanation of why the caption and dialogue match the actual visual scene in the frames.
+- COPYRIGHT & TRENDING INTEGRITY:
+  * Do NOT reproduce copyrighted movie dialogues word-for-word.
+  * All dialogue suggestions must be 100% ORIGINAL dialogue-style lines inspired by the scene.
+  * Clearly label them as original dialogue-style suggestions (e.g. "Trending-style Dialogue" or "Reel Dialogue Suggestion").
+  * Do NOT falsely claim that a dialogue is currently trending in real-world charts.
+- LANGUAGE FIDELITY:
+  * Output strictly in ${langDisplay}. Caption, Dialogue-style, and Reason must all be in ${langDisplay}.
+` : ''}
 ==================================================
 `;
   }
@@ -1006,19 +1146,25 @@ CORE GROUNDING PRINCIPLES (HIGHEST PRIORITY):
    - Every major part of the output must remain relevant to the user's requested topic.
    - Creativity must come from wording, imagery, emotion, pacing, dialogue, atmosphere, and narrative development — not from changing the user's subject.
 
-4. TONE CONTROLS HOW THE CONTENT IS WRITTEN:
-   - The selected tone must affect the emotional and linguistic treatment of the SAME USER TOPIC.
-   - Tone must NOT replace the topic.
-   - Only the presentation, emotional atmosphere, pacing, wording, dialogue style, and narrative treatment change.
+4. TONE CONTROLS HOW THE CONTENT IS WRITTEN (STYLE & EMOTIONAL DEPTH):
+   - The selected tone MUST genuinely and noticeably influence the generation style, emotional depth, vocabulary, pacing, descriptions, and dialogue.
+   - TONE MUST NOT OVERRIDE USER INTENT: Keep the user's topic, characters, names, important facts, requested format, and selected output language intact. Tone modifies HOW the story or poem is told, NOT WHAT it is about.
+   - STRICT PRIORITY HIERARCHY:
+     1. User intent / requested content & anchors (Highest)
+     2. Selected output language (${langDisplay} is FINAL AUTHORITY — tone must NEVER change output language)
+     3. Selected tone/style (${tone})
+     4. Requested length/format/action
+     5. Creativity and style enhancements
+   - TONE DIFFERENTIATION: Distinct tone options must produce clearly different outputs with distinct writing objectives.
 
 5. ZERO HALLUCINATION OF REAL FACTS:
    - If the user gives places, temples, people, or events, build scenes creatively around them.
    - Do not claim unsupported factual details as real history, real people, or real competition results. Treat them as creative fictional story elements.
 
-6. STRICT BANNED AI CLICHÉS & GENERIC PHRASES:
-   - DO NOT produce content like:
-     "In today's fast-paced world...", "Life is a beautiful journey...", "Sometimes, unexpected moments...", "Seamless...", "Impactful...", "From dreams to reality...".
-   - Avoid generic story openings. Respond directly to WHAT THE USER ACTUALLY ASKED FOR.
+6. STRICT BANNED AI CLICHÉS & GENERIC WRITING:
+   - Avoid repetitive, generic AI-style phrases such as:
+     "The world seemed to...", "In that moment...", "Little did they know...", "The air was filled with...", "Her heart skipped a beat...", "Everything changed forever...", "In today's fast-paced world...", "Life is a beautiful journey...".
+   - Avoid generic story openings. Prefer context-specific details, sensory imagery, natural human actions, and authentic creative writing.
 
 7. ZERO PREAMBLE & CLEAN FORMATTING:
    - ZERO PREAMBLE: Never include greetings, conversational filler, conversational intros, or meta-commentary (e.g. NO "Here is your poem", NO "Sure! Here is a story about...", NO "I hope you like this"). Output ONLY the creative work.
@@ -1064,39 +1210,45 @@ function buildActionPrompt(action, ctx = {}) {
       break;
 
     case 'more-creative':
-      specificInstruction = `ACTION: ELEVATE CREATIVITY & METAPHOR
-- Infuse bolder, more inventive figurative language and vivid imagery into the SAME topic from "${originalPrompt}".
-- Elevate the poetic diction without sacrificing the core characters, setting, and anchors.`;
+      specificInstruction = `ACTION: ELEVATE CREATIVITY & METAPHOR (MORE CREATIVE)
+- The response must demonstrate stronger imagination, original descriptions, interesting situations, fresh metaphors, and engaging storytelling.
+- Use fresh, imaginative ideas and original phrasing. Create vivid scenes and memorable descriptions.
+- Avoid generic or predictable wording. Introduce interesting details, imagery, and creative perspectives while preserving the user's original topic and intent.
+- Do NOT simply add poetic words randomly; craft a truly inventive, memorable rendition.`;
       break;
 
     case 'more-emotional':
-      specificInstruction = `ACTION: DEEPEN EMOTIONAL INTENSITY
-- Make the SAME situation, characters, and events from "${originalPrompt}" significantly more emotionally moving, poignant, and heartfelt.
-- Deepen the emotional resonance without changing the topic, setting, or characters.`;
+      specificInstruction = `ACTION: DEEPEN EMOTIONAL INTENSITY (MORE EMOTIONAL)
+- Create genuine emotional depth. Focus on feelings, relationships, internal reactions, meaningful moments, atmosphere, and emotional progression.
+- Avoid simply adding words like 'sad', 'love', or 'heart'. Show emotion through situations, thoughts, actions, dialogue, and meaningful details.
+- Deepen the emotional resonance while preserving the exact same characters, setting, and plot from "${originalPrompt}".`;
       break;
 
     case 'more-humorous':
-      specificInstruction = `ACTION: INJECT WIT & HUMOR
-- Infuse charming wit, delightful irony, and comedic observations into the SAME situation, characters, and events from "${originalPrompt}".
-- Keep the humor elegant and engaging while preserving the exact subject matter.`;
+      specificInstruction = `ACTION: INJECT WIT & HUMOR (MORE HUMOROUS)
+- Use natural, context-appropriate humor. Prefer witty observations, playful situations, light irony, or amusing dialogue where appropriate.
+- Do not force jokes into serious situations. Keep the humor organic and engaging while preserving the exact subject matter and characters from "${originalPrompt}".`;
       break;
 
     case 'simpler':
       specificInstruction = `ACTION: SIMPLER WORDS & DICTION
-- Rewrite using crystal-clear, accessible, and universally relatable everyday vocabulary.
-- Preserve the exact same characters, setting, and plot from "${originalPrompt}".`;
+- Rewrite using crystal-clear, accessible, and universally relatable everyday vocabulary with simpler sentences.
+- Use simple, natural, easy-to-understand language. Prefer shorter sentences and familiar vocabulary.
+- Do not unnecessarily simplify away important meaning from "${originalPrompt}".`;
       break;
 
     case 'shorter':
       specificInstruction = `ACTION: SHORTER & CONCISE
 - Condense the composition to approximately HALF (~50%) its current length.
-- Preserve the core lines, characters, and events from "${originalPrompt}", eliminating any padding.`;
+- Produce a genuinely shorter version. Remove repetition, unnecessary descriptions, and filler.
+- Preserve the central idea, important details, characters, and emotional meaning from "${originalPrompt}".`;
       break;
 
     case 'longer':
       specificInstruction = `ACTION: LONGER & EXPANDED
 - Expand the composition to approximately DOUBLE (~200%) its current length.
-- Add rich descriptive layers, stanzas, or narrative depth to the SAME characters and situation from "${originalPrompt}".`;
+- Meaningfully expand the content. Add relevant details, scenes, explanations, descriptions, dialogue, emotions, or context.
+- Do not repeat the same information just to increase length; develop the world, narrative, and characters deeply.`;
       break;
 
     case 'rewrite-originally':
@@ -1120,6 +1272,10 @@ VISUAL MEDIA CONTEXT TO PRESERVE ACROSS THIS ACTION:
 ${mc.category ? `- Category: ${mc.category}` : ''}
 ${mc.scene ? `- Setting/Scene: ${mc.scene}` : ''}
 ${(mc.subjects || mc.objects)?.length ? `- Visual Elements: ${(mc.subjects || mc.objects).join(', ')}` : ''}
+${mc.actions && mc.actions.length ? `- Observed Actions: ${mc.actions.join(' -> ')}` : ''}
+${mc.emotion ? `- Emotion: ${mc.emotion}` : ''}
+${mc.setting ? `- Setting: ${mc.setting}` : ''}
+${mc.matchReason ? `- Visual Grounding Context: ${mc.matchReason}` : ''}
 ${mc.mood ? `- Mood: ${mc.mood}` : ''}
 ${mc.visualTheme ? `- Visual Theme: ${mc.visualTheme}` : ''}
 ${mc.foodDetails ? `- Food Presentation: ${mc.foodDetails}` : ''}
@@ -1163,6 +1319,7 @@ module.exports = {
   getFormatRules,
   getPlatformRules,
   getStyleGuideline,
-  getToneGuideline
+  getToneGuideline,
+  TONE_INSTRUCTIONS
 };
 
