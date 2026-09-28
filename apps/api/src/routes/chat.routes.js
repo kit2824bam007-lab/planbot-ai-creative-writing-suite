@@ -5,7 +5,7 @@ const redis = require('../services/redis');
 const geminiService = require('../services/gemini');
 const openRouterService = require('../services/openrouter');
 const { detectLanguage } = require('../services/language');
-const { validateGuards, validateOutputLanguage } = require('../services/guards');
+const { validateGuards, validateOutputLanguage, sanitizeCreativeOutput } = require('../services/guards');
 const { buildSystemPrompt, buildActionPrompt, buildStructuredUserPrompt, CLASSICAL_TAMIL_FORMS } = require('../config/prompts');
 const { authenticate } = require('../middleware/auth');
 const { checkDailyLimit, getQuotaStatus, refundDailyLimit } = require('../middleware/rateLimit');
@@ -422,7 +422,7 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
       }
     }
 
-    let finalOutput = generationResult.fullText || generatedText;
+    let finalOutput = sanitizeCreativeOutput(generationResult.fullText || generatedText, { language: resolvedLanguage, mode });
 
     if (!finalOutput || !finalOutput.trim()) {
       await refundDailyLimit(req);
@@ -432,6 +432,8 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
       });
       return res.end();
     }
+
+    const activeProvider = generationResult?.provider === 'openrouter' ? openRouterService : geminiService;
 
     // 5b. Output Language Validation & Bounded Correction Retry
     // This runs BEFORE guard checks. A wrong-language response must not reach the user.
@@ -459,26 +461,14 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
       }
 
       try {
-        // Use whichever provider succeeded for the original generation
-        const providerLabel = generationResult.provider === 'openrouter' ? 'openrouter' : 'gemini';
-        let correctionResult = null;
-
-        if (providerLabel === 'openrouter') {
-          correctionResult = await openRouterService.generateComplete({
-            systemPrompt: systemPrompt + langCorrectionPrompt,
-            userPrompt,
-            media: streamMedia
-          });
-        } else {
-          correctionResult = await geminiService.generateComplete({
-            systemPrompt: systemPrompt + langCorrectionPrompt,
-            userPrompt,
-            media: streamMedia
-          });
-        }
+        const correctionResult = await activeProvider.generateComplete({
+          systemPrompt: systemPrompt + langCorrectionPrompt,
+          userPrompt,
+          media: streamMedia
+        });
 
         if (correctionResult && correctionResult.fullText && correctionResult.fullText.trim()) {
-          finalOutput = correctionResult.fullText;
+          finalOutput = sanitizeCreativeOutput(correctionResult.fullText, { language: resolvedLanguage, mode });
           generatedText = finalOutput;
           // Re-validate
           const revalidation = validateOutputLanguage(finalOutput, resolvedLanguage);
@@ -519,13 +509,13 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
     });
 
     let retryCount = 0;
-    // For TOPIC_RELEVANCE_FAILED and META_ANALYSIS_LEAK, limit to at most 1 retry to conserve Gemini quota
-    const maxRetries = (guardResult.code === 'TOPIC_RELEVANCE_FAILED' || guardResult.code === 'META_ANALYSIS_LEAK') ? 1 : 2;
+    // For TOPIC_RELEVANCE_FAILED, META_ANALYSIS_LEAK, and ROMANIZED_LEAK, limit to at most 1 retry
+    const maxRetries = (guardResult.code === 'TOPIC_RELEVANCE_FAILED' || guardResult.code === 'META_ANALYSIS_LEAK' || guardResult.code === 'ROMANIZED_LEAK') ? 1 : 2;
 
     while (!guardResult.valid && retryCount < maxRetries) {
       retryCount++;
       console.warn(`[Guards] Triggered: ${guardResult.code} (${guardResult.message}). Executing retry ${retryCount}...`);
-      if (guardResult.code !== 'META_ANALYSIS_LEAK') {
+      if (guardResult.code !== 'META_ANALYSIS_LEAK' && guardResult.code !== 'ROMANIZED_LEAK') {
         sendEvent('retry', {
           reason: guardResult.code,
           message: guardResult.code === 'TOPIC_RELEVANCE_FAILED'
@@ -535,14 +525,14 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
       }
 
       try {
-        const retryResult = await geminiService.generateComplete({
+        const retryResult = await activeProvider.generateComplete({
           systemPrompt: systemPrompt + '\n\n' + guardResult.retryPrompt,
           userPrompt,
           media: streamMedia
         });
 
         if (retryResult && retryResult.fullText && retryResult.fullText.trim()) {
-          finalOutput = retryResult.fullText;
+          finalOutput = sanitizeCreativeOutput(retryResult.fullText, { language: resolvedLanguage, mode });
           guardResult = validateGuards(finalOutput, {
             mode,
             language: resolvedLanguage,
@@ -565,19 +555,19 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
     }
 
     if (!guardResult.valid && guardResult.code === 'TOPIC_RELEVANCE_FAILED') {
-      // If Gemini generated valid, creative content in the target language (length >= 40),
-      // deliver the content rather than destroying it.
+      const postLangCheck = validateOutputLanguage(finalOutput, resolvedLanguage);
       const hasSubstantialCreativeContent = finalOutput && finalOutput.trim().length >= 40 && (
         (resolvedLanguage === 'ta' && /[\u0B80-\u0BFF]/.test(finalOutput)) ||
         (resolvedLanguage === 'en' && /[a-zA-Z]/.test(finalOutput)) ||
         resolvedLanguage === 'tanglish'
       );
 
-      if (hasSubstantialCreativeContent) {
+      if (hasSubstantialCreativeContent && postLangCheck.valid) {
         console.warn('[Guards] Delivering valid creative composition despite strict keyword boundary.');
         guardResult = { valid: true };
       } else {
         await refundDailyLimit(req);
+        sendEvent('replace', { text: '' });
         sendEvent('error', {
           code: 'TOPIC_RELEVANCE_FAILED',
           message: 'Could not generate content strictly matching your specific keywords. Please refine your prompt.'

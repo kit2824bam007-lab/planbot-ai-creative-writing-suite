@@ -88,6 +88,21 @@ function validateOutputLanguage(text = '', language = 'ta') {
         reason: `Tamil script proportion too low: ${(tamilRatio * 100).toFixed(1)}% (need ≥35%). Likely generated in wrong language.`
       };
     }
+    // Latin letters must not dominate native Tamil output (allow leeway for labels, proper nouns, hashtags)
+    if (latinRatio > 0.35) {
+      return {
+        valid: false,
+        reason: `Latin character proportion too high for Tamil output: ${(latinRatio * 100).toFixed(1)}% (must be ≤35%). Leaked Romanized/English words detected.`
+      };
+    }
+    const textWithoutTags = substantive.replace(/https?:\/\/\S+/gi, ' ').replace(/#\w+/g, ' ');
+    const latinWords = (textWithoutTags.match(/[a-zA-Z]{3,}/g) || []).filter((w) => !WHITELIST_WORDS.has(w.toLowerCase()));
+    if (latinWords.length >= 4) {
+      return {
+        valid: false,
+        reason: `Foreign language or Romanized fragments detected in Tamil output: ${latinWords.slice(0, 3).join(', ')}`
+      };
+    }
     return { valid: true };
   }
 
@@ -206,14 +221,18 @@ Target language is English. Output strictly in English Latin script.`
   }
 
   // 3. ROMANIZED_LEAK
-  if (romanizedInput && (language === 'ta' || language === 'hi')) {
+  if (language === 'ta' || language === 'hi') {
     // Strip hashtags and URLs so social tags don't trigger false positives
     const textWithoutTags = cleanOutput.replace(/https?:\/\/\S+/gi, ' ').replace(/#\w+/g, ' ');
-    // Check if there are English words >= 4 letters leaked into native text
-    const latinWords = textWithoutTags.match(/[a-zA-Z]{4,}/g) || [];
-    const leakedWords = latinWords.filter((w) => !WHITELIST_WORDS.has(w.toLowerCase()));
+    // Check if there are Latin/English words >= 2 letters leaked into native text
+    const latinWords = textWithoutTags.match(/[a-zA-Z]{2,}/g) || [];
+    const promptTokens = new Set((originalPrompt || '').toLowerCase().split(/\s+/));
+    const leakedWords = latinWords.filter((w) => {
+      const lower = w.toLowerCase();
+      return !WHITELIST_WORDS.has(lower) && !promptTokens.has(lower);
+    });
 
-    if (leakedWords.length >= 3) {
+    if (leakedWords.length >= (romanizedInput ? 3 : 2)) {
       return {
         valid: false,
         code: 'ROMANIZED_LEAK',
@@ -257,7 +276,7 @@ CRITICAL CORRECTION: Rewrite the work 100% in native script. Zero English alphab
     }
   }
 
-  // 6. META_ANALYSIS_LEAK (Media Analysis Leak Check)
+  // 6. META_ANALYSIS_LEAK (Media Analysis Leak Check & Artifacts)
   // Ensure the AI generated creative content rather than meta-analysis or technical observations
   const metaAnalysisPatterns = [
     /image\s*analysis/i,
@@ -274,7 +293,12 @@ CRITICAL CORRECTION: Rewrite the work 100% in native script. Zero English alphab
     /here\s*is\s*your\s*(?:poem|story|caption)/i,
     /based\s*on\s*the\s*(?:image|video)/i,
     /(?:^|\n)\s*மனநிலை\s*:/i,
-    /(?:^|\n)\s*காரணம்\s*:/i
+    /(?:^|\n)\s*காரணம்\s*:/i,
+    /\[STRUCTURED\s*GENERATION\s*REQUEST\]/i,
+    /userInput\s*:/i,
+    /contentType\s*:/i,
+    /\bsilenzio\b/i,
+    /\bup\s+Tamil\b/i
   ];
 
   const hasMetaAnalysis = metaAnalysisPatterns.some((pattern) => pattern.test(cleanOutput));
@@ -283,9 +307,9 @@ CRITICAL CORRECTION: Rewrite the work 100% in native script. Zero English alphab
     return {
       valid: false,
       code: 'META_ANALYSIS_LEAK',
-      message: 'Media meta-analysis detected in output instead of creative content.',
+      message: 'Media meta-analysis or internal artifacts detected in output instead of creative content.',
       retryPrompt: `[RETRY RULE - NO META ANALYSIS]
-Your previous response contained media analysis instead of the requested creative work. Discard that response. Return ONLY the requested ${contentTypeLabel} output. Use the uploaded media as inspiration, not as something to explain.`
+Your previous response contained meta analysis or prompt artifacts instead of the requested creative work. Discard that response. Return ONLY the requested ${contentTypeLabel} output. Use the uploaded media as inspiration, not as something to explain.`
     };
   }
 
@@ -361,6 +385,14 @@ const COMMON_CONCEPT_MAP = {
   wind: /wind|காற்று|தென்றல்/i,
   station: /station|நிலையம்|ரயில்|புகைவண்டி/i,
   railway: /railway|station|நிலையம்|ரயில்|புகைவண்டி/i,
+  relationship: /relationship|உறவு|பந்தம்|காதல்/i,
+  ponnu: /ponnu|பெண்|மங்கை|காதலி/i,
+  paiyan: /paiyan|பையன்|இளைஞன்|காதலன்/i,
+  couple: /couple|ஜோடி|இருவர்|காதலர்|தம்பதி|பையனும் பெண்ணும்/i,
+  walk: /walk|நட|நடை|செல்ல/i,
+  walking: /walking|நட|நடை|செல்ல/i,
+  together: /together|ஒன்றாக|இணைந்து|சேர்ந்து|இருவரும்/i,
+  shore: /shore|கடற்கரை|கரை|மணல்/i,
   first: /first|முதல்|முதன்/i
 };
 
@@ -409,6 +441,7 @@ function validateTopicRelevance(output = '', originalPrompt = '', language = 'ta
     'write', 'create', 'generate', 'make', 'give', 'compose', 'story', 'poem', 'content', 'post',
     'please', 'tell', 'me', 'want', 'like', 'need', 'some', 'that', 'this', 'these', 'those',
     'feel', 'feeling', 'based', 'using', 'around', 'mode', 'type', 'tone', 'genre',
+    'oru', 'pathi', 'paththi', 'romba',
     'ஒரு', 'மற்றும்', 'என்று', 'என', 'உள்ள', 'ஆகிய', 'கதை', 'கவிதை', 'எழுது'
   ]);
 
@@ -451,11 +484,71 @@ Do NOT invent an unrelated story or fallback to generic templates. Ground every 
   return { valid: true };
 }
 
+/**
+ * Deterministically sanitizes AI-generated creative text by stripping
+ * echoed prompt headers, markdown titles, conversational preambles,
+ * meta labels (Mood:, Reason:, etc.), and isolated leaked Latin artifacts in Tamil mode.
+ */
+function sanitizeCreativeOutput(output = '', params = {}) {
+  if (!output || typeof output !== 'string') return '';
+  let text = output.trim();
+
+  // 1. Remove echoed [STRUCTURED GENERATION REQUEST] or JSON blocks
+  text = text.replace(/\[STRUCTURED\s*GENERATION\s*REQUEST\][\s\S]*?(?:MANDATORY GENERATION DIRECTIVES:|\n\n)/i, '');
+  text = text.replace(/^\{[\s\S]*?"userInput"[\s\S]*?\}\s*/i, '');
+
+  // 2. Remove markdown title headers at the beginning (e.g., # Title, ## Poem)
+  text = text.replace(/^#{1,4}\s+[^\n]+\n+/m, '');
+
+  // 3. Remove conversational preambles
+  text = text.replace(/^(?:Here is (?:your|the) (?:poem|story|composition|caption)[^\n]*:?\s*)/i, '');
+  text = text.replace(/^(?:Based on (?:your|the) (?:prompt|image|video)[^\n]*:?\s*)/i, '');
+  text = text.replace(/^(?:நிச்சயமாக,?[^\n]*:\s*)/i, '');
+  text = text.replace(/^(?:இதோ உங்கள் (?:கவிதை|கதை)[^\n]*:?\s*)/i, '');
+
+  // 4. Remove leading meta labels on lines
+  const metaLabelRegex = /^(?:Tone|Mood|Style|Reason|Analysis|Genre|Language|Format|Paar|Caption):\s*[^\n]*\n+/gim;
+  text = text.replace(metaLabelRegex, '');
+
+  // 5. In Tamil mode, clean trailing English notes or isolated Latin fragment lines
+  if (params.language === 'ta') {
+    text = text.replace(/\n+\s*\((?:Note|Explanation|Translation)[^\)]*\)\s*$/i, '');
+    text = text.replace(/\n+\s*(?:Note|Explanation|Translation):\s*[^\n]+$/i, '');
+    const lines = text.split('\n');
+    const filteredLines = lines.filter((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return true;
+      const hasTamil = /[\u0B80-\u0BFF]/.test(trimmed);
+      const isPureLatin = /^[a-zA-Z\s.,!?:;'"\-—]+$/.test(trimmed);
+      if (!hasTamil && isPureLatin) {
+        const lower = trimmed.toLowerCase();
+        if (
+          lower.includes('silenzio') ||
+          lower.includes('up tamil') ||
+          lower.includes('paar') ||
+          lower.includes('here is') ||
+          lower.includes('based on') ||
+          lower.includes('poem') ||
+          lower.includes('story') ||
+          lower.length < 5
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+    text = filteredLines.join('\n');
+  }
+
+  return text.trim();
+}
+
 module.exports = {
   validateGuards,
   looksLikePoem,
   validateTopicRelevance,
   validateOutputLanguage,
-  stripLanguageNeutralContent
+  stripLanguageNeutralContent,
+  sanitizeCreativeOutput
 };
 

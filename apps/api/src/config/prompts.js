@@ -1042,7 +1042,7 @@ MANDATORY GENERATION DIRECTIVES:
 4. TONE IS A HARD CONSTRAINT: The selected tone ("${tone}") must be FELT through the writing, vocabulary, and rhythm. NEVER write "Tone:", "Mood:", "Reason:".
 ${getToneGuideline(tone, language)}
 5. OUTPUT LANGUAGE: The selected output language (${language === 'tanglish' ? 'Tanglish' : langDisplay}) is FINAL AUTHORITY.
-   - If Tamil: 100% natural, expressive Tamil in native script with ZERO unnecessary English/Tanglish mixing.
+   - If Tamil: 100% natural, expressive Tamil in native script with ZERO unnecessary English/Tanglish mixing. Do NOT generate Romanized Tamil/Tanglish output unless Tanglish is explicitly selected as the output format.
    - If English: 100% natural, expressive English with ZERO Tamil/Tanglish mixing.
 6. NO META OUTPUT & ZERO PREAMBLE: Begin immediately with the first line of the creative work. Do NOT output "Image Analysis", "Video Analysis", "Mood:", "Reason:", "Detected:", "Real language:", "Here is your poem", or markdown title headers (#).`;
 }

@@ -22,7 +22,7 @@ class GeminiService {
   async generateStream({ systemPrompt, userPrompt, media = null, onChunk = null, signal = null }) {
     let keyEntry = null;
     let attempts = 0;
-    const maxAttempts = 5;
+    const maxAttempts = Math.min(Math.max(keyPool.keys.length || 1, 1), 3);
 
     while (attempts < maxAttempts) {
       attempts++;
@@ -216,23 +216,65 @@ class GeminiService {
 
       if (isPoemMode) {
         if (isTamil) {
-          if (isRain || userPromptLower.includes('mazhai') || isRomantic || contextLower.includes('night') || contextLower.includes('walk')) {
-            mockResponse = `மழைத்துளி தெறிக்கும் இரவுக் கண்ணாடியில்\nஒளிர்கிறது நனைந்த தெருவின் மௌனம்!\nவிழியோரம் வழியும் துளிகளெல்லாம்\nஉன் நினைவைச் சுமந்து கவிதையாகுதே!\nகாற்றினில் தவழும் ஈர வாசம்\nகாலத்தின் சுவடை மெல்லத் துடைக்குதே!\nநெஞ்சினில் மலரும் உன் நினைவுகள்\nஎன்றுமே அழியாத காதல் சுடரே!`;
-          } else if (isSunset) {
-            mockResponse = `அந்தி வானம் செவ்வொளி சிந்தும்\nகடற்கரை அலைகள் பாடும் ராகம்!\nமறையும் கதிரவன் அழகின் கோலம்\nநெஞ்சில் நிறையும் அமைதி வெள்ளம்!`;
+          if (isSunset) {
+            mockResponse = `அந்தி வானம் செவ்வொளி சிந்தும் கடலோரக் கரையில்
+இணைந்து நின்ற ஜோடியின் விழிகளில் மிளிரும் மென் காதல்!
+அலைகள் தழுவும் மணற்பரப்பில் மறையும் பொன் மாலை
+நெஞ்சில் நிறையும் அமைதியான காதல் வெள்ளம்!`;
+          } else if (contextLower.includes('walk') || userPromptLower.includes('walk')) {
+            mockResponse = `இணைந்து நடக்கும் அந்த இருவரின் காலடித் தடங்களிலே
+மலர்கிறது அழகிய காதலின் ஆழமான புன்னகையே!
+தோளோடு தோள் உரசிப் பேசும் அந்த மௌனங்கள்
+காலத்தின் சுவடுகளில் அழியாத அன்புப் பயணமே!`;
+          } else if (isRain || userPromptLower.includes('mazhai')) {
+            mockResponse = `மழைத்துளி தெறிக்கும் இரவுக் கண்ணாடியில்
+ஒளிர்கிறது நனைந்த தெருவின் மௌனம்!
+விழியோரம் வழியும் துளிகளெல்லாம்
+உன் நினைவைச் சுமந்து கவிதையாகுதே!
+காற்றினில் தவழும் ஈர வாசம்
+காலத்தின் சுவடை மெல்லத் துடைக்குதே!
+நெஞ்சினில் மலரும் உன் நினைவுகள்
+என்றுமே அழியாத காதல் சுடரே!`;
           } else if (isMountain) {
-            mockResponse = `மேகங்கள் தவழும் மலைச்சிகரம் நோக்கி\nகால்கள் நடக்கும் புதிய பாதையிலே!\nஉயரங்கள் யாவும் சவாலல்ல நெஞ்சே\nஉள்ளத்தின் துணிவே வெற்றி வானமே!`;
+            mockResponse = `மேகங்கள் தவழும் மலைச்சிகரம் நோக்கி
+கால்கள் நடக்கும் புதிய பாதையிலே!
+உயரங்கள் யாவும் சவாலல்ல நெஞ்சே
+உள்ளத்தின் துணிவே வெற்றி வானமே!`;
           } else {
-            mockResponse = `காட்சியின் அழகில் மலர்ந்த கவிதை\nகாலத்தின் ஏட்டில் நிழலாய் நிற்குதே!\nவிழிகள் கண்ட வண்ணக் கோலம்\nநெஞ்சினில் வாழும் நிசப்த கானமே!`;
+            mockResponse = `காட்சியின் அழகில் மலர்ந்த கவிதை
+காலத்தின் ஏட்டில் நிழலாய் நிற்குதே!
+விழிகள் கண்ட வண்ணக் கோலம்
+நெஞ்சினில் வாழும் நிசப்த கானமே!`;
           }
         } else {
           // English poem
-          if (isRain || userPromptLower.includes('rain') || isRomantic || contextLower.includes('night') || contextLower.includes('walk')) {
-            mockResponse = `Across the rain-washed quiet street at night,\nReflections glimmer in the amber light.\nThe mist descends where solitary shadows roam,\nAnd silent memories softly find their home.\nEach falling drop a whisper in the dark,\nIgniting in the stillness one tender spark.`;
-          } else if (isSunset || isMountain) {
-            mockResponse = `Golden horizon meets the endless sea,\nWhere twilight whispers gentle symphony.\nThe mountains rise to touch the misty air,\nAnd stillness settles softly everywhere.`;
+          if (isSunset) {
+            mockResponse = `Beside the amber twilight of the shore,
+Two hearts stand quiet as the oceans roar.
+The golden horizon crowns their tender grace,
+A lasting peace within this sacred space.`;
+          } else if (contextLower.includes('walk') || userPromptLower.includes('walk')) {
+            mockResponse = `Walking together in the gentle light,
+Their quiet steps make every sorrow bright.
+Side by side along the peaceful way,
+Their love outshines the fading glow of day.`;
+          } else if (isRain || userPromptLower.includes('rain')) {
+            mockResponse = `Across the rain-washed quiet street at night,
+Reflections glimmer in the amber light.
+The mist descends where solitary shadows roam,
+And silent memories softly find their home.
+Each falling drop a whisper in the dark,
+Igniting in the stillness one tender spark.`;
+          } else if (isMountain) {
+            mockResponse = `Golden horizon meets the endless sea,
+Where twilight whispers gentle symphony.
+The mountains rise to touch the misty air,
+And stillness settles softly everywhere.`;
           } else {
-            mockResponse = `A fleeting moment captured in the light,\nWhere motion blends into the quiet night.\nThe frames awaken stories left untold,\nIn shades of silver, amber, and soft gold.`;
+            mockResponse = `A fleeting moment captured in the light,
+Where motion blends into the quiet night.
+The frames awaken stories left untold,
+In shades of silver, amber, and soft gold.`;
           }
         }
       } else if (isStoryMode) {
@@ -750,27 +792,26 @@ Real moments don't need a filter—just the right light. 🌇
       const toneSimpler = toneStr.includes('simple') || actionStr.includes('simpl');
       const toneShorter = toneStr.includes('short') || actionStr.includes('short');
       const toneLonger = toneStr.includes('long') || actionStr.includes('long');
+      const userPromptLower = (userPrompt || '').toLowerCase();
+      const isRainLove = (userPromptLower.includes('rain') || userPromptLower.includes('mazhai') || userPromptLower.includes('மழை')) && (userPromptLower.includes('first love') || userPromptLower.includes('first') || userPromptLower.includes('love') || userPromptLower.includes('kadhal') || userPromptLower.includes('முதல் காதல்') || userPromptLower.includes('காதல்'));
+      const isRelationshipTalk = (userPromptLower.includes('relationship') || userPromptLower.includes('உறவு')) && (userPromptLower.includes('talk') || userPromptLower.includes('பேசு') || userPromptLower.includes('speaking') || userPromptLower.includes('pathi') || userPromptLower.includes('பற்றி')) && (userPromptLower.includes('girl') || userPromptLower.includes('boy') || userPromptLower.includes('ponnu') || userPromptLower.includes('paiyan') || userPromptLower.includes('பெண்') || userPromptLower.includes('பையன்'));
 
-      if (isLoveStory) {
-        const sName = hasSabari ? 'சபரி' : 'மாறன்';
-        const kName = hasKani ? 'கனி' : 'நிலா';
-        if (toneCreative) {
-          mockResponse = `${sName}யும் ${kName}யும் கடலோர மணல்வெளியில் அமர்ந்து, எழும் அலைகளைக் கற்பனைக் கவிதைகளாக மொழிபெயர்த்துக் கொண்டிருந்தனர். அவர்களின் காதல் வெறும் வழக்கமான வார்த்தைகளில் அடங்காத ஒரு புதிய வண்ண ஓவியமாய் விரிந்தது. வானத்து மேகங்கள் அவர்களின் நினைவுகளை விண்மீன்களாய் வரைந்து கொண்டிருந்தன.`;
-        } else if (toneEmotional) {
-          mockResponse = `கடற்கரையின் அந்தி வெளிச்சத்தில் ${sName}யின் கைகளை மெல்லப் பிடித்தபடி ${kName} நின்றிருந்தாள். மௌனமாய் வழிந்த விழியோரத் துளிகளுக்குள் பல வருடப் பிரிவு, சொல்லப்படாத தவிப்பு மற்றும் ஆழமான அன்பு எல்லாம் ஒருங்கே உறைந்திருந்தது. "நீ என்னோடு இருக்கும் இந்த நொடி போதும்," என்றாள் அவள் குரல் தழுதழுக்க.`;
-        } else if (toneHumorous) {
-          mockResponse = `${sName}யும் ${kName}யும் காதலர்கள் தான், ஆனால் அந்த காதல் பெரும்பாலும் 'இன்னைக்கு என்ன சாப்பிடுறது?' என்ற சுவையான விவாதத்தில்தான் ஆரம்பமாகும்! கடற்கரையில் தீவிரமாக பேசிக்கொண்டிருந்தபோது, "என் மனசுல நீ மட்டும்தான் இருக்க" என்று ${sName} சொல்ல, "சரி முதல்ல அந்த சுண்டல் வாங்கித் தாங்க!" என்று ${kName} சிரித்தாள்.`;
-        } else if (toneSimpler) {
-          mockResponse = `${sName}யும் ${kName}யும் ஒருவரையொருவர் உண்மையாக நேசித்தனர். அவர்களின் அன்பு மிகவும் எளிமையானது. தினமும் ஒன்றாக நடப்பதும், மனம் விட்டுப் பேசுவதும் மட்டுமே அவர்களுக்குப் பிடித்திருந்தது.`;
-        } else if (toneShorter) {
-          mockResponse = `${sName}யும் ${kName}யும் கடற்கரையில் நின்றனர். அமைதியான அந்திப் பொழுதில் அவர்களின் உள்ளங்கள் அன்பால் இணைந்தன.`;
-        } else if (toneLonger) {
-          mockResponse = `${sName}யும் ${kName}யும் மாலை வேளையில் பழமையான துறைமுகப் பாலத்தில் அமைதியாக நடந்து கொண்டிருந்தனர். கடலின் குளிர்ந்த காற்று மெல்லிய இசையாக அவர்கள் மேல் தவழ்ந்தது. கடந்த கால நினைவுகள், அவர்கள் கடந்து வந்த சவாலான பாதைகள், ஒருவருக்கொருவர் துணையாய் நின்ற தருணங்கள் என எல்லாவற்றையும் நினைத்துப் பார்த்தனர்.\n\n"${sName}, இத்தனை தூரம் நாம் ஒன்றாக வருவோம் என்று நான் நினைக்கவே இல்லை," என்று கடலை வெறித்தபடி மெல்லிய குரலில் சொன்னாள் ${kName}.\n\nஅவன் அவளது கண்களைப் பார்த்து புன்னகைத்தான். "${kName}, தூரங்கள் மாறலாம், ஆனால் நாம் பகிர்ந்த அன்பு என்றும் மாறாது." என்றான் உறுதியோடு. அந்த மாலை அவர்களின் வாழ்வின் மறக்க முடியாத அழகான அத்தியாயமாகப் பதிவானது.`;
-        } else {
-          mockResponse = `${sName}யும் ${kName}யும் கடற்கரையில் நின்றனர். அந்தி வானத்தின் செவ்வொளியில் அவர்களின் காதல் அமைதியாகப் பூத்துக் குலுங்கியது. இருவரின் கண்களிலும் எதிர்காலம் பற்றிய நம்பிக்கை சுடராய் ஒளிர்ந்தது.`;
-        }
-      } else if (systemPrompt.includes('[MODE: POEM GENERATION]')) {
-        if (systemPrompt.includes('STRUCTURAL FORM: Haiku')) {
+      if (systemPrompt.includes('[MODE: POEM GENERATION]')) {
+        if (isRelationshipTalk) {
+          mockResponse = `மௌனமாய் அமர்ந்திருக்கும் மாலையின் நிழலினிலே
+பேசுகின்றார் ஒரு பையனும் பெண்ணும் தங்களின் காதல் உறவை!
+விழிகள் சொல்லும் கதைகள் வார்த்தைகளை விட ஆழமாய்
+வழிகின்ற மௌனத்தில் மலர்கிறது இருவரின் அன்புப் பிணைப்பு!
+ஒருவரையொருவர் புரிந்து கொள்ளும் அந்தப் பேச்சு
+உள்ளத்தின் ஆழத்தில் நிலைத்திருக்கும் புதிய நம்பிக்கை!`;
+        } else if (isRainLove) {
+          mockResponse = `மழைத்துளிகள் தூவும் முதல் காதலின் நனைவிலே
+நனைந்த விழிகள் பேசும் ஆயிரம் கவிதைகளே!
+மண்ணில் விழும் ஒவ்வொரு துளியும் உன் பெயரையே பாடுதே
+நெஞ்சில் மலர்ந்த முதல் அன்பின் வாசம் என்றுமே தீராதே!
+வானம் பொழியும் இந்தச் சிலிர்ப்பான மாலையிலே
+வாழ்நாளெல்லாம் மறக்காத முதல் காதலின் நிழலே!`;
+        } else if (systemPrompt.includes('STRUCTURAL FORM: Haiku')) {
           mockResponse = `நிலவின் மென்வெளிச்சம்\nஉன் நினைவைச் சுமந்து\nஇரவை நனைக்குதே!`;
         } else if (systemPrompt.includes('வெண்பா')) {
           mockResponse = `வானத்து வெண்மதியைக் கண்டுமகிழ் நெஞ்சமே\nகானத்து வேய்ங்குழலின் இன்னிசையும் - தானுணர்ந்து\nபாடலின்பம் பொங்கப் பரவசமாய் நின்றாட\nநாளுமெழும் தூயநல் லன்பு!`;
@@ -790,9 +831,29 @@ Real moments don't need a filter—just the right light. 🌇
           mockResponse = `காற்றினில் தவழும் கானகம் போலே\nதோற்றுவித்தாய் ஓர் புதுநிலா ஒளியை!\nகாதலின் ஆழம் கடலிலும் பெரிதாய்\nநெஞ்சினில் நின்றே நிலைபெறு மானே!\n\nவிண்ணின் தாரகை கண் சிமிட்டும் நேரம்\nமண்ணின் மலர்கள் மனம் மயக்கும் நறுமணம்\nஉன்னோடு வாழும் ஒவ்வொரு நொடியும்\nஎன்னோடு இணையும் அழியாத கவிதை!`;
         }
       } else if (systemPrompt.includes('[MODE: STORY GENERATION]')) {
-        const isDream = combined.includes('kanavu') || combined.includes('dream') || combined.includes('கனவு');
-        const isLifePrompt = combined.includes('real life') || combined.includes('nothing to happen') || combined.includes('life') || combined.includes('வாழ்க்கை');
-        if (isDream) {
+        const isDream = userPromptLower.includes('kanavu') || userPromptLower.includes('dream') || userPromptLower.includes('கனவு');
+        const isLifePrompt = userPromptLower.includes('real life') || userPromptLower.includes('nothing to happen') || userPromptLower.includes('வாழ்க்கை');
+        if (isRelationshipTalk) {
+          mockResponse = `அந்தி சாயும் அந்த அமைதியான பூங்காவின் மரத்தடியில், ஒரு பையனும் பெண்ணும் தங்கள் உறவைப் பற்றி ஆழமாகப் பேசிக் கொண்டிருந்தனர். கடந்த காலத்தின் சிறு முரண்பாடுகள், எதிர்காலம் பற்றிய தயக்கங்கள் என எல்லாவற்றையும் இருவரும் மனம் திறந்து பகிர்ந்தனர்.\n\n"நாம் கடந்து வந்த தூரம் குறைவல்ல. இந்த உறவு எனக்கு மிகவும் முக்கியமானது," என்று அவன் அவளது கண்களைப் பார்த்து மென்மையாகக் கூறினான்.\n\nஅவள் புன்னகையுடன் அவனது கைகளைப் பற்றினாள். "பேசாமல் இருந்த மௌனங்களை விட, இப்போது நாம் பகிரும் இந்த உண்மையான வார்த்தைகள் நம்மை இன்னும் நெருக்கமாக்குகின்றன," என்றாள். அந்த மாலை நேரம் அவர்களின் உறவில் புதியதொரு தெளிவையும் ஆழமான நம்பிக்கையையும் ஏற்படுத்தியது.`;
+        } else if (isLoveStory) {
+          const sName = hasSabari ? 'சபரி' : 'மாறன்';
+          const kName = hasKani ? 'கனி' : 'நிலா';
+          if (toneCreative) {
+            mockResponse = `${sName}யும் ${kName}யும் கடலோர மணல்வெளியில் அமர்ந்து, எழும் அலைகளைக் கற்பனைக் கவிதைகளாக மொழிபெயர்த்துக் கொண்டிருந்தனர். அவர்களின் காதல் வெறும் வழக்கமான வார்த்தைகளில் அடங்காத ஒரு புதிய வண்ண ஓவியமாய் விரிந்தது. வானத்து மேகங்கள் அவர்களின் நினைவுகளை விண்மீன்களாய் வரைந்து கொண்டிருந்தன.`;
+          } else if (toneEmotional) {
+            mockResponse = `கடற்கரையின் அந்தி வெளிச்சத்தில் ${sName}யின் கைகளை மெல்லப் பிடித்தபடி ${kName} நின்றிருந்தாள். மௌனமாய் வழிந்த விழியோரத் துளிகளுக்குள் பல வருடப் பிரிவு, சொல்லப்படாத தவிப்பு மற்றும் ஆழமான அன்பு எல்லாம் ஒருங்கே உறைந்திருந்தது. "நீ என்னோடு இருக்கும் இந்த நொடி போதும்," என்றாள் அவள் குரல் தழுதழுக்க.`;
+          } else if (toneHumorous) {
+            mockResponse = `${sName}யும் ${kName}யும் காதலர்கள் தான், ஆனால் அந்த காதல் பெரும்பாலும் 'இன்னைக்கு என்ன சாப்பிடுறது?' என்ற சுவையான விவாதத்தில்தான் ஆரம்பமாகும்! கடற்கரையில் தீவிரமாக பேசிக்கொண்டிருந்தபோது, "என் மனசுல நீ மட்டும்தான் இருக்க" என்று ${sName} சொல்ல, "சரி முதல்ல அந்த சுண்டல் வாங்கித் தாங்க!" என்று ${kName} சிரித்தாள்.`;
+          } else if (toneSimpler) {
+            mockResponse = `${sName}யும் ${kName}யும் ஒருவரையொருவர் உண்மையாக நேசித்தனர். அவர்களின் அன்பு மிகவும் எளிமையானது. தினமும் ஒன்றாக நடப்பதும், மனம் விட்டுப் பேசுவதும் மட்டுமே அவர்களுக்குப் பிடித்திருந்தது.`;
+          } else if (toneShorter) {
+            mockResponse = `${sName}யும் ${kName}யும் கடற்கரையில் நின்றனர். அமைதியான அந்திப் பொழுதில் அவர்களின் உள்ளங்கள் அன்பால் இணைந்தன.`;
+          } else if (toneLonger) {
+            mockResponse = `${sName}யும் ${kName}யும் மாலை வேளையில் பழமையான துறைமுகப் பாலத்தில் அமைதியாக நடந்து கொண்டிருந்தனர். கடலின் குளிர்ந்த காற்று மெல்லிய இசையாக அவர்கள் மேல் தவழ்ந்தது. கடந்த கால நினைவுகள், அவர்கள் கடந்து வந்த சவாலான பாதைகள், ஒருவருக்கொருவர் துணையாய் நின்ற தருணங்கள் என எல்லாவற்றையும் நினைத்துப் பார்த்தனர்.\n\n"${sName}, இத்தனை தூரம் நாம் ஒன்றாக வருவோம் என்று நான் நினைக்கவே இல்லை," என்று கடலை வெறித்தபடி மெல்லிய குரலில் சொன்னாள் ${kName}.\n\nஅவன் அவளது கண்களைப் பார்த்து புன்னகைத்தான். "${kName}, தூரங்கள் மாறலாம், ஆனால் நாம் பகிர்ந்த அன்பு என்றும் மாறாது." என்றான் உறுதியோடு. அந்த மாலை அவர்களின் வாழ்வின் மறக்க முடியாத அழகான அத்தியாயமாகப் பதிவானது.`;
+          } else {
+            mockResponse = `${sName}யும் ${kName}யும் கடற்கரையில் நின்றனர். அந்தி வானத்தின் செவ்வொளியில் அவர்களின் காதல் அமைதியாகப் பூத்துக் குலுங்கியது. இருவரின் கண்களிலும் எதிர்காலம் பற்றிய நம்பிக்கை சுடராய் ஒளிர்ந்தது.`;
+          }
+        } else if (isDream) {
           mockResponse = `அன்று கண்ட கனவு மாறனின் மனதை விடிய விடிய அமைதியிழக்கச் செய்திருந்தது. கனவில் கண்ட அதே பழைய பாழடைந்த மண்டபம், அதன் சுவரில் பொறிக்கப்பட்டிருந்த விசித்திரமான மர்மக் குறியீடு... எல்லாம் நிஜத்தில் கண்முன்னே நின்றபோது அவனது உடல் சிலிர்த்தது.\n\n"இது வெறும் கனவு மட்டுமல்ல, ஏதோ ஓர் உண்மையை வெளிக்கொண்டு வர காலம் போட்ட புதிர்" என்று முணுமுணுத்தான் மாறன்.\n\nமண்டபத்தின் நடுவே இருந்த கல் தூணின் அடியில் மெல்லத் தோண்டினான். அங்கே மண்ணில் புதையுண்டிருந்த ஒரு பழங்காலத்துச் செப்பேடு அவனது கைக்குக் கிடைத்தது. கனவு சொன்ன திசை நோக்கி அவன் அடியெடுத்து வைக்க, புதிரின் முதல் முடிச்சு அவிழ்ந்தது.`;
         } else if (isLifePrompt) {
           mockResponse = `"நிஜ வாழ்க்கையில் எதுவும் நடக்காதது போல சில அமைதியான நாட்கள் நகரும்... ஆனால் அந்த அமைதியில்தான் வாழ்க்கையின் மிகப்பெரிய திருப்பங்கள் அமைதியாகக் காத்திருக்கும்" என்று நினைத்துக் கொண்டான் அர்ஜுன்.\n\nகாலை நேரத்து காபி கோப்பையுடன் பால்கனியில் நின்றிருந்த அவனுக்கு, தினசரி வழக்கமான சலிப்பு ஒருவித ஏமாற்றத்தை தந்தது. "ஏன் என் வாழ்க்கையில் மட்டும் எந்த மாற்றமும் நிகழ மாட்டேங்குது?" என்று முணுமுணுத்தான்.\n\nஅப்போது அவனது கதவு தட்டப்பட்டது. எதிர்வீட்டுச் சிறுவன் ஓடிவந்து, "அண்ணா, நீங்க தேடிக்கிட்டு இருந்த உங்க அப்பாவோட பழைய டைரி எங்க பரண்ல கிடைச்சிருக்கு!" என்று ஒரு பழமையான நோட்டுப்புத்தகத்தை நீட்டினான். அதுவரை எதுவும் நடக்காததாகத் தோன்றிய அந்தச் சாதாரண நாள், அவனது குடும்பத்தின் 20 வருட ரகசியத்தை வெளிக்கொணரும் தொடக்கப் புள்ளியானது.`;
@@ -839,26 +900,15 @@ Real moments don't need a filter—just the right light. 🌇
       const toneShorter = toneStr.includes('short') || actionStr.includes('short');
       const toneLonger = toneStr.includes('long') || actionStr.includes('long');
 
-      if (isLoveStory) {
-        const sName = hasSabari ? 'Sabari' : 'Daniel';
-        const kName = hasKani ? 'Kani' : 'Maya';
-        if (toneCreative) {
-          mockResponse = `${sName} and ${kName} strolled along the twilight shoreline where the tide sculpted intricate constellations into the wet amber sand. Their love felt like an unspoken language composed of quiet glances, fresh ocean mist, and vivid dreams woven under an emerald-tinted horizon.`;
-        } else if (toneEmotional) {
-          mockResponse = `Standing beside the restless waves, ${sName} gently held ${kName}'s hand as evening settled over the sea. Years of quiet sacrifices, gentle patience, and deep devotion surfaced in the tender silence between them. "No matter what changes," ${sName} whispered, "my home will always be with you."`;
-        } else if (toneHumorous) {
-          mockResponse = `${sName} and ${kName} were completely in love, though their grandest romantic debates usually revolved around who stole the last slice of pizza! As ${sName} leaned in with dramatic cinematic flair to profess his eternal devotion, ${kName} simply laughed and said, "That's very poetic, but did you remember to bring the umbrella?"`;
-        } else if (toneSimpler) {
-          mockResponse = `${sName} and ${kName} loved each other very much. Their bond was simple and honest. They enjoyed walking together by the beach, talking about their day, and sharing quiet moments.`;
-        } else if (toneShorter) {
-          mockResponse = `${sName} and ${kName} stood by the evening sea, their hearts joined in quiet love.`;
-        } else if (toneLonger) {
-          mockResponse = `The amber sun dipped below the horizon as ${sName} and ${kName} walked along the weathered wooden pier, listening to the rhythmic swell of the incoming tide. Over the years, they had weathered doubts, shared triumphs, and built an unshakable trust that deepened with every changing season.\n\n"Do you ever think about the day we first met?" ${kName} asked, smiling as the salt breeze stirred her hair.\n\n${sName} met her gaze with quiet tenderness. "Every single day," he answered. Looking out across the boundless water, they realized that the greatest adventure wasn't chasing distant horizons, but choosing to stand side by side through every unfolding chapter of life.`;
-        } else {
-          mockResponse = `${sName} and ${kName} stood by the shore as the amber sky faded into dusk, their bond steady and calm against the rolling waves.`;
-        }
-      } else if (systemPrompt.includes('[MODE: POEM GENERATION]')) {
-        if (systemPrompt.includes('STRUCTURAL FORM: Haiku')) {
+      if (systemPrompt.includes('[MODE: POEM GENERATION]')) {
+        const isRainLove = (combined.includes('rain') || combined.includes('mazhai') || combined.includes('மழை')) && (combined.includes('first love') || combined.includes('first') || combined.includes('love') || combined.includes('kadhal'));
+        const isRelationshipTalk = (combined.includes('relationship') || combined.includes('உறவு') || combined.includes('talk') || combined.includes('பேசு')) && (combined.includes('girl') || combined.includes('boy') || combined.includes('ponnu') || combined.includes('paiyan'));
+
+        if (isRelationshipTalk) {
+          mockResponse = `Beneath the quiet shelter of the twilight trees,\nA girl and boy converse upon the whispering breeze.\nSpeaking of their shared bond, their fears, their gentle grace,\nUnfolding every secret in that tender space.\nWords bridge the distance where two hearts align,\nA quiet promise that their love will softly shine.`;
+        } else if (isRainLove) {
+          mockResponse = `The first sweet rain descends upon the glistening ground,\nWhere initial love in tender innocence is found.\nEach falling drop reflects a heartbeat softly stirred,\nA quiet promise deeper than the spoken word.\nIn rain-washed streets where youthful shadows gently meet,\nThe memories of first love remain forever sweet.`;
+        } else if (systemPrompt.includes('STRUCTURAL FORM: Haiku')) {
           mockResponse = `Pale moon softly glows,\nWhispering ancient secrets,\nLove stirs in the heart.`;
         } else if (toneCreative) {
           mockResponse = `Stardust entangled in the weaver's loom,\nBreathes silver lanterns through the midnight gloom.\nAn uncharted voyage where the wild winds play,\nTurning the shadows into vibrant day.`;
@@ -876,6 +926,7 @@ Real moments don't need a filter—just the right light. 🌇
           mockResponse = `The whispers of the midnight breeze,\nAwaken slumber in the ancient trees.\nA tapestry of golden light,\nDispels the sorrow of the night.\n\nIn every step, a truth reclaimed,\nA silent wonder yet unnamed.`;
         }
       } else if (systemPrompt.includes('[MODE: STORY GENERATION]')) {
+        const isRelationshipTalk = (combined.includes('relationship') || combined.includes('உறவு') || combined.includes('talk') || combined.includes('பேசு')) && (combined.includes('girl') || combined.includes('boy') || combined.includes('ponnu') || combined.includes('paiyan'));
         const isLife = combined.includes('real life') || combined.includes('nothing to happen');
         const hasPallathur = combined.includes('pallathur');
         const hasRock = combined.includes('rock');
@@ -883,7 +934,27 @@ Real moments don't need a filter—just the right light. 🌇
         const hasCollege = combined.includes('college');
         const hasFarewell = combined.includes('farewell');
 
-        if (isLife) {
+        if (isRelationshipTalk) {
+          mockResponse = `On a quiet wooden bench beneath the old oak tree, a boy and a girl sat speaking candidly about their relationship. The evening air was cool, and the gentle rustle of leaves filled the pauses between their thoughtful words.\n\n"I think we spent too much time trying to be perfect instead of just being honest with each other," he admitted softly, watching the amber sky fade into dusk.\n\nShe looked at him with gentle warmth and smiled. "Then let's stop worrying about the road ahead and focus on the understanding we share right now." In that quiet moment of honest conversation, the unspoken distance between them dissolved, leaving behind a bond stronger than before.`;
+        } else if (isLoveStory) {
+          const sName = hasSabari ? 'Sabari' : 'Daniel';
+          const kName = hasKani ? 'Kani' : 'Maya';
+          if (toneCreative) {
+            mockResponse = `${sName} and ${kName} strolled along the twilight shoreline where the tide sculpted intricate constellations into the wet amber sand. Their love felt like an unspoken language composed of quiet glances, fresh ocean mist, and vivid dreams woven under an emerald-tinted horizon.`;
+          } else if (toneEmotional) {
+            mockResponse = `Standing beside the restless waves, ${sName} gently held ${kName}'s hand as evening settled over the sea. Years of quiet sacrifices, gentle patience, and deep devotion surfaced in the tender silence between them. "No matter what changes," ${sName} whispered, "my home will always be with you."`;
+          } else if (toneHumorous) {
+            mockResponse = `${sName} and ${kName} were completely in love, though their grandest romantic debates usually revolved around who stole the last slice of pizza! As ${sName} leaned in with dramatic cinematic flair to profess his eternal devotion, ${kName} simply laughed and said, "That's very poetic, but did you remember to bring the umbrella?"`;
+          } else if (toneSimpler) {
+            mockResponse = `${sName} and ${kName} loved each other very much. Their bond was simple and honest. They enjoyed walking together by the beach, talking about their day, and sharing quiet moments.`;
+          } else if (toneShorter) {
+            mockResponse = `${sName} and ${kName} stood by the evening sea, their hearts joined in quiet love.`;
+          } else if (toneLonger) {
+            mockResponse = `The amber sun dipped below the horizon as ${sName} and ${kName} walked along the weathered wooden pier, listening to the rhythmic swell of the incoming tide. Over the years, they had weathered doubts, shared triumphs, and built an unshakable trust that deepened with every changing season.\n\n"Do you ever think about the day we first met?" ${kName} asked, smiling as the salt breeze stirred her hair.\n\n${sName} met her gaze with quiet tenderness. "Every single day," he answered. Looking out across the boundless water, they realized that the greatest adventure wasn't chasing distant horizons, but choosing to stand side by side through every unfolding chapter of life.`;
+          } else {
+            mockResponse = `${sName} and ${kName} stood by the shore as the amber sky faded into dusk, their bond steady and calm against the rolling waves.`;
+          }
+        } else if (isLife) {
           mockResponse = `"Nothing ever happens in real life," Julian muttered, staring out the rain-streaked window of the coffee shop, stirring his lukewarm espresso.\n\nHe watched the familiar routine of people passing by with umbrellas, longing for even a small spark of adventure to disrupt the monotony.\n\nJust as he stood up to leave, the elderly man sitting across from him forgot a leather-bound sketchbook on the velvet bench. Julian picked it up to run after him, only to open the first page and see an intricate, hyper-realistic sketch of himself—sitting at that very table, drawn hours before he had even arrived.`;
         } else if (hasPallathur || (hasRock && hasTemple)) {
           mockResponse = `At the ancient temple grounds in Pallathur, the crowd gathered under the amber dusk for the annual rock lifting competition. The boy stood before the massive stone, exchanging a quiet glance of encouragement with the girl.\n\n"You've trained for this moment," she said softly, her belief steady and calm.\n\nTaking a deep breath, he gripped the rugged surface of the rock, feeling the weight of the moment and the quiet resolve echoing through the temple courtyards.`;
