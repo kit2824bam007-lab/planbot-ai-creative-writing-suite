@@ -64,7 +64,7 @@ class GeminiService {
           }
         });
 
-        // Assemble multimodal parts: ONLY images can be sent as inlineData (videos are rejected by Gemini inlineData API)
+        // Assemble multimodal parts: images and sampled video frames sent as inlineData
         const parts = [];
         if (media && media.data && media.type === 'image') {
           let rawBase64 = media.data;
@@ -78,6 +78,22 @@ class GeminiService {
               mimeType: resolvedMime,
               data: rawBase64
             }
+          });
+        } else if (media && media.type === 'video' && Array.isArray(media.frames) && media.frames.length > 0) {
+          media.frames.slice(0, 6).forEach((frameData) => {
+            let rawBase64 = frameData;
+            let mimeType = 'image/jpeg';
+            if (rawBase64.includes(';base64,')) {
+              const split = rawBase64.split(';base64,');
+              if (split[0].includes('image/')) mimeType = split[0].replace('data:', '');
+              rawBase64 = split[1];
+            }
+            parts.push({
+              inlineData: {
+                mimeType,
+                data: rawBase64
+              }
+            });
           });
         }
         parts.push({ text: userPrompt });
@@ -159,7 +175,7 @@ class GeminiService {
    * High quality mock generation for local development without active Gemini API keys
    */
   async mockStreamGeneration({ userPrompt, systemPrompt, onChunk, signal }) {
-    const isTanglish = systemPrompt.includes('TARGET = TANGLISH') || (userPrompt && userPrompt.toLowerCase().includes('tanglish'));
+    const isTanglish = systemPrompt.includes('TARGET = TANGLISH') || (!systemPrompt.includes('TARGET = TAMIL') && !systemPrompt.includes('TARGET = ENGLISH') && userPrompt && /\b(in\s+tanglish|tanglish\s+output)\b/i.test(userPrompt));
     const isTamil = !isTanglish && (systemPrompt.includes('TARGET = TAMIL') || systemPrompt.includes('Tamil (தமிழ்)') || systemPrompt.includes('வெண்பா'));
     let mockResponse = '';
 
@@ -195,7 +211,46 @@ class GeminiService {
       const isProduct = contextLower.includes('product') || contextLower.includes('watch') || contextLower.includes('shoe');
       const isTechDemo = contextLower.includes('tech_demo') || contextLower.includes('project') || contextLower.includes('student') || contextLower.includes('demo') || contextLower.includes('ai') || contextLower.includes('code') || contextLower.includes('software');
 
-      if (isLinkedIn) {
+      const isPoemMode = systemPrompt.includes('[MODE: POEM GENERATION]') || (userPrompt && (userPrompt.includes('contentType": "Poem') || userPrompt.includes('"mode": "poem"')));
+      const isStoryMode = systemPrompt.includes('[MODE: STORY GENERATION]') || (userPrompt && (userPrompt.includes('contentType": "Short Story') || userPrompt.includes('"mode": "story"')));
+
+      if (isPoemMode) {
+        if (isTamil) {
+          if (isRain || userPromptLower.includes('mazhai') || isRomantic || contextLower.includes('night') || contextLower.includes('walk')) {
+            mockResponse = `மழைத்துளி தெறிக்கும் இரவுக் கண்ணாடியில்\nஒளிர்கிறது நனைந்த தெருவின் மௌனம்!\nவிழியோரம் வழியும் துளிகளெல்லாம்\nஉன் நினைவைச் சுமந்து கவிதையாகுதே!\nகாற்றினில் தவழும் ஈர வாசம்\nகாலத்தின் சுவடை மெல்லத் துடைக்குதே!\nநெஞ்சினில் மலரும் உன் நினைவுகள்\nஎன்றுமே அழியாத காதல் சுடரே!`;
+          } else if (isSunset) {
+            mockResponse = `அந்தி வானம் செவ்வொளி சிந்தும்\nகடற்கரை அலைகள் பாடும் ராகம்!\nமறையும் கதிரவன் அழகின் கோலம்\nநெஞ்சில் நிறையும் அமைதி வெள்ளம்!`;
+          } else if (isMountain) {
+            mockResponse = `மேகங்கள் தவழும் மலைச்சிகரம் நோக்கி\nகால்கள் நடக்கும் புதிய பாதையிலே!\nஉயரங்கள் யாவும் சவாலல்ல நெஞ்சே\nஉள்ளத்தின் துணிவே வெற்றி வானமே!`;
+          } else {
+            mockResponse = `காட்சியின் அழகில் மலர்ந்த கவிதை\nகாலத்தின் ஏட்டில் நிழலாய் நிற்குதே!\nவிழிகள் கண்ட வண்ணக் கோலம்\nநெஞ்சினில் வாழும் நிசப்த கானமே!`;
+          }
+        } else {
+          // English poem
+          if (isRain || userPromptLower.includes('rain') || isRomantic || contextLower.includes('night') || contextLower.includes('walk')) {
+            mockResponse = `Across the rain-washed quiet street at night,\nReflections glimmer in the amber light.\nThe mist descends where solitary shadows roam,\nAnd silent memories softly find their home.\nEach falling drop a whisper in the dark,\nIgniting in the stillness one tender spark.`;
+          } else if (isSunset || isMountain) {
+            mockResponse = `Golden horizon meets the endless sea,\nWhere twilight whispers gentle symphony.\nThe mountains rise to touch the misty air,\nAnd stillness settles softly everywhere.`;
+          } else {
+            mockResponse = `A fleeting moment captured in the light,\nWhere motion blends into the quiet night.\nThe frames awaken stories left untold,\nIn shades of silver, amber, and soft gold.`;
+          }
+        }
+      } else if (isStoryMode) {
+        if (isTamil) {
+          if (isRain || userPromptLower.includes('mazhai') || isRomantic || contextLower.includes('walk') || contextLower.includes('alone') || contextLower.includes('night')) {
+            mockResponse = `மழை ஓய்ந்த அந்த இரவில், தெருவிளக்கின் மங்கலான ஒளியில் அவன் தனியாக நடந்து கொண்டிருந்தான். ஈரம் படிந்த சாலையில் விழுந்த அவனது நிழல், அவன் சுமந்து வந்த கடந்த கால நினைவுகளைப் போல நீண்டு கிடந்தது.\n\nஅப்போது தூரத்தில் ஒரு மெல்லிய குரல் கேட்டது. "எவ்வளவு காலம் தான் இப்படித் தனியாகவே நடப்பாய்?" என்று அவள் நின்றிருந்தாள்.\n\nஅவன் திரும்பிப் பார்த்தான். இருவரின் கண்களிலும் சொல்லப்படாத எத்தனையோ வருடங்களின் பிரிவு மௌனமாய் கரைந்து கொண்டிருந்தது. "உன்னைத் தேடித் தானே இந்த மழை இரவிலும் நடந்து கொண்டிருக்கிறேன்," என்றான் அவன் நெகிழ்ச்சியோடு. அந்த இரவு அவர்களுக்கான ஒரு புதிய தொடக்கமாக மாறியது.`;
+          } else {
+            mockResponse = `அந்திப் பொழுதில் அந்த நீண்ட நெடுஞ்சாலையில் அவர்கள் இருவரும் தொடர்ந்து பயணித்துக் கொண்டிருந்தனர். காரின் ஜன்னல் வழியே குளிர்ந்த காற்று வீச, மலைச்சாரலின் பசுமை மனதை அமைதிப்படுத்தியது.\n\n"நாம் வந்த பாதை நீண்டது, ஆனால் இந்த தருணம் அதைவிட அழகாக இருக்கிறது," என்றான் மாறன் சாலையை உற்றுப் பார்த்தபடி.\n\nநிலா புன்னகைத்தாள். "பயணம் என்பது சேருமிடத்தில் இல்லை, வழியில் நாம் உணரும் உணர்வுகளில் தான் இருக்கிறது," என்றாள். அந்த மாலை நேரம் அவர்களின் நினைவில் என்றும் நிலைத்திருக்கும் ஒரு பொக்கிஷமாக மாறியது.`;
+          }
+        } else {
+          // English story
+          if (contextLower.includes('friend') || contextLower.includes('travel') || contextLower.includes('road') || userPromptLower.includes('travel') || userPromptLower.includes('friend')) {
+            mockResponse = `The quiet highway stretched forward beneath the vast golden sky as the two friends drove into the horizon. Wind whipped through the open windows, carrying the scent of pine and distant mountain rain.\n\n"Do you think we'll ever look back at this and wonder where the time went?" Leo asked, watching the sun dip behind the ridges.\n\nMaya smiled, keeping her eyes on the winding road ahead. "Not if we remember exactly how it felt right now."\n\nAs the cinematic twilight enveloped the valley, the journey ceased to be about the destination—it became a testament to the road they shared.`;
+          } else {
+            mockResponse = `Under the amber glow of the solitary streetlight, the wet pavement reflected a quiet city that had finally paused to breathe. Raindrops tapped against the glass like a long-forgotten rhythm.\n\n"Sometimes the quietest nights tell the loudest truths," Julian whispered, stepping into the mist.\n\nElena nodded gently beside him. "Then let us listen before the morning comes."\n\nIn that brief, cinematic pause between shadow and dawn, their journey found the clarity they had sought for years.`;
+          }
+        }
+      } else if (isLinkedIn) {
         if (isTechDemo) {
           mockResponse = `Today, we got to see our AI project move from an idea on paper to something we could actually demonstrate.
 
@@ -298,7 +353,7 @@ Excited for what lies ahead on this journey.
           mockResponse = `🎬 Title:\nSummit Views Beyond The Clouds 🏔️\n\n🔥 Hook:\nThe climb is steep, but the view from the summit proves every drop of effort was worth it.\n\n📝 Short Description:\nThrough misty peaks and winding roads, finding stillness above the clouds. Never stop ascending.\n\n#️⃣ Hashtags:\n#Shorts #MountainTravel #Wanderlust #TravelDiaries #AdventureShorts #ClimbHigher`;
         }
       } else if (systemPrompt.includes('Media Type: video') || systemPrompt.includes('[MEDIA-AWARE VIDEO GENERATION REQUEST]') || (mcMatch && mcMatch[1].includes('video'))) {
-        // Structured Video Response: Caption + Dialogue-style suggestion + Mood + Reason
+        // Creative Video Social Content (Caption + Reel/Dialogue Suggestion) without meta-analysis
         const isNightWalk = contextLower.includes('walk') || contextLower.includes('night') || contextLower.includes('alone') || contextLower.includes('look') || contextLower.includes('emotional');
         const isDance = contextLower.includes('dance') || contextLower.includes('choreograph') || contextLower.includes('rhythm');
         const isAction = contextLower.includes('fight') || contextLower.includes('action') || contextLower.includes('punch');
@@ -306,38 +361,38 @@ Excited for what lies ahead on this journey.
 
         if (isTamil) {
           if (isNightWalk) {
-            mockResponse = `Caption:\n"திரும்பிப் பார்க்க வைத்தது பாதை இல்லை... நினைவுகள்."\n\nDialogue-style:\n"சில பிரிவுகள் முடிவல்ல... ஒரு புதிய கதையின் தொடக்கம்."\n\nMood:\nEmotional + Cinematic\n\nReason:\n"இரவு தெருவிளக்கின் ஒளியில் தனிமையான நடையும், திரும்பிப் பார்க்கும் உணர்ச்சிகரமான தருணமும் காட்சிகளில் பதிவாகியுள்ளன."`;
+            mockResponse = `Caption:\n"திரும்பிப் பார்க்க வைத்தது பாதை இல்லை... நினைவுகள்."\n\nDialogue-style:\n"சில பிரிவுகள் முடிவல்ல... ஒரு புதிய கதையின் தொடக்கம்."`;
           } else if (isDance) {
-            mockResponse = `Caption:\n"தாளமும் பாதமும் இணையும் நொடியில்... நடனம் உயிர் பெறுகிறது! 🔥"\n\nDialogue-style:\n"ஆட்டம் ஆடலாம்... ஆனா ஸ்டைல் நம்முடையதா இருக்கணும்! 🔥"\n\nMood:\nEnergetic + Vibrant\n\nReason:\n"துடிப்பான உடல் அசைவுகளும் இசைக்கேற்ப ஆடும் நடனமும் வீடியோ காட்சிகளில் தெளிவாகப் பதிவாகியுள்ளன."`;
+            mockResponse = `Caption:\n"தாளமும் பாதமும் இணையும் நொடியில்... நடனம் உயிர் பெறுகிறது! 🔥"\n\nDialogue-style:\n"ஆட்டம் ஆடலாம்... ஆனா ஸ்டைல் நம்முடையதா இருக்கணும்! 🔥"`;
           } else if (isAction) {
-            mockResponse = `Caption:\n"அமைதியை பலவீனமாய் நினைக்காதே... புயலுக்கு முன் வரும் நிசப்தம் இது! 🔥"\n\nDialogue-style:\n"ஒரு பார்வை போதும்... கதை மாறிடும்! 🔥"\n\nMood:\nIntense + Mass\n\nReason:\n"கூரிய பார்வையும் வேகமான சண்டை அசைவுகளும் காட்சிகளில் மாஸ் உணர்வை ஏற்படுத்துகின்றன."`;
+            mockResponse = `Caption:\n"அமைதியை பலவீனமாய் நினைக்காதே... புயலுக்கு முன் வரும் நிசப்தம் இது! 🔥"\n\nDialogue-style:\n"ஒரு பார்வை போதும்... கதை மாறிடும்! 🔥"`;
           } else if (isRomantic) {
-            mockResponse = `Caption:\n"வார்த்தைகள் தேவையில்லை... உன் விழிகளின் மௌனமே எனக்குக் கவிதை. ❤️"\n\nDialogue-style:\n"உலகம் முழுக்கத் தேடிய அமைதி... உன் ஒற்றைப் புன்னகையில் கிடைத்தது."\n\nMood:\nRomantic + Poetic\n\nReason:\n"மென்மையான பார்வை பரிமாற்றமும் இயற்கை வெளிச்சத்தில் நிகழும் அருகாமையும் காட்சிகளில் பதிவாகியுள்ளன."`;
+            mockResponse = `Caption:\n"வார்த்தைகள் தேவையில்லை... உன் விழிகளின் மௌனமே எனக்குக் கவிதை. ❤️"\n\nDialogue-style:\n"உலகம் முழுக்கத் தேடிய அமைதி... உன் ஒற்றைப் புன்னகையில் கிடைத்தது."`;
           } else if (isMountain) {
-            mockResponse = `Caption:\n"உயரங்களைத் தொட எட்டிப் பார்க்கும் ஒவ்வொரு கணமும் ஒரு புதிய நம்பிக்கை. ⛰️"\n\nDialogue-style:\n"வழிகள் முடிவதில்லை... நாம் நடக்கும் தூரம் தான் மாறுகிறது."\n\nMood:\nInspirational + Adventurous\n\nReason:\n"பனிமூட்டமான சிகரங்களும் மலைப்பாதையின் பயணமும் காட்சிகளில் தெளிவாகப் பதிவாகியுள்ளன."`;
+            mockResponse = `Caption:\n"உயரங்களைத் தொட எட்டிப் பார்க்கும் ஒவ்வொரு கணமும் ஒரு புதிய நம்பிக்கை. ⛰️"\n\nDialogue-style:\n"வழிகள் முடிவதில்லை... நாம் நடக்கும் தூரம் தான் மாறுகிறது."`;
           } else {
-            mockResponse = `Caption:\n"ஒவ்வொரு நகர்விலும் ஒரு கதை... காட்சியின் ஓட்டமே தனி அழகு. ✨"\n\nDialogue-style:\n"சில தருணங்கள் காலத்தால் அழியாதவை... நெஞ்சில் நிலைத்து நிற்பவை."\n\nMood:\nCinematic + Aesthetic\n\nReason:\n"காட்சிகளின் இயல்பான இயக்கமும் காட்சி அழகியலும் இக்கவிதையான வரிகளுக்குப் பொருத்தமாக அமைந்துள்ளன."`;
+            mockResponse = `Caption:\n"ஒவ்வொரு நகர்விலும் ஒரு கதை... காட்சியின் ஓட்டமே தனி அழகு. ✨"\n\nDialogue-style:\n"சில தருணங்கள் காலத்தால் அழியாதவை... நெஞ்சில் நிலைத்து நிற்பவை."`;
           }
         } else if (isTanglish) {
           if (isNightWalk) {
-            mockResponse = `Caption:\n"Thirumbi paaka vechathu paadhai illa... ninaivugal thaan."\n\nDialogue-style:\n"Sila pirivugal mudivu illa... pudhu kadhaiyoda thodakkam."\n\nMood:\nEmotional + Cinematic\n\nReason:\n"Visual frames-la solitary walk and emotional look-back moment cinematic lighting-la kaatapadudhu."`;
+            mockResponse = `Caption:\n"Thirumbi paaka vechathu paadhai illa... ninaivugal thaan."\n\nDialogue-style:\n"Sila pirivugal mudivu illa... pudhu kadhaiyoda thodakkam."`;
           } else {
-            mockResponse = `Caption:\n"Scene moves fast, but the vibe stays forever. ✨"\n\nDialogue-style:\n"Sila moments marakkave mudiyadhu... frames-la freeze aana magic idhu!"\n\nMood:\nCinematic + Reel Style\n\nReason:\n"The dynamic visual progression across the video frames matches this engaging tone."`;
+            mockResponse = `Caption:\n"Scene moves fast, but the vibe stays forever. ✨"\n\nDialogue-style:\n"Sila moments marakkave mudiyadhu... frames-la freeze aana magic idhu!"`;
           }
         } else {
           // English
           if (isNightWalk) {
-            mockResponse = `Caption:\n"What made me look back wasn't the road... but the memories."\n\nDialogue-style:\n"Some goodbyes are not endings—they are the quiet beginning of a whole new chapter."\n\nMood:\nEmotional + Cinematic\n\nReason:\n"The frames show a solitary walk with an emotional look-back moment and cinematic night lighting."`;
+            mockResponse = `Caption:\n"What made me look back wasn't the road... but the memories."\n\nDialogue-style:\n"Some goodbyes are not endings—they are the quiet beginning of a whole new chapter."`;
           } else if (isDance) {
-            mockResponse = `Caption:\n"When rhythm meets passion, every step becomes pure art. 🔥"\n\nDialogue-style:\n"Every beat has a story; our rhythm speaks for itself."\n\nMood:\nEnergetic + Vibrant\n\nReason:\n"The sampled frames capture synchronized choreography, expressive footwork, and vibrant movement."`;
+            mockResponse = `Caption:\n"When rhythm meets passion, every step becomes pure art. 🔥"\n\nDialogue-style:\n"Every beat has a story; our rhythm speaks for itself."`;
           } else if (isAction) {
-            mockResponse = `Caption:\n"Never mistake stillness for hesitation—it is the gathering of the storm. 🔥"\n\nDialogue-style:\n"One decisive look is enough to shift the entire narrative."\n\nMood:\nIntense + Cinematic Action\n\nReason:\n"The frames display focused intensity, rapid physical action, and dramatic shadow framing."`;
+            mockResponse = `Caption:\n"Never mistake stillness for hesitation—it is the gathering of the storm. 🔥"\n\nDialogue-style:\n"One decisive look is enough to shift the entire narrative."`;
           } else if (isRomantic) {
-            mockResponse = `Caption:\n"No words needed when the quietest glances speak the loudest poetry. ❤️"\n\nDialogue-style:\n"The peace I sought across the world was found in a single smile."\n\nMood:\nRomantic + Poetic\n\nReason:\n"The sampled visual frames capture intimate eye contact and tender expressions under soft natural lighting."`;
+            mockResponse = `Caption:\n"No words needed when the quietest glances speak the loudest poetry. ❤️"\n\nDialogue-style:\n"The peace I sought across the world was found in a single smile."`;
           } else if (isMountain) {
-            mockResponse = `Caption:\n"The climb is steep, but the view from the summit proves every drop of effort was worth it. ⛰️"\n\nDialogue-style:\n"Paths never truly end—it is the horizon that invites us further."\n\nMood:\nInspirational + Adventurous\n\nReason:\n"The sampled frames capture an active ascent across winding mountain roads and misty summits."`;
+            mockResponse = `Caption:\n"The climb is steep, but the view from the summit proves every drop of effort was worth it. ⛰️"\n\nDialogue-style:\n"Paths never truly end—it is the horizon that invites us further."`;
           } else {
-            mockResponse = `Caption:\n"Captured in motion, alive in the moment. ✨"\n\nDialogue-style:\n"Some moments are not measured in time, but in the impressions they leave behind."\n\nMood:\nCinematic + Aesthetic\n\nReason:\n"The visual frames show a fluid narrative progression and expressive composition."`;
+            mockResponse = `Caption:\n"Captured in motion, alive in the moment. ✨"\n\nDialogue-style:\n"Some moments are not measured in time, but in the impressions they leave behind."`;
           }
         }
       } else if (isTamil) {

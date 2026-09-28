@@ -288,82 +288,19 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
         mediaContext
       });
 
-      if (mediaContext) {
-        const userInstruction = prompt.trim();
-        const mediaVisualSummary = [
-          mediaContext.category ? `Category: ${mediaContext.category}` : '',
-          mediaContext.scene ? `Setting: ${mediaContext.scene}` : '',
-          (mediaContext.subjects || mediaContext.objects)?.length ? `Subjects: ${(mediaContext.subjects || mediaContext.objects).join(', ')}` : '',
-          mediaContext.actions?.length ? `Observed Actions: ${mediaContext.actions.join(' -> ')}` : '',
-          mediaContext.emotion ? `Emotion: ${mediaContext.emotion}` : '',
-          mediaContext.setting ? `Lighting & Environment: ${mediaContext.setting}` : '',
-          mediaContext.visual_style ? `Visual Style: ${mediaContext.visual_style}` : '',
-          mediaContext.important_events?.length ? `Timeline Events: ${mediaContext.important_events.join(' | ')}` : '',
-          mediaContext.dialogueMood ? `Dialogue Mood: ${mediaContext.dialogueMood}` : '',
-          mediaContext.matchReason ? `Visual Grounding Context: ${mediaContext.matchReason}` : '',
-          mediaContext.peopleContext ? `People: ${mediaContext.peopleContext}` : '',
-          mediaContext.foodDetails ? `Food: ${mediaContext.foodDetails}` : '',
-          mediaContext.productDetails ? `Product: ${mediaContext.productDetails}` : '',
-          mediaContext.lighting ? `Lighting: ${mediaContext.lighting}` : '',
-          mediaContext.mood ? `Mood: ${mediaContext.mood}` : '',
-          mediaContext.colors?.length ? `Colors: ${mediaContext.colors.join(', ')}` : '',
-          mediaContext.visualTheme ? `Theme: ${mediaContext.visualTheme}` : '',
-          mediaContext.activity ? `Activity: ${mediaContext.activity}` : '',
-          mediaContext.distinctiveDetails ? `Details: ${mediaContext.distinctiveDetails}` : '',
-          mediaContext.openingHook ? `Opening Frame: ${mediaContext.openingHook}` : '',
-          mediaContext.keyActions?.length ? `Video Actions: ${mediaContext.keyActions.join(' -> ')}` : '',
-          mediaContext.endingMoment ? `Ending: ${mediaContext.endingMoment}` : '',
-          mediaContext.summary ? `Summary: ${mediaContext.summary}` : ''
-        ].filter(Boolean).join(' | ');
-
-        if (mediaContext.mediaType === 'video') {
-          userPrompt = `[MEDIA-AWARE VIDEO GENERATION REQUEST]
-Uploaded Video Context: ${mediaVisualSummary}
-${userInstruction ? `User Instruction: "${userInstruction}"` : ''}
-
-CRITICAL VIDEO INSTRUCTIONS:
-1. Genuinely ground every line in what is visually depicted in these video frames (${mediaVisualSummary}). Do NOT generate generic filler or ignore the visual actions.
-2. Produce a complete video package:
-   - Caption: A scene-grounded creative caption directly reflecting the visual movement and selected tone (${resolvedTone || 'aesthetic'}).
-   - Dialogue-style: An original trending-style / reel-style dialogue suggestion inspired by the visual mood. (Do NOT copy long copyrighted movie dialogues; provide 100% original cinematic lines).
-   - Mood: The emotional and aesthetic mood of the scene.
-   - Reason: A concise 1-2 sentence explanation of why the caption and dialogue match the actual visual scene in the frames.
-3. The selected output language is ${resolvedLanguage === 'ta' ? 'Tamil (தமிழ்)' : 'English'}. The entire output (Caption, Dialogue-style, and Reason) must be written in ${resolvedLanguage === 'ta' ? 'native Tamil script' : 'English'}.
-4. Selected tone: "${resolvedTone || 'aesthetic'}" must guide the emotional intensity and phrasing.`;
-        } else if (userInstruction) {
-          userPrompt = `[MEDIA-AWARE GENERATION REQUEST]
-Uploaded ${mediaContext.mediaType || 'visual media'}: ${mediaVisualSummary}
-User Instruction: "${userInstruction}"
-
-CRITICAL INSTRUCTIONS:
-1. Genuinely ground every line in what is visually depicted in this uploaded ${mediaContext.mediaType || 'media'} (${mediaVisualSummary}). Do NOT invent unrelated scenes or generic filler.
-2. Execute the user's instruction: "${userInstruction}" applying the requested mood, tone, format, and language.
-3. If movie dialogue or mass style is asked, compose 100% original, creative wording without copying copyrighted movie lines.
-4. Include 2 to 8 relevant emojis directly reflecting the visual content, and 5 to 10 targeted hashtags.`;
-        } else {
-          userPrompt = `[MEDIA-AWARE GENERATION REQUEST]
-Uploaded ${mediaContext.mediaType || 'visual media'}: ${mediaVisualSummary}
-
-CRITICAL INSTRUCTIONS:
-1. Compose social media content tailored to what is shown in this ${mediaContext.mediaType || 'media'} for ${params.platform || 'Instagram'} in ${params.style || 'aesthetic'} style and ${resolvedFormat || 'caption'} format.
-2. Produce 3 distinct creative options (Cinematic, Aesthetic, Casual) plus an original line and targeted hashtags.
-3. Ground the copy in the visible atmosphere, subjects, and setting.`;
-        }
-      } else {
-        userPrompt = buildStructuredUserPrompt({
-          prompt,
-          mode,
-          poemType: resolvedPoemType,
-          genre: params.genre,
-          tone: resolvedTone,
-          length,
-          language: resolvedLanguage,
-          platform: resolvedPlatform,
-          style: resolvedStyle,
-          format: resolvedFormat,
-          mediaContext: null
-        });
-      }
+      userPrompt = buildStructuredUserPrompt({
+        prompt,
+        mode,
+        poemType: resolvedPoemType,
+        genre: params.genre,
+        tone: resolvedTone,
+        length,
+        language: resolvedLanguage,
+        platform: resolvedPlatform,
+        style: resolvedStyle,
+        format: resolvedFormat,
+        mediaContext
+      });
     }
 
     // 4. Cache Check (24h TTL)
@@ -403,7 +340,7 @@ CRITICAL INSTRUCTIONS:
       abortController.abort();
     });
 
-    // Only pass lightweight image to generateStream; video context is already embedded into prompt
+    // Pass lightweight image or representative sampled video frames to generateStream for multimodal generation
     let streamMedia = null;
     if (params.media && params.media.type === 'image') {
       const commaIdx = params.media.data ? params.media.data.indexOf(',') : -1;
@@ -412,6 +349,11 @@ CRITICAL INSTRUCTIONS:
       if (!actualBytes || actualBytes < 4 * 1024 * 1024) {
         streamMedia = params.media;
       }
+    } else if (params.media && params.media.type === 'video' && Array.isArray(params.media.frames) && params.media.frames.length > 0) {
+      streamMedia = {
+        type: 'video',
+        frames: params.media.frames.slice(0, 6)
+      };
     }
 
     generatedText = '';
@@ -577,18 +519,20 @@ CRITICAL INSTRUCTIONS:
     });
 
     let retryCount = 0;
-    // For TOPIC_RELEVANCE_FAILED, limit to at most 1 retry to conserve Gemini quota
-    const maxRetries = guardResult.code === 'TOPIC_RELEVANCE_FAILED' ? 1 : 2;
+    // For TOPIC_RELEVANCE_FAILED and META_ANALYSIS_LEAK, limit to at most 1 retry to conserve Gemini quota
+    const maxRetries = (guardResult.code === 'TOPIC_RELEVANCE_FAILED' || guardResult.code === 'META_ANALYSIS_LEAK') ? 1 : 2;
 
     while (!guardResult.valid && retryCount < maxRetries) {
       retryCount++;
       console.warn(`[Guards] Triggered: ${guardResult.code} (${guardResult.message}). Executing retry ${retryCount}...`);
-      sendEvent('retry', {
-        reason: guardResult.code,
-        message: guardResult.code === 'TOPIC_RELEVANCE_FAILED'
-          ? 'Refining composition to strictly ground in your requested topic...'
-          : 'Refining composition to meet strict structural standards...'
-      });
+      if (guardResult.code !== 'META_ANALYSIS_LEAK') {
+        sendEvent('retry', {
+          reason: guardResult.code,
+          message: guardResult.code === 'TOPIC_RELEVANCE_FAILED'
+            ? 'Refining composition to strictly ground in your requested topic...'
+            : 'Refining composition to meet strict structural standards...'
+        });
+      }
 
       try {
         const retryResult = await geminiService.generateComplete({

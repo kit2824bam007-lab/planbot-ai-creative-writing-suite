@@ -257,6 +257,38 @@ CRITICAL CORRECTION: Rewrite the work 100% in native script. Zero English alphab
     }
   }
 
+  // 6. META_ANALYSIS_LEAK (Media Analysis Leak Check)
+  // Ensure the AI generated creative content rather than meta-analysis or technical observations
+  const metaAnalysisPatterns = [
+    /image\s*analysis/i,
+    /video\s*analysis/i,
+    /frame\s*analysis/i,
+    /scene\s*analysis/i,
+    /(?:^|\n)\s*mood\s*:/i,
+    /(?:^|\n)\s*reason\s*:/i,
+    /(?:^|\n)\s*detected\s*:/i,
+    /(?:^|\n)\s*real\s*language\s*:/i,
+    /(?:^|\n)\s*frame\s*[0-9]+\s*:/i,
+    /keywords?\s*detected/i,
+    /prompt\s*interpretation/i,
+    /here\s*is\s*your\s*(?:poem|story|caption)/i,
+    /based\s*on\s*the\s*(?:image|video)/i,
+    /(?:^|\n)\s*மனநிலை\s*:/i,
+    /(?:^|\n)\s*காரணம்\s*:/i
+  ];
+
+  const hasMetaAnalysis = metaAnalysisPatterns.some((pattern) => pattern.test(cleanOutput));
+  if (hasMetaAnalysis) {
+    const contentTypeLabel = mode === 'poem' ? 'POEM' : mode === 'story' ? 'STORY' : 'CONTENT CREATOR';
+    return {
+      valid: false,
+      code: 'META_ANALYSIS_LEAK',
+      message: 'Media meta-analysis detected in output instead of creative content.',
+      retryPrompt: `[RETRY RULE - NO META ANALYSIS]
+Your previous response contained media analysis instead of the requested creative work. Discard that response. Return ONLY the requested ${contentTypeLabel} output. Use the uploaded media as inspiration, not as something to explain.`
+    };
+  }
+
   // Passed all guards
   return { valid: true };
 }
@@ -326,7 +358,10 @@ const COMMON_CONCEPT_MAP = {
   competion: /competition|போட்டி|பந்தயம்/i,
   nature: /nature|இயற்கை/i,
   sky: /sky|வானம்|விண்|ஆகாயம்/i,
-  wind: /wind|காற்று|தென்றல்/i
+  wind: /wind|காற்று|தென்றல்/i,
+  station: /station|நிலையம்|ரயில்|புகைவண்டி/i,
+  railway: /railway|station|நிலையம்|ரயில்|புகைவண்டி/i,
+  first: /first|முதல்|முதன்/i
 };
 
 function checkConceptMatch(keyword, text, language) {

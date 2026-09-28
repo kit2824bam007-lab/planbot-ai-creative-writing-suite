@@ -177,7 +177,7 @@ describe('Video Frame Analysis & Grounded Creative Generation System', () => {
   });
 
   describe('4. Generation & Language / Tone Integrity', () => {
-    test('11. Generates Caption, Dialogue-style suggestion, Mood, and Reason for night walk video in Tamil', async () => {
+    test('11. Generates Caption and Dialogue-style suggestion without meta-analysis for night walk video in Tamil', async () => {
       const mediaContext = {
         mediaType: 'video',
         category: 'emotional_moment',
@@ -204,14 +204,15 @@ describe('Video Frame Analysis & Grounded Creative Generation System', () => {
 
       expect(res.fullText).toContain('Caption:');
       expect(res.fullText).toContain('Dialogue-style:');
-      expect(res.fullText).toContain('Mood:');
-      expect(res.fullText).toContain('Reason:');
+      // Must NOT contain meta-analysis labels
+      expect(res.fullText).not.toContain('Mood:');
+      expect(res.fullText).not.toContain('Reason:');
       // Must be in Tamil script
       expect(res.fullText).toMatch(/[\u0B80-\u0BFF]/);
       expect(res.fullText).toContain('பாதை');
     });
 
-    test('12. Generates Caption, Dialogue-style suggestion, Mood, and Reason in English when English is selected', async () => {
+    test('12. Generates Caption and Dialogue-style suggestion without meta-analysis in English when English is selected', async () => {
       const mediaContext = {
         mediaType: 'video',
         category: 'emotional_moment',
@@ -238,8 +239,9 @@ describe('Video Frame Analysis & Grounded Creative Generation System', () => {
 
       expect(res.fullText).toContain('Caption:');
       expect(res.fullText).toContain('Dialogue-style:');
-      expect(res.fullText).toContain('Mood:');
-      expect(res.fullText).toContain('Reason:');
+      // Must NOT contain meta-analysis labels
+      expect(res.fullText).not.toContain('Mood:');
+      expect(res.fullText).not.toContain('Reason:');
       expect(res.fullText).toContain('memories');
     });
 

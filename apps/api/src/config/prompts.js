@@ -20,6 +20,7 @@ const CLASSICAL_TAMIL_FORMS = [
   'முல்லை',
   'மருதம்',
   'நெய்தல்',
+  'நேய்தல்',
   'அந்தாதி',
   'கட்டளைக் கலித்துறை',
   'பரணி',
@@ -35,11 +36,50 @@ const CLASSICAL_TAMIL_FORMS = [
 ];
 
 /**
+ * Checks if a poem type is a Classical Tamil poetic form (in Tamil script or transliteration)
+ */
+function isClassicalTamilForm(form) {
+  if (!form || typeof form !== 'string') return false;
+  const trimmed = form.trim();
+  if (CLASSICAL_TAMIL_FORMS.includes(trimmed)) return true;
+  const lower = trimmed.toLowerCase().replace(/[\s_\-()]+/g, '');
+  return (
+    lower.includes('venpa') ||
+    lower.includes('kurinji') ||
+    lower.includes('mullai') ||
+    lower.includes('marutham') ||
+    lower.includes('marudham') ||
+    lower.includes('neidhal') ||
+    lower.includes('neythal') ||
+    lower.includes('andhadhi') ||
+    lower.includes('anthathi') ||
+    lower.includes('kattalaikalithurai') ||
+    lower.includes('parani') ||
+    lower.includes('sindhu') ||
+    lower.includes('kuravanji') ||
+    lower.includes('asiriyappa') ||
+    lower.includes('agavalpa') ||
+    lower.includes('kalippa') ||
+    lower.includes('vanjippa') ||
+    lower.includes('virutham') ||
+    lower.includes('nattupura') ||
+    lower.includes('thalattu') ||
+    lower.includes('siddhar') ||
+    lower.includes('pudhukkavithai')
+  );
+}
+
+/**
  * Returns rules for Western poetry types
  */
 function getWesternPoemRules(type) {
   const normalized = (type || 'free verse').toLowerCase().replace(/-/g, ' ').trim();
   switch (normalized) {
+    case 'modern verse':
+      return `STRUCTURAL FORM: Modern Verse.
+- Contemporary poetic form blending fresh sensory imagery, rhythmic cadences, striking enjambment, and authentic emotional resonance.
+- Break free of rigid, archaic rhymes; focus on visceral metaphors, dynamic line breaks, and evocative human truths.`;
+
     case 'haiku':
       return `STRUCTURAL FORM: Haiku.
 - Exactly 3 lines with 5-7-5 syllable structure (or 3 rhythmic concise verses in Tamil).
@@ -125,6 +165,7 @@ function getWesternPoemRules(type) {
 - Dense, highly poetic prose without line breaks, glowing with vivid metaphors, internal rhythm, and emotional intensity.`;
 
     case 'lyrical verse':
+    case 'lyrical song verse':
       return `STRUCTURAL FORM: Lyrical Song Verse.
 - Song-like rhythm, rhyming flow, emotional intimacy, and melodic cadence suited for musical expression.`;
 
@@ -138,102 +179,120 @@ function getWesternPoemRules(type) {
  * Returns structural rules for Classical Tamil poetry meters
  */
 function getClassicalTamilRules(form) {
-  switch (form) {
-    case 'வெண்பா':
-      return `மரபு வடிவம்: வெண்பா (Venpa).
+  const norm = (form || '').trim();
+  const lower = norm.toLowerCase().replace(/[\s_\-()]+/g, '');
+
+  if (norm === 'வெண்பா' || lower.includes('venpa')) {
+    return `மரபு வடிவம்: வெண்பா (Venpa).
 - மொத்தம் 4 அடிகள்.
 - முதல் மூன்று அடிகள் நாற்சீராய் (4 சீர்கள்), நான்காவது அடி முச்சீராய் (3 சீர்கள்) அமைதல் வேண்டும்.
 - வெண்டளை நெறி: 'மாமுன் நிரை', 'விளம்முன் நேர்', 'காய்முன் நேர்' எனும் தளை விதிகள் தவறாமல் அமைதல் வேண்டும்.
 - ஈற்றுச் சீர் (கடைசிச் சீர்) நாள், மலர், காசு, பிறப்பு ஆகியவற்றில் ஒன்றாய் முடிதல் கட்டாயம்.
 - தூய செந்தமிழ்ச் சொற்களால், சந்த நயத்துடன் எழுதப்பட வேண்டும்.`;
+  }
 
-    case 'குறிஞ்சி':
-      return `திணை வடிவம்: குறிஞ்சித் திணை (Kurinji).
+  if (norm === 'குறிஞ்சி' || lower.includes('kurinji')) {
+    return `திணை வடிவம்: குறிஞ்சித் திணை (Kurinji / Kurinjithinai).
 - நிலம்: மலையும் மலை சார்ந்த பகுதியும்.
 - உரிப்பொருள்: புணர்தலும் புணர்தல் நிமித்தமும் (காதல் ஒன்றுதல், தலைவன் தலைவி சந்திப்பு).
 - கருப்பொருட்கள்: வேங்கை மரம், செங்காந்தள் மலர், குறிஞ்சிப் பூ, மயில்கள், அருவி நீர், தேன் கூடு, இரவு அல்லது கூதிர்/பனிக்காலப் பின்னணி.
 - அகநானூறு/குறுந்தொகை மரபில் ஆழ்ந்த காதல் உணர்வும் இயற்கை எழிலும் மிளிர வேண்டும்.`;
+  }
 
-    case 'முல்லை':
-      return `திணை வடிவம்: முல்லைத் திணை (Mullai).
+  if (norm === 'முல்லை' || lower.includes('mullai')) {
+    return `திணை வடிவம்: முல்லைத் திணை (Mullai / Mullai Thinai).
 - நிலம்: காடும் காடு சார்ந்த இடமும்.
 - உரிப்பொருள்: இருத்தலும் இருத்தல் நிமித்தமும் (பிரிவில் தலைவனுக்காக ஆற்றியிருத்தல்/காத்திருத்தல்).
 - கருப்பொருட்கள்: செவ்விய முல்லைப் பூ, கார் கால மேகம்/மழை, மாலைப் பொழுது, ஆயர் வாழ்வியல், மான் கூட்டம், புல்லாங்குழல் இசை.
 - அமைதியான நம்பிக்கையும் ஏக்கமும் கலந்த காதலின் தூய்மை வெளிப்பட வேண்டும்.`;
+  }
 
-    case 'மருதம்':
-      return `திணை வடிவம்: மருதத் திணை (Marudham).
+  if (norm === 'மருதம்' || lower.includes('marutham') || lower.includes('marudham')) {
+    return `திணை வடிவம்: மருதத் திணை (Marudham / Marutham Thinai).
 - நிலம்: வயலும் வயல் சார்ந்த நிலமும்.
 - உரிப்பொருள்: ஊடலும் ஊடல் நிமித்தமும் (செல்லக் கோபம், சிறு பிணக்கு, சமாதானம்).
 - கருப்பொருட்கள்: செங்கழுநீர், தாமரை, கயல் மீன், உழவர் உழவுப் பாடல், விடியல் பொழுது, பொய்கை.
 - மெல்லிய காதற் சினமும், அதைத் தீர்க்கும் நயமும் கவிதையில் திகழ வேண்டும்.`;
+  }
 
-    case 'நெய்தல்':
-      return `திணை வடிவம்: நெய்தல் திணை (Neidhal).
+  if (norm === 'நெய்தல்' || norm === 'நேய்தல்' || lower.includes('neidhal') || lower.includes('neythal')) {
+    return `திணை வடிவம்: நெய்தல் திணை (Neidhal / Neythal Thinai).
 - நிலம்: கடலும் கடல் சார்ந்த இடமும்.
 - உரிப்பொருள்: இரங்கலும் இரங்கல் நிமித்தமும் (பிரிவுத் துயரம், பெருமூச்சு, அலைகளின் ஓலம் போன்ற மன வலி).
 - கருப்பொருட்கள்: வெண்மணல் பரப்பு, உப்புக்கழிகள், புன்னை மரம், தாழை மலர், சங்குகள், அலைகளின் ஓயாத சத்தம், மாலைச் சூரிய மறைவு (ஏற்பாடு).
 - கடல் அலைகளோடு சங்கமிக்கும் ஆழ்ந்த பிரிவுத் தவிப்பு ஒலிக்க வேண்டும்.`;
+  }
 
-    case 'அந்தாதி':
-      return `மரபு வடிவம்: அந்தாதி (Anthathi).
+  if (norm === 'அந்தாதி' || lower.includes('andhadhi') || lower.includes('anthathi')) {
+    return `மரபு வடிவம்: அந்தாதி (Anthathi / Andhadhi).
 - கட்டமைப்பு விதி: முந்தைய அடியின்/பாடலின் கடைசிச் சொல் (அந்தம்) அடுத்த அடியின்/பாடலின் முதல் சொல்லாக (ஆதி) தொடங்குதல் வேண்டும்.
 - குறைந்தது 4-6 சீரான கண்ணிகள்/அடிகள்.
 - சங்கிலித் தொடர் போன்ற எதுகை-மோனை சொற்களின் தடையற்ற ஓட்டம் மற்றும் பொருள் பொதிந்த அழகு.`;
+  }
 
-    case 'கட்டளைக் கலித்துறை':
-      return `மரபு வடிவம்: கட்டளைக் கலித்துறை (Kattalai Kalithurai).
+  if (norm === 'கட்டளைக் கலித்துறை' || lower.includes('kattalaikalithurai')) {
+    return `மரபு வடிவம்: கட்டளைக் கலித்துறை (Kattalai Kalithurai).
 - 4 அடிகள். அடிதோறும் 5 சீர்கள்.
 - அடிகளில் முதற்சீர் நெடிலாக இருந்தால் ஒற்றொழித்து 16 எழுத்துகளும், குறிலாக இருந்தால் ஒற்றொழித்து 17 எழுத்துகளும் அமையும் கணிப்பு.
 - அடிதோறும் எதுகை அமைதி பெற்று, கம்பீரமான சந்த நடையுடன் அமைதல் வேண்டும்.`;
+  }
 
-    case 'பரணி':
-      return `மரபு வடிவம்: பரணி இலக்கிய நடை (Parani).
+  if (norm === 'பரணி' || lower.includes('parani')) {
+    return `மரபு வடிவம்: பரணி இலக்கிய நடை (Parani).
 - பாடுபொருள்: வீரம், போர்க்களக் காட்சிகள், வெற்றிப் புகழ், அஞ்சா நெஞ்சம்.
 - நடை: கலித்தாழிசை அமைதி, முழங்கும் சொற்கள், இடி போன்ற எதுகை ஓசை, கம்பீரமான தமிழ்ச் சொற்கட்டு.`;
+  }
 
-    case 'சிந்து':
-      return `மரபு வடிவம்: காவடிச் சிந்து / நாட்டுப்புற சிந்து நடை (Sindhu).
+  if (norm === 'சிந்து' || lower.includes('sindhu')) {
+    return `மரபு வடிவம்: காவடிச் சிந்து / நாட்டுப்புற சிந்து நடை (Sindhu).
 - நடை: துள்ளல் ஓசை கொண்ட தாளக் கட்டு, பாமரரும் பாடிப் பரவசமாகும் இசைச் சந்தம்.
 - எடுப்பு, தொடுப்பு போன்ற அமைதி, 'தந்தனத் தானா' என்ற வகையிலான உள்ளுறை தாள லயத்துடன் கூடிய பக்தி அல்லது காதல் மணம்.`;
+  }
 
-    case 'குறவஞ்சி':
-      return `மரபு வடிவம்: குறவஞ்சி நடை (Kuravanji).
+  if (norm === 'குறவஞ்சி' || lower.includes('kuravanji')) {
+    return `மரபு வடிவம்: குறவஞ்சி நடை (Kuravanji).
 - நடை: குறி சொல்லும் குறமகள் அல்லது குறவன் உரையாடல் வடிவம்.
 - மலை வளம், இயற்கை எழில், எதிர்கால நற்செய்தி உரைத்தல், கொச்சை நயமும் செந்தமிழும் கலந்த வசீகர இசைப்பாடல் முறை.`;
+  }
 
-    case 'ஆசிரியப்பா':
-      return `மரபு வடிவம்: ஆசிரியப்பா (Agavalpa).
+  if (norm === 'ஆசிரியப்பா' || lower.includes('asiriyappa') || lower.includes('agavalpa')) {
+    return `மரபு வடிவம்: ஆசிரியப்பா (Agavalpa / Asiriyappa).
 - அகவலோசை அமைதி, அடிதோறும் 4 சீர்கள் (நாற்சீர்), இயற்சீர் மிகுந்து நேரொன்றாசிரியத் தளை அல்லது நிரையொன்றாசிரியத் தளை தழுவி வருதல்.
 - சங்க இலக்கியப் பாடல்களின் ஆழமும் கம்பீரமும் நிறைந்த சொற்கட்டு.`;
-
-    case 'கலிப்பா':
-      return `மரபு வடிவம்: கலிப்பா (Kalippa).
-- துள்ளல் ஓசை, கலித்தளை அமைதி ('காய்முன் நிரை'), உற்சாகமும் கம்பீரமும் கலந்த ஓட்டம்.`;
-
-    case 'வஞ்சிப்பா':
-      return `மரபு வடிவம்: வஞ்சிப்பா (Vanjippa).
-- தூங்கல் ஓசை, வஞ்சித்தளை அமைதி ('கனிமுன் நேர்'), மெல்லிய ஓட்டமுடைய பா வகை.`;
-
-    case 'விருத்தம்':
-      return `மரபு வடிவம்: விருத்தம் (Virutham).
-- அறுசீர் அல்லது எண்சீர் கழிநெடிலடி ஆசிரிய விருத்தம், சந்த நயமும் எதுகை மோனை அமைப்பும் திகழும் காவிய நடை (கம்பராமாயண நடை).`;
-
-    case 'நாட்டுப்புறப் பாடல்':
-      return `மரபு வடிவம்: நாட்டுப்புறப் பாடல் / தாலாட்டு (Folk Verse).
-- மண்வாசம் கமழும் நாட்டுப்புறச் சந்தம், தாலாட்டு அல்லது ஏற்றப்பாட்டு இசை நயம், எளிய சொல்லாட்சி, நெஞ்சைத் தொடும் கிராமியப் பாசம்.`;
-
-    case 'சித்தர் பாடல்':
-      return `மரபு வடிவம்: சித்தர் பாடல் (Siddhar Verse).
-- ஞான நெறி, உடலின் மாயை, உள்ளொளி, தத்துவார்த்த சாட்டை அடி, எளிய எதுகை கொண்ட ஆழமான ஆன்மீக நடை.`;
-
-    case 'புதுக்கவிதை':
-      return `மரபு வடிவம்: புதுக்கவிதை (Modern Free Verse).
-- யாப்புக் கட்டுப்பாடுகளைத் தாண்டி, படிமங்கள், குறியீடுகள், கவித்துவ வெளிப்பாடு, சிந்தனையைத் தூண்டும் நவீன தமிழ் நடை.`;
-
-    default:
-      return `மரபுத் தமிழ்க் கவிதை வடிவம்: செந்தமிழ்ச் சொற்கள், சீர், எதுகை, மோனை நயங்களுடன் அமைதல் வேண்டும்.`;
   }
+
+  if (norm === 'கலிப்பா' || lower.includes('kalippa')) {
+    return `மரபு வடிவம்: கலிப்பா (Kalippa).
+- துள்ளல் ஓசை, கலித்தளை அமைதி ('காய்முன் நிரை'), உற்சாகமும் கம்பீரமும் கலந்த ஓட்டம்.`;
+  }
+
+  if (norm === 'வஞ்சிப்பா' || lower.includes('vanjippa')) {
+    return `மரபு வடிவம்: வஞ்சிப்பா (Vanjippa).
+- தூங்கல் ஓசை, வஞ்சித்தளை அமைதி ('கனிமுன் நேர்'), மெல்லிய ஓட்டமுடைய பா வகை.`;
+  }
+
+  if (norm === 'விருத்தம்' || lower.includes('virutham')) {
+    return `மரபு வடிவம்: விருத்தம் (Virutham).
+- அறுசீர் அல்லது எண்சீர் கழிநெடிலடி ஆசிரிய விருத்தம், சந்த நயமும் எதுகை மோனை அமைப்பும் திகழும் காவிய நடை (கம்பராமாயண நடை).`;
+  }
+
+  if (norm === 'நாட்டுப்புறப் பாடல்' || lower.includes('nattupura') || lower.includes('thalattu')) {
+    return `மரபு வடிவம்: நாட்டுப்புறப் பாடல் / தாலாட்டு (Folk Verse).
+- மண்வாசம் கமழும் நாட்டுப்புறச் சந்தம், தாலாட்டு அல்லது ஏற்றப்பாட்டு இசை நயம், எளிய சொல்லாட்சி, நெஞ்சைத் தொடும் கிராமியப் பாசம்.`;
+  }
+
+  if (norm === 'சித்தர் பாடல்' || lower.includes('siddhar')) {
+    return `மரபு வடிவம்: சித்தர் பாடல் (Siddhar Verse).
+- ஞான நெறி, உடலின் மாயை, உள்ளொளி, தத்துவார்த்த சாட்டை அடி, எளிய எதுகை கொண்ட ஆழமான ஆன்மீக நடை.`;
+  }
+
+  if (norm === 'புதுக்கவிதை' || lower.includes('pudhukkavithai') || lower.includes('modernverse')) {
+    return `மரபு வடிவம்: புதுக்கவிதை (Modern Free Verse).
+- யாப்புக் கட்டுப்பாடுகளைத் தாண்டி, படிமங்கள், குறியீடுகள், கவித்துவ வெளிப்பாடு, சிந்தனையைத் தூண்டும் நவீன தமிழ் நடை.`;
+  }
+
+  return `மரபுத் தமிழ்க் கவிதை வடிவம்: ${form}.
+- செந்தமிழ்ச் சொற்கள், சீர், எதுகை, மோனை நயங்களுடன் அமைதல் வேண்டும்.`;
 }
 
 /**
@@ -427,6 +486,117 @@ function getStyleGuideline(style) {
 }
 
 /**
+ * Returns narrative rules and atmospheric guidance for story genres
+ */
+function getStoryGenreRules(genre, language = 'ta') {
+  const norm = (genre || 'generic').toLowerCase().replace(/[\s_\-()]+/g, '');
+
+  if (norm.includes('romance') || norm.includes('kadhal')) {
+    return `GENRE DIRECTIVE: Romance (காதல்)
+- Atmosphere & Chemistry: Focus on intimate emotional connection, unspoken chemistry, tender moments, subtle body language, and vulnerability.
+- Narrative Technique: Build emotional tension through mutual perception, meaningful glances, pauses in conversation, and heartfelt dialogue. Avoid generic love declarations; show love through actions, selflessness, and honest connection.`;
+  }
+  if (norm.includes('mystery') || norm.includes('marmam')) {
+    return `GENRE DIRECTIVE: Mystery (மர்மம்)
+- Atmosphere & Intrigue: Cultivate suspense and curiosity. Weave subtle clues, odd anomalies, or unanswered questions into the setting and character interactions.
+- Narrative Technique: Maintain measured pacing, rising stakes, and misdirection leading to a compelling revelation or thought-provoking ending.`;
+  }
+  if (norm.includes('adventure') || norm.includes('sagasam')) {
+    return `GENRE DIRECTIVE: Adventure (சாகசம்)
+- Atmosphere & Momentum: Dynamic momentum, visceral physical stakes, untamed environments, and high-energy exploration.
+- Narrative Technique: Fast-paced narrative progression, sensory challenges, courage under pressure, and triumphant perseverance.`;
+  }
+  if (norm.includes('drama') || norm.includes('nadagam')) {
+    return `GENRE DIRECTIVE: Drama (நாடகம் / வாழ்வியல் மோதல்)
+- Atmosphere & Conflict: Grounded human realism, conflicting values, ethical dilemmas, and emotional crossroads.
+- Narrative Technique: Rich character dialogue with deep subtext, authentic moral weight, and transformative emotional resolution.`;
+  }
+  if (norm.includes('comedy') || norm.includes('nagaichuvai') || norm.includes('humor')) {
+    return `GENRE DIRECTIVE: Comedy (நகைச்சுவை)
+- Atmosphere & Wit: Playful, lighthearted, and relatable situations.
+- Narrative Technique: Amusing misunderstandings, sharp comedic timing, witty dialogue, and endearing character flaws without turning into forced slapstick.`;
+  }
+  if (norm.includes('horror') || norm.includes('acham') || norm.includes('bayam')) {
+    return `GENRE DIRECTIVE: Horror (அச்சம் & திகில்)
+- Atmosphere & Dread: Creeping psychological unease, shadows, uncanny sounds, chilling sensory details, and tightening tension.
+- Narrative Technique: Slow-burn anticipation, atmospheric dread, and gripping visceral confrontation with the unknown.`;
+  }
+  if (norm.includes('thriller') || norm.includes('pathatram')) {
+    return `GENRE DIRECTIVE: Thriller (பதற்றம்)
+- Atmosphere & Urgency: Ticking-clock stakes, acute danger, adrenaline-charged atmosphere, and unpredictability.
+- Narrative Technique: Rapid scene transitions, edge-of-the-seat tension, unexpected turns, and relentless forward momentum.`;
+  }
+  if (norm.includes('fantasy') || norm.includes('karpinai') || norm.includes('karpani')) {
+    return `GENRE DIRECTIVE: Fantasy (கற்பனை உலகம்)
+- Atmosphere & Wonder: Evocative world-building, magical wonder, mythic textures, and awe-inspiring scope.
+- Narrative Technique: Ground supernatural or mystical wonders in deeply human stakes, loyalties, and personal quests.`;
+  }
+  if (norm.includes('scifi') || norm.includes('science')) {
+    return `GENRE DIRECTIVE: Sci-Fi (அறிவியல் புனைவு)
+- Atmosphere & Speculation: Futuristic concepts, visionary technology, cosmic exploration, or speculative societies.
+- Narrative Technique: Explore the human emotional impact of scientific progress, questions of consciousness, identity, and future destiny.`;
+  }
+  if (norm.includes('poeticdrama') || norm.includes('poetic')) {
+    return `GENRE DIRECTIVE: Poetic Drama (கவிதை நாடகம்)
+- Atmosphere & Lyrical Weight: Heightened emotional atmosphere, lyrical cadence in narrative prose, profound emotional subtext.
+- Narrative Technique: Metaphorical depth, philosophical dialogue, and theatrical grandeur woven into realistic human pain and triumph.`;
+  }
+  if (norm.includes('folklore') || norm.includes('myth')) {
+    return `GENRE DIRECTIVE: Folklore & Myth (நாட்டுப்புறக் கதை & புராணம்)
+- Atmosphere & Heritage: Timeless oral storytelling tone, legendary flavor, ancient wisdom, and cultural roots.
+- Narrative Technique: Archetypal characters, moral clarity, traditional proverbs, and legendary resonance.`;
+  }
+  if (norm.includes('historical') || norm.includes('history')) {
+    return `GENRE DIRECTIVE: Historical Fiction (வரலாற்றுப் புனைவு)
+- Atmosphere & Period Texture: Authenticity of era, sensory details of architecture, attire, language, and cultural milieu.
+- Narrative Technique: Personal human struggles framed against monumental historical currents and timeless dilemmas.`;
+  }
+  if (norm.includes('village') || norm.includes('rural')) {
+    return `GENRE DIRECTIVE: Village & Rural Life (கிராமத்து மண்வாசம்)
+- Atmosphere & Earthiness: Rich scent of the soil (மண்வாசம்), morning mist over fields, chirping birds, tea shop camaraderie, rustic simplicity.
+- Narrative Technique: Authentic colloquial warmth, deep community bonds, unconditional kinship, and heartfelt rural innocence.`;
+  }
+  if (norm.includes('psychological') || norm.includes('mind')) {
+    return `GENRE DIRECTIVE: Psychological (மனோதத்துவம்)
+- Atmosphere & Subconscious: Introspective depth, perceptual shifts, unsaid emotional subtext, internal conflict.
+- Narrative Technique: Nuanced internal monologues, psychological motives, vulnerability, and shifts in perception.`;
+  }
+  if (norm.includes('crime') || norm.includes('detective')) {
+    return `GENRE DIRECTIVE: Crime & Detective (துப்பறியும் கதை)
+- Atmosphere & Investigation: Gritty realism, keen observant eye, tension of interrogation, pursuit of truth.
+- Narrative Technique: Clues uncovered through intellect and observation, deductive progression, and psychological confrontation.`;
+  }
+  if (norm.includes('slice') || norm.includes('life')) {
+    return `GENRE DIRECTIVE: Slice of Life (வாழ்வியல் பதிவு)
+- Atmosphere & Everyday Truth: Subtle beauty in quiet everyday moments, unadorned honesty, relatable routines.
+- Narrative Technique: Poignant understatement, gentle humor, authentic dialogue, and quiet revelations about what it means to be human.`;
+  }
+  if (norm.includes('friendship') || norm.includes('brotherhood')) {
+    return `GENRE DIRECTIVE: Friendship & Brotherhood (நட்பு & பாசம்)
+- Atmosphere & Kinship: Unshakeable loyalty, shared laughter, unspoken understanding, standing by one another through trial.
+- Narrative Technique: Natural banter, shared sacrifices, mutual trust, and heartfelt emotional warmth.`;
+  }
+  if (norm.includes('time') || norm.includes('destiny')) {
+    return `GENRE DIRECTIVE: Time Travel & Destiny (காலப் பயணம் & விதி)
+- Atmosphere & Fate: Echoes of forgotten eras, paradoxes of choice, bittersweet encounters across the tapestry of time.
+- Narrative Technique: Poignant nostalgia, the weight of destiny, and timeless love enduring across eras.`;
+  }
+  if (norm.includes('action') || norm.includes('martial')) {
+    return `GENRE DIRECTIVE: Action & Martial (வீர சாகசப் போர்)
+- Atmosphere & Kinetic Power: Visceral physical momentum, crackling tension, breathless stakes, warrior honor.
+- Narrative Technique: Crisp choreography, kinetic verbs, unwavering bravery, and triumphant resolve.`;
+  }
+  if (norm.includes('family') || norm.includes('sentiment')) {
+    return `GENRE DIRECTIVE: Family & Sentiment (குடும்ப உறவு & பாசம்)
+- Atmosphere & Heartfelt Ties: Generational warmth, parent-child devotion, unspoken sacrifices, bittersweet memories.
+- Narrative Technique: Deep emotional resonance, tearful reconciliation, healing old wounds, and enduring unconditional love.`;
+  }
+
+  return `GENRE DIRECTIVE: ${genre || 'Literary Fiction'}
+- Craft an engaging, authentic narrative with vivid sensory details, compelling character actions, natural dialogue, and emotional progression.`;
+}
+
+/**
  * Comprehensive Semantic Tone Definitions
  * Ensures tone actually influences style, vocabulary, emotional depth, pacing, and dialogue
  * while strictly preserving user intent and selected language.
@@ -469,7 +639,7 @@ const TONE_INSTRUCTIONS = {
   },
   romantic: {
     name: 'Romantic / காதல் நயம்',
-    en: 'Romantic, intimate, and tender. Capture subtle chemistry, gentle longing, warmth of connection, and poetic beauty of love.',
+    en: 'Romantic, intimate, and tender. Capture subtle chemistry, gentle longing, warmth of connection, and poetic beauty of love with emotional subtlety.',
     ta: 'காதல் நயம், மென்மை மற்றும் கவித்துவ உணர்வு. இரு உள்ளங்களின் மெல்லிய பிணைப்பு, ஏக்கம், அன்பு மற்றும் பாசத்தின் தூய்மையை வெளிப்படுத்துக.'
   },
   playful: {
@@ -489,7 +659,7 @@ const TONE_INSTRUCTIONS = {
   },
   melancholic: {
     name: 'Melancholic / புலம்பல் நயம்',
-    en: 'Melancholic and soulful. Evoke tender sorrow, longing, bittersweet reflection, and the quiet ache of absence.',
+    en: 'Melancholic, nostalgic, reflective, and emotionally restrained. Evoke tender sorrow, longing, bittersweet reflection, and the quiet ache of absence.',
     ta: 'புலம்பல் நயம், நெகிழ்ச்சி மற்றும் மெல்லிய சோகம். பிரிவின் வலி, ஏக்கம், ஏக்கத்தின் இனிமை மற்றும் நினைவுகளின் சுவடுகளைப் பதிவு செய்க.'
   },
   epic: {
@@ -499,8 +669,13 @@ const TONE_INSTRUCTIONS = {
   },
   philosophical: {
     name: 'Philosophical / தத்துவார்த்த',
-    en: 'Philosophical and reflective. Explore existential insight, metaphysical questions, meaning, and timeless wisdom.',
+    en: 'Philosophical and reflective, thoughtful without becoming generic. Explore existential insight, metaphysical questions, meaning, and timeless wisdom.',
     ta: 'தத்துவார்த்த பார்வை, வாழ்க்கை மெய்ஞானம், காலத்தின் சுழற்சி மற்றும் ஆழ்ந்த வாழ்வியல் உண்மைகளை வெளிப்படுத்துக.'
+  },
+  mystical: {
+    name: 'Mystical / மெய்ஞ்ஞான & மர்ம நயம்',
+    en: 'Mysterious, imaginative, and enigmatic. Weave ethereal atmosphere, unseen currents, poetic wonder, and intriguing secrets.',
+    ta: 'மெய்ஞ்ஞான & மர்ம நயம். புதிரான சூழல், புரியாத ரகசியம், பிரபஞ்ச வியப்பு மற்றும் மனதை ஈர்க்கும் விசித்திரக் கற்பனைகளை விரவ விடுக.'
   },
   spiritual: {
     name: 'Spiritual & Devotional / பக்தி & ஆன்மீகம்',
@@ -514,27 +689,27 @@ const TONE_INSTRUCTIONS = {
   },
   nostalgic: {
     name: 'Nostalgic / பசுமை நினைவுகள்',
-    en: 'Nostalgic and evocative. Rekindle fond memories, bittersweet remembrance, vintage warmth, and the gentle echoes of yesterday.',
+    en: 'Nostalgic, memory-driven, and emotionally warm. Rekindle fond memories, bittersweet remembrance, vintage warmth, and the gentle echoes of yesterday.',
     ta: 'பசுமை நினைவுகள், கடந்த காலத் தென்றல், பால்யத்தின் நினைவுகள் மற்றும் பழமையின் கதகதப்பை மீட்டுத்தருக.'
   },
   peaceful: {
     name: 'Peaceful & Serene / அமைதி & சாந்தம்',
-    en: 'Peaceful, tranquil, and serene. Calm waters, gentle breathing, quiet stillness, and soothing harmony.',
+    en: 'Peaceful, soft, calm, and serene. Calm waters, gentle breathing, quiet stillness, and soothing harmony.',
     ta: 'அமைதி மற்றும் சாந்தம். சலனமற்ற நதி, மெல்லிய காற்று மற்றும் மனதிற்கு இதமளிக்கும் நிசப்தத்தைப் பொழிக.'
   },
   passionate: {
     name: 'Passionate & Fiery / அனல் பறக்கும் ஆர்வம்',
-    en: 'Passionate, fiery, and intense. Unstoppable drive, ardent longing, burning devotion, and electrified emotion.',
+    en: 'Passionate, fiery, intense, and expressive. Unstoppable drive, ardent longing, burning devotion, and electrified emotion.',
     ta: 'அனல் பறக்கும் ஆர்வம், தீவிர உணர்ச்சி மற்றும் தணியாத வேட்கையை அனல் தெறிக்கும் வார்த்தைகளால் வடிக்க.'
   },
   sarcastic: {
     name: 'Sarcastic & Witty / அங்கதம் & கேலி',
-    en: 'Sarcastic, sharp, and witty. Clever irony, dry humor, sharp observations, and satirical edge.',
+    en: 'Sarcastic, clever, witty, and controlled. Clever irony, dry humor, sharp observations, and satirical edge.',
     ta: 'அங்கதம், கூர்மையான கேலி மற்றும் சமயோசித அறிவு. நகைச்சுவை கலந்த முரண்களையும் கூர்மையான பார்வைகளையும் வெளிப்படுத்துக.'
   },
   hopeful: {
     name: 'Hopeful & Optimistic / நம்பிக்கை ஒளி',
-    en: 'Hopeful, radiant, and optimistic. Dawn after darkness, gentle renewal, bright horizons, and faith in tomorrow.',
+    en: 'Hopeful, warm, uplifting, and meaningful. Dawn after darkness, gentle renewal, bright horizons, and faith in tomorrow.',
     ta: 'நம்பிக்கை ஒளி, இருள் விலகும் விடியல், புது வசந்தம் மற்றும் நாளைய வெற்றிக்கான உறுதிமொழியைத் தருக.'
   },
   heartbreak: {
@@ -542,9 +717,19 @@ const TONE_INSTRUCTIONS = {
     en: 'Heartbreak and poignant grief. The raw ache of separation, fractured trust, unspoken tears, and the silence of loss.',
     ta: 'இதய வலி, தாங்கொணா பிரிவு, மௌனக் கண்ணீர் மற்றும் உடைந்த கனவுகளின் சோகத்தை உள்ளுருக வடிக்க.'
   },
+  sad: {
+    name: 'Sad / சோகம் & வலி',
+    en: 'Quietly painful, poignant, and meaningful. Capture raw sorrow with dignity, unspoken heartache, and gentle emotional truth.',
+    ta: 'ஆழ்ந்த சோகம், மன வலி மற்றும் அமைதியான கண்ணீர். பிரிவின் சோகத்தை, வலியை கண்ணியத்துடனும் உண்மை உணர்வுடனும் வடிக்க.'
+  },
+  cinematic: {
+    name: 'Cinematic / திரைப்படக் காட்சி நயம்',
+    en: 'Visual, atmospheric, and dramatic. Write with cinematic scale, rich sensory textures, vivid lighting, evocative soundscapes, and compelling drama.',
+    ta: 'திரைப்படக் காட்சி நயம், பிரம்மாண்டமான பின்னணி மற்றும் தீவிர நாடகத் தருணங்கள். ஒளியும் நிழலும் கலந்த காட்சி விவரிப்புகள் மூலம் உணர்வை எழுப்புக.'
+  },
   'nature-vibe': {
     name: 'Nature & Earthy / இயற்கை எழில்',
-    en: 'Nature-infused and earthy. Fragrant soil, rustling leaves, rivers, birdsong, and deep organic harmony.',
+    en: 'Nature-infused and earthy. Strong connection to natural imagery, fragrant soil, rustling leaves, rivers, birdsong, and deep organic harmony.',
     ta: 'இயற்கை எழில், மண்வாசம், சலசலக்கும் ஓடை, மரங்களின் பசுமை மற்றும் இயற்கையோடு இயைந்த மெல்லிய உணர்வை வரைக.'
   }
 };
@@ -558,6 +743,12 @@ function getToneGuideline(tone, lang = 'ta') {
 
   if (norm.includes('creative') || norm.includes('imagin') || norm.includes('artistic')) {
     matchKey = 'creative';
+  } else if (norm.includes('cinematic') || norm.includes('visual-drama')) {
+    matchKey = 'cinematic';
+  } else if (norm.includes('sad') || norm.includes('grief')) {
+    matchKey = 'sad';
+  } else if (norm.includes('mystic') || norm.includes('mystery-tone')) {
+    matchKey = 'mystical';
   } else if (norm.includes('emotional') || norm.includes('emotion') || norm.includes('heart')) {
     matchKey = 'emotional';
   } else if (norm.includes('humor') || norm.includes('funny') || norm.includes('comedy') || norm.includes('joke')) {
@@ -803,11 +994,16 @@ function buildStructuredUserPrompt(params = {}) {
   if (mediaContext) {
     const mc = mediaContext;
     mediaSummary = `
-[VISUAL MEDIA CONTEXT]:
+[VISUAL MEDIA SOURCE MATERIAL]:
 - Type: ${mc.mediaType || 'visual media'}
 ${mc.category ? `- Category: ${mc.category}` : ''}
 ${mc.scene ? `- Setting/Location: ${mc.scene}` : ''}
-${(mc.subjects || mc.objects)?.length ? `- Main Subjects: ${(mc.subjects || mc.objects).join(', ')}` : ''}
+${(mc.subjects || mc.objects)?.length ? `- Main Subjects/Objects: ${(mc.subjects || mc.objects).join(', ')}` : ''}
+${mc.actions?.length ? `- Observed Actions: ${mc.actions.join(' -> ')}` : ''}
+${mc.emotion ? `- Emotion & Expressions: ${mc.emotion}` : ''}
+${mc.setting ? `- Setting & Lighting: ${mc.setting}` : ''}
+${mc.visual_style ? `- Visual Style: ${mc.visual_style}` : ''}
+${mc.important_events?.length ? `- Timeline Events: ${mc.important_events.join(' | ')}` : ''}
 ${mc.mood ? `- Mood: ${mc.mood}` : ''}
 `;
   }
@@ -829,16 +1025,26 @@ USER'S ACTUAL INPUT (PRIMARY SOURCE OF TRUTH):
 "${rawInput}"
 
 CONTENT ANCHORS TO WEAVE INTO THE WORK:
-${anchorItems.length > 0 ? anchorItems.join('\n') : `- Topic: ${rawInput}`}
+${anchorItems.length > 0 ? anchorItems.join('\n') : `- Topic: ${rawInput || 'Inspired by the uploaded media'}`}
 
 MANDATORY GENERATION DIRECTIVES:
-1. WHAT TO WRITE ABOUT: The user's actual input is the primary source of the content. Every generated scene or verse MUST revolve around the anchors above (${anchors.summary || rawInput}).
-2. NO GENERIC SUBSTITUTION: Never replace the user's topic with a generic template or invent an unrelated story.
-3. GENRE ROLE: The selected genre ("${genre || 'General'}") provides the stylistic framework/backdrop only. It must NEVER override the user's specific topic.
-4. TONE ROLE: The selected tone ("${tone}") controls HOW the content is written (style, vocabulary, emotional depth, pacing, dialogue), not WHAT it is about.
+1. WHAT TO WRITE: Generate ONLY the requested content type: ${contentTypeLabel.toUpperCase()}.
+   - If POEM: Output ONLY a poem with genuine line breaks. Zero prose, zero analysis, zero metadata.
+   - If STORY: Output ONLY a story in narrative prose. Include vivid dialogue and emotional progression. Zero verse, zero analysis.
+   - If CONTENT CREATOR: Output ONLY publish-ready creator content suited for ${platform || 'social media'}.
+2. STRICT INPUT GROUNDING & CREATIVE INTERPRETATION:
+   - WHAT TO WRITE ABOUT: The user's actual input is the primary source of the content ("${rawInput}") and the foundational seed.
+   - GENRE ROLE: The selected genre ("${genre || 'Generic'}") provides the stylistic framework/backdrop only. It must NEVER override the user's specific topic.
+   - If the user provided a single keyword or short prompt (e.g. "first love"), interpret its emotional essence, imagery, and mood into an evocative work. Do NOT repeat the keyword mechanically or use generic filler.
+   - If the user provided multiple keywords (e.g. "rain + first love + railway station"), understand the relationships between them and weave them seamlessly into a unified piece.
+   - Expand the user's ideas with rich creative depth; never replace their subject with unrelated concepts.
+3. VISUAL MEDIA IS INSPIRATION (NOT OUTPUT): Understand the media internally and transform its visual atmosphere, actions, and emotions into creative writing. NEVER describe your analysis of the media. NEVER output detected objects, frames, mood, reason, language detection, or technical observations.
+4. TONE IS A HARD CONSTRAINT: The selected tone ("${tone}") must be FELT through the writing, vocabulary, and rhythm. NEVER write "Tone:", "Mood:", "Reason:".
 ${getToneGuideline(tone, language)}
-5. LANGUAGE: Write strictly in ${language === 'tanglish' ? 'Tanglish' : langDisplay}.
-6. NO FILLER OR CLICHÉS: Begin immediately with the first line of creative content. No preamble, no meta-announcements, no markdown header titles.`;
+5. OUTPUT LANGUAGE: The selected output language (${language === 'tanglish' ? 'Tanglish' : langDisplay}) is FINAL AUTHORITY.
+   - If Tamil: 100% natural, expressive Tamil in native script with ZERO unnecessary English/Tanglish mixing.
+   - If English: 100% natural, expressive English with ZERO Tamil/Tanglish mixing.
+6. NO META OUTPUT & ZERO PREAMBLE: Begin immediately with the first line of the creative work. Do NOT output "Image Analysis", "Video Analysis", "Mood:", "Reason:", "Detected:", "Real language:", "Here is your poem", or markdown title headers (#).`;
 }
 
 /**
@@ -857,7 +1063,7 @@ function buildSystemPrompt(params = {}) {
   const romanizedInput = Boolean(params.romanizedInput);
 
   const langDisplay = langName(language);
-  const isClassical = CLASSICAL_TAMIL_FORMS.includes(poemType);
+  const isClassical = isClassicalTamilForm(poemType) || (language === 'ta' && CLASSICAL_TAMIL_FORMS.includes(poemType));
 
   let modeSpecificRules = '';
 
@@ -869,16 +1075,19 @@ function buildSystemPrompt(params = {}) {
 ${formRules}
 ${getToneGuideline(tone, language)}
 ${getLengthGuideline(length, 'poem')}
-POETIC LINE BREAK RULE:
+POETIC MASTERY & LINE BREAK RULES:
 - Preserve genuine poetic line breaks (one verse/line per line).
 - Do not compress lines into a single running paragraph.
-- Use line breaks meaningfully for cadence and rhythm.
+- Use line breaks meaningfully for cadence, emotional breathing room, and rhythm.
+- Evoke fresh imagery, heartfelt metaphors, and memorable turns of phrase.
+- The user's prompt/keywords are the foundational seed: expand their emotional and creative depth without mechanically repeating words or introducing unrelated filler.
 `;
   } else if (mode === 'story') {
     modeSpecificRules = `
 [MODE: STORY GENERATION]
 GENRE FRAMEWORK: ${genre}
 (CRITICAL: The genre defines ONLY the atmospheric backdrop and creative framework. It must NEVER override or replace the user's specific topic with generic ${genre} tropes.)
+${getStoryGenreRules(genre, language)}
 ${getToneGuideline(tone, language)}
 ${getLengthGuideline(length, 'story')}
 NARRATIVE RULES:
@@ -1018,18 +1227,19 @@ CRITICAL MANDATORY LANGUAGE DIRECTIVE: TARGET = TAMIL (தமிழ்)
 INPUT UNDERSTANDING: Understand the user's input regardless of whether it is written in:
 - Native Tamil script (தமிழ் எழுத்துகள்)
 - Romanized Tamil / Tanglish (e.g. "sabari matrum kani iruvarum kadhalargal", "kadhal kavithai")
-- Plain English (e.g. "Sabari and Kani are lovers")
+- Plain English (e.g. "Sabari and Kani are lovers", "first love in the rain")
 - Any mixed-language combination
 
 OUTPUT LANGUAGE RULE: The selected output language is TAMIL. This is the FINAL AUTHORITY.
 1. EVERY SINGLE WORD OF THE OUTPUT MUST BE WRITTEN IN NATIVE TAMIL SCRIPT (தமிழ் எழுத்துகளில் மட்டுமே).
 2. NEVER infer the output language from the input language. Even if the user typed in English or Tanglish, the OUTPUT must be in Tamil.
-3. ABSOLUTELY FORBIDDEN: Writing in English, Latin alphabet letters, Hindi, Malayalam, Telugu, or any other script for prose/verse content.
-4. Do NOT copy, transliterate, or echo the user's English or Romanized Tamil letters into the output.
-5. Do NOT switch languages in the middle of the response.
-6. Do NOT randomly introduce Hindi, Malayalam, Telugu, Kannada, Bengali, or other languages.
-7. EXCEPTION (allowed): Proper nouns (names like Sabari, Kani), unavoidable technical terms, URLs, hashtags, and brand names may appear where contextually appropriate — but the surrounding prose must be Tamil.
-8. Prefer natural, expressive Tamil prose. Do NOT generate Romanized Tamil/Tanglish output unless Tanglish is explicitly selected as the output format.
+3. ABSOLUTELY FORBIDDEN: Writing in English, Latin alphabet letters, Tanglish, Hindi, Malayalam, Telugu, or any other script.
+4. Do NOT produce mixed sentences like "ஒரு girl rain-ல் நடக்கிறாள்...". Express the complete thought naturally and purely in Tamil.
+5. The output must feel like it was originally created in Tamil — not a mechanical word-by-word translation.
+6. Do NOT copy, transliterate, or echo the user's English or Romanized Tamil letters into the output.
+7. Do NOT switch languages in the middle of the response.
+8. EXCEPTION (allowed): Proper nouns (names like Sabari, Kani), unavoidable technical terms, URLs, hashtags, and brand names may appear where contextually appropriate — but the surrounding prose must be Tamil.
+9. Prefer natural, expressive Tamil prose. Do NOT generate Romanized Tamil/Tanglish output unless Tanglish is explicitly selected as the output format.
 ==================================================
 `;
   } else {
@@ -1044,11 +1254,11 @@ INPUT UNDERSTANDING: Understand the user's input regardless of whether it is wri
 
 OUTPUT LANGUAGE RULE: The selected output language is ENGLISH. This is the FINAL AUTHORITY.
 1. Output exclusively in English Latin script.
-2. NEVER infer the output language from the input language. Even if the user typed in Tamil or Tanglish, the OUTPUT must be in English.
+2. NEVER infer the output language from the input language. Even if the user typed in Tamil or Tanglish, understand the underlying emotion and express it 100% naturally in English.
 3. Do NOT switch to Tamil, Tanglish, Hindi, or any other language mid-response.
 4. Do NOT randomly introduce Tamil script, Devanagari, or other non-Latin scripts into the prose.
 5. EXCEPTION (allowed): Proper nouns (names, places), unavoidable technical terms, URLs, and hashtags may remain as-is where appropriate.
-6. Generate natural, fluent English prose. Do not use broken English or echo the input language.
+6. Generate natural, fluent, evocative English prose. Do not use broken English or echo the input language.
 ==================================================
 `;
   }
@@ -1089,56 +1299,54 @@ ${mc.keyActions && mc.keyActions.length ? `- Video Movements: ${mc.keyActions.jo
 ${mc.endingMoment ? `- Video Ending Scene: ${mc.endingMoment}` : ''}
 ${mc.summary ? `- Overview: ${mc.summary}` : ''}
 
-MANDATORY RULES FOR MEDIA-AWARE OUTPUT:
-1. Your generated content MUST be genuinely inspired by and relevant to this visual media.
-2. Connect the visual details, mood, and setting with the selected platform (${platform}), visual style (${style}), card format (${format}), and language (${langDisplay}).
-3. Do NOT invent completely unrelated storylines or generic motivational quotes that contradict the image/video.
-4. Do NOT simply mechanically list objects or say "In this image we see...". Instead, creatively channel the imagery, atmosphere, and essence of the media into captivating literature/social copy.
-${mc.mediaType === 'video' ? `
-SPECIAL RULES FOR VIDEO GENERATION:
-- Ground your output in the actual observed movements and scene actions (${mc.actions?.join(', ') || mc.scene || 'video scene'}).
-- Unless the user specifically asks for another format (like haiku or short story), provide:
-  * Caption: A scene-grounded creative caption matching the tone (${tone}).
-  * Dialogue-style: An original trending-style / reel-style dialogue suggestion inspired by the visual mood. (Do NOT copy long copyrighted movie dialogues; create 100% original cinematic lines).
-  * Mood: The emotional and visual aesthetic mood.
-  * Reason: A concise 1-2 sentence explanation of why the caption and dialogue match the actual visual scene in the frames.
-- COPYRIGHT & TRENDING INTEGRITY:
-  * Do NOT reproduce copyrighted movie dialogues word-for-word.
-  * All dialogue suggestions must be 100% ORIGINAL dialogue-style lines inspired by the scene.
-  * Clearly label them as original dialogue-style suggestions (e.g. "Trending-style Dialogue" or "Reel Dialogue Suggestion").
-  * Do NOT falsely claim that a dialogue is currently trending in real-world charts.
-- LANGUAGE FIDELITY:
-  * Output strictly in ${langDisplay}. Caption, Dialogue-style, and Reason must all be in ${langDisplay}.
-` : ''}
+MANDATORY RULES FOR MEDIA-AWARE CREATIVE GENERATION:
+1. The uploaded ${mc.mediaType || 'image/video'} is creative source material. Understand it internally and transform its meaningful visual details, atmosphere, actions and emotions into the requested creative work.
+2. NEVER describe your analysis of the media. NEVER output detected objects, frames, mood, reason, language detection, scene analysis or technical observations.
+3. STRICT PRIORITY HIERARCHY:
+   1. Selected Content Type (${mode === 'poem' ? 'POEM' : mode === 'story' ? 'STORY' : 'CONTENT CREATOR'}) — You must output ONLY this content type.
+      - If POEM: Output ONLY a poem. No prose, no analysis, no metadata.
+      - If STORY: Output ONLY a story in prose. Complete narrative arc with character dialogue. No verse, no analysis.
+      - If CONTENT CREATOR: Output ONLY publish-ready creator content suited for ${platform}.
+   2. Selected Output Language (${langDisplay}) — FINAL AUTHORITY.
+   3. User's prompt / keywords
+   4. Selected Tone (${tone}) — The tone must be FELT through the writing, never labeled. Do NOT write "Tone:", "Mood:", "Reason:".
+   5. Selected Genre / Style
+   6. Uploaded media (source material/inspiration)
+4. Do NOT simply mechanically list objects or say "In this image we see..." or "In this video...". Instead, creatively channel the imagery, atmosphere, and essence of the media into the requested literary or creator work.
+5. If movie dialogue or punch lines are requested in creator mode:
+   - Do NOT reproduce copyrighted movie dialogues word-for-word.
+   - All dialogue suggestions must be 100% ORIGINAL dialogue-style lines inspired by the scene.
+   - Do NOT falsely claim that a dialogue is currently trending.
+6. NO META OUTPUT: The final response must NEVER contain "Analysis", "Image Analysis", "Video Analysis", "Frame Analysis", "Detected:", "Real language:", "Mood:", "Reason:", "Keywords detected", or "Here is your poem/story". Return the creative work directly.
 ==================================================
 `;
   }
 
-  return `You are DreamInk AI, a controlled creative writing engine, world-class master poet, literary author, and multilingual creative artisan.
-Generate content strictly based on the user's actual request.
+  return `You are DreamInk AI, a master creative writing engine, world-class poet, literary author, and multilingual creative artisan.
+Your ONLY mission is to produce original, memorable, emotionally resonant, human-quality creative works strictly tailored to the user's exact request.
 
 ${languageDirective}
 ${mediaDirective}
 
 ==================================================
 CORE GROUNDING PRINCIPLES (HIGHEST PRIORITY):
-1. USER INPUT = WHAT TO WRITE ABOUT
-   - THE USER'S ACTUAL INPUT IS THE PRIMARY SOURCE OF THE CONTENT.
-   - Do NOT generate random content.
-   - Do NOT use generic filler.
-   - Do NOT ignore keywords.
-   - Do NOT replace user-provided concepts with your own concepts.
-   - Do NOT invent an unrelated story just because a genre is selected.
+1. USER INPUT = WHAT TO WRITE ABOUT (THE FOUNDATIONAL SEED)
+   - The user's actual prompt, keywords, or phrase are the PRIMARY SOURCE OF TRUTH.
+   - If the user provides a single keyword or short prompt (e.g. "first love"):
+     Interpret the emotional core, imagery, and atmosphere deeply. Do NOT simply expand the words mechanically or repeat the keyword over and over. Avoid generic AI filler.
+   - If the user provides multiple keywords (e.g. "rain + first love + railway station"):
+     Naturally weave the relationships between these concepts into a seamless, unified creative piece rather than treating them as an isolated checklist.
+   - Expand the user's idea creatively; NEVER replace or abandon the user's idea with unrelated concepts.
 
 2. STRICT PRIORITY HIERARCHY:
    1. USER'S ACTUAL INPUT / KEYWORDS (Highest Priority)
-   2. SELECTED CONTENT TYPE
-   3. SELECTED GENRE
-   4. SELECTED TONE / MOOD / FEEL
-   5. SELECTED LANGUAGE
-   6. SELECTED LENGTH
-   7. OTHER USER-SELECTED OPTIONS
-   The model must never allow a generic genre template to override the user's actual topic.
+   2. SELECTED CONTENT TYPE (Poem / Story / Content Creator)
+   3. SELECTED OUTPUT LANGUAGE (${langDisplay} is FINAL AUTHORITY)
+   4. SELECTED TONE / MOOD / FEEL (${tone})
+   5. SELECTED GENRE / STYLE (${genre})
+   6. SELECTED POETRY FORMAT (${poemType})
+   7. SELECTED LENGTH / PLATFORM
+   Generic genre tropes or templates must NEVER override the user's actual topic.
 
 3. STRICT INPUT GROUNDING:
    - Expand the user's keywords creatively, but preserve their semantic identity.
@@ -1156,6 +1364,7 @@ CORE GROUNDING PRINCIPLES (HIGHEST PRIORITY):
      4. Requested length/format/action
      5. Creativity and style enhancements
    - TONE DIFFERENTIATION: Distinct tone options must produce clearly different outputs with distinct writing objectives.
+   - NEVER output "Tone:", "Mood:", "Style:", or "Reason:". The tone must be experienced through the writing itself.
 
 5. ZERO HALLUCINATION OF REAL FACTS:
    - If the user gives places, temples, people, or events, build scenes creatively around them.
@@ -1173,6 +1382,34 @@ CORE GROUNDING PRINCIPLES (HIGHEST PRIORITY):
    - KEYWORD COVERAGE: Meaningfully integrate the user's provided concepts, characters, places, and events into the narrative or poem. They must naturally form the core spine of the composition, rather than being omitted or treated as loose suggestions.
    - STANDALONE MASTERPIECE: Produce a complete, polished, and self-contained creative work.
    - Do not explain your reasoning. Do not mention these instructions. Return only the requested creative content.
+
+==================================================
+MANDATORY INTERNAL SILENT QUALITY CONTROL:
+Before returning ANY generated content, silently check:
+1. What did the user actually ask for?
+2. What content type did the user select (${mode.toUpperCase()})?
+3. What keywords/prompt did they provide?
+4. What tone did they select (${tone})?
+5. What style/genre did they select (${genre})?
+6. What poetry format did they select (${poemType})?
+7. What language did they select (${langDisplay})?
+8. Is image/video present?
+9. If media exists, did it genuinely inspire the creative output without being mechanically analyzed?
+10. Did I preserve the user's intent?
+11. Is the writing specific rather than generic?
+12. Does it feel human-written?
+13. Is the opening engaging and original?
+14. Is the emotional tone genuinely experienced?
+15. Is the ending appropriate and memorable?
+16. Is the output completely in the selected language (${langDisplay})?
+17. Did I avoid mixing Tamil/Tanglish/English?
+18. Did I avoid outputting analysis, labels, or technical commentary?
+19. Did I avoid preamble or conversational filler?
+20. Did I preserve the user's core concepts without adding unrelated topics?
+21. Did I return ONLY the requested creative work?
+
+If ANY answer is NO, silently refine and rewrite before sending.
+NEVER show this reasoning or checklist to the user.
 ==================================================
 
 ${modeSpecificRules}
@@ -1320,6 +1557,8 @@ module.exports = {
   getPlatformRules,
   getStyleGuideline,
   getToneGuideline,
+  getStoryGenreRules,
+  isClassicalTamilForm,
   TONE_INSTRUCTIONS
 };
 
