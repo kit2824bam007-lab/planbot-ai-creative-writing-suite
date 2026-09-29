@@ -366,9 +366,17 @@ router.post('/generate', authenticate, sanitizeInput, checkDailyLimit, async (re
         userPrompt,
         media: streamMedia,
         signal: abortController.signal,
+        onReset: () => {
+          if (generatedText) {
+            sendEvent('replace', { text: '' });
+            generatedText = '';
+          }
+        },
         onChunk: (chunk) => {
-          generatedText += chunk;
-          sendEvent('token', { text: chunk });
+          if (chunk) {
+            generatedText += chunk;
+            sendEvent('token', { text: chunk });
+          }
         }
       });
     } catch (gErr) {

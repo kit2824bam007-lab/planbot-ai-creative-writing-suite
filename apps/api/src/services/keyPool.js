@@ -161,8 +161,13 @@ class KeyPool {
         target.cooldownUntil = now + (retrySec * 1000);
         target.lastError = `429 Rate Limit (retry in ${retrySec}s)`;
       }
+    } else if (msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand') || (errorObj && errorObj.status === 503)) {
+      // Upstream 503 Service Unavailable / high demand: set 15s cooldown to rotate keys cleanly
+      target.isCooldown = true;
+      target.cooldownUntil = now + 15 * 1000;
+      target.lastError = '503 Service Unavailable (high demand)';
     } else {
-      // Temporary network/503 spikes: 3s cooldown
+      // Temporary network spikes: 3s cooldown
       target.isCooldown = true;
       target.cooldownUntil = now + 3 * 1000;
     }

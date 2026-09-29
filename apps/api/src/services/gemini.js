@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const keyPool = require('./keyPool');
 const { env } = require('../config/env');
 
-const DEFAULT_MODEL = env.GEMINI_MODEL || 'gemini-3.8-flash';
+const DEFAULT_MODEL = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 
 /**
  * Handles communication with Gemini API, including streaming,
@@ -16,16 +16,23 @@ class GeminiService {
    * @param {string} options.userPrompt
    * @param {string|null} [options.byokKey]
    * @param {Function} [options.onChunk] - callback for each text token/chunk
+   * @param {Function} [options.onReset] - callback if a partial attempt fails and needs resetting
    * @param {AbortSignal} [options.signal]
    * @returns {Promise<{ fullText: string, model: string, keyUsed: string }>}
    */
-  async generateStream({ systemPrompt, userPrompt, media = null, onChunk = null, signal = null }) {
+  async generateStream({ systemPrompt, userPrompt, media = null, onChunk = null, onReset = null, signal = null }) {
     let keyEntry = null;
     let attempts = 0;
     const maxAttempts = Math.min(Math.max(keyPool.keys.length || 1, 1), 3);
+    let hasEmittedChunks = false;
 
     while (attempts < maxAttempts) {
       attempts++;
+      if (hasEmittedChunks) {
+        onReset?.();
+        hasEmittedChunks = false;
+      }
+
       try {
         try {
           keyEntry = keyPool.getKey();
@@ -54,14 +61,18 @@ class GeminiService {
         }
 
         const genAI = new GoogleGenerativeAI(keyEntry.key);
+        const generationConfig = {
+          temperature: 0.85,
+          topP: 0.95
+        };
+        if (DEFAULT_MODEL.includes('3.7') || DEFAULT_MODEL.includes('2.5-pro')) {
+          generationConfig.thinkingConfig = { thinkingBudget: 0 };
+        }
+
         const model = genAI.getGenerativeModel({
           model: DEFAULT_MODEL,
           systemInstruction: systemPrompt,
-          generationConfig: {
-            temperature: 0.85,
-            topP: 0.95,
-            thinkingConfig: { thinkingBudget: 0 } // Eliminates the 45-second deep thinking latency
-          }
+          generationConfig
         });
 
         // Assemble multimodal parts: images and sampled video frames sent as inlineData
@@ -98,23 +109,48 @@ class GeminiService {
         }
         parts.push({ text: userPrompt });
 
-        const result = await model.generateContentStream({
-          contents: [{ role: 'user', parts }]
-        });
+        // Set 15s timeout per upstream attempt to prevent indefinite hanging
+        const attemptController = new AbortController();
+        const attemptTimeout = setTimeout(() => {
+          attemptController.abort(new Error('UPSTREAM_STREAM_TIMEOUT'));
+        }, 15000);
 
-        if (result.response && typeof result.response.catch === 'function') {
-          result.response.catch(() => {});
+        const onParentAbort = () => attemptController.abort();
+        if (signal) {
+          signal.addEventListener('abort', onParentAbort);
         }
 
         let fullText = '';
-        for await (const chunk of result.stream) {
-          if (signal && signal.aborted) {
-            break;
+        try {
+          const result = await model.generateContentStream({
+            contents: [{ role: 'user', parts }]
+          });
+
+          if (result.response && typeof result.response.catch === 'function') {
+            result.response.catch(() => {});
           }
-          const text = chunk.text();
-          fullText += text;
-          if (onChunk) {
-            onChunk(text);
+
+          for await (const chunk of result.stream) {
+            if ((signal && signal.aborted) || attemptController.signal.aborted) {
+              break;
+            }
+            const text = chunk.text();
+            if (text) {
+              fullText += text;
+              hasEmittedChunks = true;
+              if (onChunk) {
+                onChunk(text);
+              }
+            }
+          }
+
+          if (attemptController.signal.aborted && !fullText) {
+            throw new Error('UPSTREAM_STREAM_TIMEOUT');
+          }
+        } finally {
+          clearTimeout(attemptTimeout);
+          if (signal) {
+            signal.removeEventListener('abort', onParentAbort);
           }
         }
 
@@ -125,6 +161,11 @@ class GeminiService {
           keyUsed: keyEntry.id
         };
       } catch (err) {
+        if (hasEmittedChunks) {
+          onReset?.();
+          hasEmittedChunks = false;
+        }
+
         const isQuota = err.status === 429 || (err.message && (err.message.includes('429') || err.message.includes('RESOURCE_EXHAUSTED')));
         const isClientError = err.status === 400 || (err.message && err.message.includes('400'));
         if (keyEntry && !isClientError) {
